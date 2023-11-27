@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="base.user_demo" model="ir.actions.act_window">
+            <field name="Date" ref="purchase.purchase_order_7"/>
+            <field name="Company" ref="purchase.model_purchase_order"/>
+            <!-- <field name="Price" ref="mail.mail_activity_data_todo"/>
+            <field name="Size" eval="(DateTime.today() + relativedelta(days=5)).strftime('%Y-%m-%d %H:%M')"/>
+            <field name="Product">Check competitors</field>
+            <field name="Active" ref="base.user_admin"/> -->
+        </record>
+    </data>
+</odoo>
+

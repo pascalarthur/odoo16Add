@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="tree_view" model="ir.ui.view">
+        <field name="name">tree</field>
+        <field name="model">test_model</field>
+        <field name="arch" type="xml">
+            <tree string="Fish Prices">
+                <field name="name"/>
+                <field name="Date"/>
+                <field name="Vendor"/>
+                <field name="Product"/>
+                <field name="Size"/>
+                <field name="Price"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="form_view" model="ir.ui.view">
+        <field name="name">form</field>
+        <field name="model">test_model</field>
+        <field name="arch" type="xml">
+          <form string="Test">
+          <header>
+            <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
+        </header>
+            <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="Date"/>
+                        </group>
+                        <group>
+                            <field name="Vendor"/>
+                            <field name="Size"/>
+                            <field name="Product"/>
+                            <field name="Quantity"/>
+                        </group>
+                        <group>
+                            <field name="Price"/>
+                            <field name="Currency"/>
+                        </group>
+                        <!-- <notebook>
+                            <page string="Description">
+                                <field name="description"/>
+                            </page>
+                            <page string="Extra Information">
+                                <field name="information"/>
+                            </page>
+                        </notebook> -->
+                    </group>
+                </sheet>
+            </form>
+      </field>
+    </record>
+
+
+    <record id="test_model_action" model="ir.actions.act_window">
+        <field name="name">Fish Prices</field>
+        <field name="res_model">test_model</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>
