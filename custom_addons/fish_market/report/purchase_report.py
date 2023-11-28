@@ -33,38 +33,39 @@ class PurchaseReport(models.Model):
 
     size = fields.Float('Fish Size', readonly=True)
     quantity = fields.Float('Number of Tons', readonly=True)
-    walvis_price = fields.Float('Price Walvis', readonly=True)
-    zambia_price = fields.Float('Price Zambia', readonly=True)
+    price = fields.Float('Price', readonly=True)
     date = fields.Date('Date', readonly=True)
+    location_id = fields.Char('Location', readonly=True)
 
     def init(self):
-        return self._cr.execute('''
+        return self._cr.execute("""
             CREATE OR REPLACE VIEW fish_market_report AS (
                 SELECT
                     row_number() over() as id,
                     sub.date,
-                    sub.walvis_price,
-                    sub.zambia_price,
-                    sub.size,
-                    sub.product_id
+                    AVG(sub.price) as price,
+                    AVG(sub.size) as size,
+                    AVG(sub.product_id) as product_id,
+                    sub.location_id
                 FROM (
                     SELECT
                         pc.date as date,
-                        pc.price as walvis_price,
-                        0 as zambia_price,
+                        pc.price as price,
                         pc.size as size,
-                        pc.product_id as product_id
+                        pc.product_id as product_id,
+                        'Walvis' as location_id
                     FROM
                         walvis_bay_price_collection_model pc
                     UNION ALL
                     SELECT
                         zc.date as date,
-                        0 as walvis_price,
-                        zc.price as zambia_price,
+                        zc.price as price,
                         zc.size as size,
-                        zc.product_id as product_id
+                        zc.product_id as product_id,
+                        'Zambia' as location_id
                     FROM
                         zambia_price_collection_model zc
                 ) sub
+                GROUP BY sub.date, sub.location_id
             )
-        ''')
+        """)

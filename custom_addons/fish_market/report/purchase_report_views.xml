@@ -24,8 +24,8 @@
         <field name="arch" type="xml">
             <graph string="Price Comparison" type="line">
                 <field name="date" interval="day" type="row"/>
-                <field name="walvis_price" type="measure"/>
-                <field name="zambia_price" type="measure"/>
+                <field name="location_id" type="col"/>
+                <field name="price" type="measure"/>
             </graph>
         </field>
     </record>
