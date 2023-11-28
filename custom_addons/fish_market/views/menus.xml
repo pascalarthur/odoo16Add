@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 <menuitem id="test_menu_root" name="Fish Prices" groups="base.group_user">
-    <menuitem id="test_first_level_menu" name="Data Collection">
-        <menuitem id="test_model_menu_action" action="test_model_action"/>
+    <menuitem id="test_first_level_menu" name="Price Collection">
+        <menuitem id="fish_prices_walvis_bay_menu_action" action="fish_prices_walvis_bay_action"/>
+        <menuitem id="fish_prices_zimbabwe_menu_action" action="fish_prices_zimbabwe_action"/>
     </menuitem>
 </menuitem>
 </odoo>

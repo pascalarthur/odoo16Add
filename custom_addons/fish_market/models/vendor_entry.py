@@ -3,25 +3,36 @@ from datetime import datetime
 from odoo import fields, models
 
 
-class TestModel(models.Model):
-    _name = 'test_model'
-    _description = 'Collect fish prices here to make better purchase decisions.'
+class InheritedModel(models.Model):
+    _inherit = "purchase.order"
 
-    namibia_tz = pytz.timezone('Africa/Windhoek')
-    name = fields.Char(default=datetime.now(namibia_tz).strftime("%d/%m/%Y %H:%M:%S"), readonly=True)
-
-    Date = fields.Date(default=fields.Date.context_today)
-    Vendor = fields.Many2one('res.partner', string="Vendor") #  fields.Many2one('vendor.model', string="Vendor", required=True)
-    Product = fields.Many2one('product.product', string='Product')
-    information = fields.Char()
-    Size = fields.Float()
-    Quantity = fields.Float()
+    new_field = fields.Char(string="New Field")
 
     def _default_currency(self):
         return self.env['res.currency'].search([('name', '=', 'N$')], limit=1).id
 
-    Price = fields.Monetary(currency_field='Currency', default=0.0)
-    Currency = fields.Many2one('res.currency', string='Currency', default=_default_currency)
+    currency_id = fields.Many2one('res.currency', string='Currency', default=_default_currency)
+
+
+
+class PriceCollectionModel(models.Model):
+    _name = 'test_model'
+    _description = 'Collect fish prices here to make better purchase decisions.'
+
+    namibia_tz = pytz.timezone('Africa/Windhoek')
+    reference = fields.Char(default=datetime.now(namibia_tz).strftime("%d/%m/%Y %H:%M:%S"), string='Reference', readonly=True)
+
+    date = fields.Date(default=fields.Date.context_today)
+    partner_id = fields.Many2one('res.partner', string="Vendor")
+    product_id = fields.Many2one('product.product', string='Product')
+    size = fields.Float(string='Size')
+    quantity = fields.Float(string='Quantity')
+
+    def _default_currency(self):
+        return self.env['res.currency'].search([('name', '=', 'N$')], limit=1).id
+
+    price = fields.Monetary(currency_field='currency_id', string='Price', default=0.0)
+    currency_id = fields.Many2one('res.currency', string='Currency', default=_default_currency)
 
     def action_buy(self):
         self.ensure_one()
@@ -30,7 +41,7 @@ class TestModel(models.Model):
 
         # Create a purchase order
         order_vals = {
-            'partner_id': self.Vendor.id,  # Assuming you have a vendor_id field
+            'partner_id': self.partner_id.id,
             'date_order': fields.Date.context_today(self),
             # Other necessary fields
         }
@@ -39,13 +50,13 @@ class TestModel(models.Model):
         # Add a line to the purchase order
         line_vals = {
             'order_id': order.id,
-            'product_id': self.Product.id,  # Assuming you have a product_id field
+            'product_id': self.product_id.id,
             'name': 'Fish',
-            'product_qty': self.Quantity,  # Assuming you have a quantity field
-            'product_uom': self.Product.uom_id.id,
-            'price_unit': self.Price,
+            'product_qty': self.quantity,
+            'product_uom': self.product_id.uom_id.id,
+            'price_unit': self.price,
             'date_planned': fields.Date.context_today(self),
-            'currency_id': self.Currency.id,
+            'currency_id': self.currency_id.id,
             # Other necessary fields
         }
         purchase_order_line_obj.create(line_vals)
@@ -58,3 +69,14 @@ class TestModel(models.Model):
             'res_id': order.id,
             'view_mode': 'form',
         }
+
+
+class WalvisBayPriceCollection(models.Model):
+    _inherit = 'test_model'
+    _name = 'walvis_bay_price_collection_model'
+
+
+
+class ZambiaPriceCollection(models.Model):
+    _inherit = 'test_model'
+    _name = 'zambia_price_collection_model'

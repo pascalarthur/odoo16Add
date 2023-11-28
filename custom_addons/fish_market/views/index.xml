@@ -5,12 +5,12 @@
         <field name="model">test_model</field>
         <field name="arch" type="xml">
             <tree string="Fish Prices">
-                <field name="name"/>
-                <field name="Date"/>
-                <field name="Vendor"/>
-                <field name="Product"/>
-                <field name="Size"/>
-                <field name="Price"/>
+                <field name="reference"/>
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="size"/>
+                <field name="price"/>
             </tree>
         </field>
     </record>
@@ -25,41 +25,35 @@
         </header>
             <sheet>
                     <group>
-                        <group>
-                            <field name="name"/>
-                        </group>
-                        <group>
-                            <field name="Date"/>
-                        </group>
-                        <group>
-                            <field name="Vendor"/>
-                            <field name="Size"/>
-                            <field name="Product"/>
-                            <field name="Quantity"/>
-                        </group>
-                        <group>
-                            <field name="Price"/>
-                            <field name="Currency"/>
-                        </group>
-                        <!-- <notebook>
-                            <page string="Description">
-                                <field name="description"/>
-                            </page>
-                            <page string="Extra Information">
-                                <field name="information"/>
-                            </page>
-                        </notebook> -->
+                        <field name="reference"/>
+                        <field name="price"/>
+                        <field name="currency_id"/>
+                        <field name="size"/>
+                        <field name="date"/>
+                        <field name="partner_id"/>
+                        <field name="product_id"/>
+                        <field name="quantity"/>
                     </group>
                 </sheet>
             </form>
       </field>
     </record>
 
-
-    <record id="test_model_action" model="ir.actions.act_window">
-        <field name="name">Fish Prices</field>
-        <field name="res_model">test_model</field>
+   <record id="fish_prices_walvis_bay_action" model="ir.actions.act_window">
+        <field name="name">Fish Prices - Walvis Bay</field>
+        <field name="res_model">walvis_bay_price_collection_model</field>
         <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                                   (0, 0, {'view_mode': 'tree', 'view_id': ref('tree_view')}),
+                                   (0, 0, {'view_mode': 'form', 'view_id': ref('form_view')})]"/>
     </record>
 
+    <record id="fish_prices_zimbabwe_action" model="ir.actions.act_window">
+        <field name="name">Fish Prices - Zimbabwe</field>
+        <field name="res_model">zambia_price_collection_model</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+                                   (0, 0, {'view_mode': 'tree', 'view_id': ref('tree_view')}),
+                                   (0, 0, {'view_mode': 'form', 'view_id': ref('form_view')})]"/>
+    </record>
 </odoo>
