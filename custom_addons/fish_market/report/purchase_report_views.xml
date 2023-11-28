@@ -18,6 +18,17 @@
         </field>
         <field name="target">current</field>
     </record>
+    <record id="view_purchase_report_graph" model="ir.ui.view">
+        <field name="name">purchase.report.graph</field>
+        <field name="model">fish_market.report</field>
+        <field name="arch" type="xml">
+            <graph string="Price Comparison" type="line">
+                <field name="date" interval="day" type="row"/>
+                <field name="walvis_price" type="measure"/>
+                <field name="zambia_price" type="measure"/>
+            </graph>
+        </field>
+    </record>
 
     <menuitem id="purchase_report_main" name="Reporting" parent="fish_market.test_menu_root" sequence="99" groups="base.group_user"/>
     <menuitem id="purchase_report" name="Purchase" parent="purchase_report_main" sequence="99" groups="base.group_user" action="action_purchase_order_report_all"/>
