@@ -1,32 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <record id="action_purchase_order_report_all" model="ir.actions.act_window">
         <field name="name">Price Analysis</field>
-        <field name="res_model">fish_market.report</field>
-        <field name="view_mode">graph,pivot</field>
-        <field name="view_id"></field>  <!-- force empty -->
-        <field name="context" eval="{
-                'search_default_orders': 1,
-                'search_default_filter_date_approve': 1}"/>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No Purchase Analysis
-            </p><p>
-                This analysis allows you to easily check and analyse your company purchase history and performance.
-                You can track your negotiation performance, the delivery performance of your vendors, etc
-            </p>
-        </field>
-        <field name="target">current</field>
+        <field name="res_model">fish_market.report.image</field>
+        <field name="view_mode">tree,form</field>
+        <field name="views" eval="[(ref('view_purchase_report_form'), 'form')]"/>
     </record>
-    <record id="view_purchase_report_graph" model="ir.ui.view">
-        <field name="name">purchase.report.graph</field>
-        <field name="model">fish_market.report</field>
+
+    <record id="view_purchase_report_form" model="ir.ui.view">
+        <field name="name">purchase.report.form</field>
+        <field name="model">fish_market.report.image</field>
         <field name="arch" type="xml">
-            <graph string="Price Comparison" type="line">
-                <field name="date" interval="day" type="row"/>
-                <field name="location_id" type="col"/>
-                <field name="price" type="measure"/>
-            </graph>
+            <form>
+                <sheet>
+                    <group>
+                        <field name='image_base64' widget="image" class="oe_avatar"/>
+                    </group>
+                </sheet>
+            </form>
         </field>
     </record>
 

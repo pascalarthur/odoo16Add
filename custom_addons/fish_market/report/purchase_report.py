@@ -6,6 +6,31 @@
 #
 
 from odoo import fields, models, api
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+
+
+class AnalyticsReport(models.Model):
+    _name = "fish_market.report.image"
+    _description = "Fish Price Report"
+    # _auto = False
+
+    def create_image(self):
+        # Create a Matplotlib plot
+        plt.figure()
+        plt.plot([1, 2, 3, 4])
+        plt.title("Sample Plot")
+
+        buf = BytesIO()
+        plt.savefig(buf, format='png')
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read())
+        buf.close()
+
+        return image_base64
+
+    image_base64 = fields.Binary(string="Image", default=create_image)
 
 
 class PurchaseReport(models.Model):
@@ -35,7 +60,9 @@ class PurchaseReport(models.Model):
     quantity = fields.Float('Number of Tons', readonly=True)
     price = fields.Float('Price', readonly=True)
     date = fields.Date('Date', readonly=True)
+    write_date = fields.Date('Write Date', readonly=True)
     location_id = fields.Char('Location', readonly=True)
+
 
     def init(self):
         return self._cr.execute("""
@@ -43,9 +70,10 @@ class PurchaseReport(models.Model):
                 SELECT
                     row_number() over() as id,
                     sub.date,
-                    AVG(sub.price) as price,
-                    AVG(sub.size) as size,
-                    AVG(sub.product_id) as product_id,
+                    sub.date as write_date,
+                    sub.price,
+                    sub.size,
+                    sub.product_id,
                     sub.location_id
                 FROM (
                     SELECT
@@ -66,6 +94,5 @@ class PurchaseReport(models.Model):
                     FROM
                         zambia_price_collection_model zc
                 ) sub
-                GROUP BY sub.date, sub.location_id
             )
         """)
