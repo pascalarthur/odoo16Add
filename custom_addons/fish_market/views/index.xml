@@ -19,11 +19,12 @@
         <field name="name">form</field>
         <field name="model">test_model</field>
         <field name="arch" type="xml">
-          <form string="Test">
-          <header>
-            <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
-        </header>
-            <sheet>
+            <form string="Test" duplicate="false">
+                <header>
+                    <button string="Save" class="oe_highlight" type="object" name="action_save"/>
+                    <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
+                </header>
+                <sheet>
                     <group>
                         <field name="reference"/>
                         <field name="price"/>

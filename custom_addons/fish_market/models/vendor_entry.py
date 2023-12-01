@@ -70,11 +70,15 @@ class PriceCollectionModel(models.Model):
             'view_mode': 'form',
         }
 
+    def action_save(self):
+        return {
+            'type': 'ir.actions.act_window_close'
+        }
+
 
 class WalvisBayPriceCollection(models.Model):
     _inherit = 'test_model'
     _name = 'walvis_bay_price_collection_model'
-
 
 
 class ZambiaPriceCollection(models.Model):

@@ -1,7 +1,7 @@
 {
     'name': "Fish_Market",
     'version': '1.0',
-    'depends': ['base', 'purchase'],
+    'depends': ['base', 'purchase', 'web'],
     'author': "Author Name",
     'category': 'Category',
     'description': """
@@ -16,6 +16,11 @@
 
         'report/purchase_report_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'fish_market/static/src/css/style.css',
+        ],
+    },
     # data files containing optionally loaded demonstration data
     # 'demo': [
     #     'data/purchase_demo.xml',
