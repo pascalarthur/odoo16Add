@@ -5,6 +5,9 @@
         <field name="model">test_model</field>
         <field name="arch" type="xml">
             <tree string="Fish Prices">
+                <header>
+                    <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
+                </header>
                 <field name="reference"/>
                 <field name="date"/>
                 <field name="partner_id"/>
@@ -22,7 +25,6 @@
             <form string="Test" duplicate="false">
                 <header>
                     <button string="Save" class="oe_highlight" type="object" name="action_save"/>
-                    <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
                 </header>
                 <sheet>
                     <group>

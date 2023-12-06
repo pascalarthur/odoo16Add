@@ -1,7 +1,7 @@
 {
     'name': "Fish_Market",
     'version': '1.0',
-    'depends': ['base', 'purchase', 'web', 'fleet'],
+    'depends': ['base', 'purchase', 'web', 'fleet', 'stock'],
     'author': "Author Name",
     'category': 'Category',
     'description': """
@@ -10,11 +10,15 @@
     # data files always loaded at installation
     'data': [
         'security/ir.model.access.csv',
+
+        'data/email_template_suppliers.xml',
+
+        'views/quotation_management_view.xml',
         'views/index.xml',
         'views/res_partner_supplier_views.xml',
         'views/custom_purchase_view.xml',
-
         'report/purchase_report_views.xml',
+
         'views/menus.xml',
     ],
 

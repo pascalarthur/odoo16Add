@@ -1,0 +1,12 @@
+from odoo import fields, models
+
+class InheritedModel(models.Model):
+    _inherit = "purchase.order"
+
+    new_field = fields.Char(string="New Field")
+
+    def _default_currency(self):
+        return self.env['res.currency'].search([('name', '=', 'N$')], limit=1).id
+
+    currency_id = fields.Many2one('res.currency', string='Currency', default=_default_currency)
+    quotation_management_id = fields.Many2one('quotation.management', string='Quotation Management')
