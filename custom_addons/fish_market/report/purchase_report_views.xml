@@ -4,10 +4,10 @@
         <field name="name">purchase.report.form</field>
         <field name="model">fish_market.report.image</field>
         <field name="arch" type="xml">
-            <form edit="false" duplicate="false" delete="false" create="false">
+            <form string="Hello WOrld" create="false" edit="false" js_class="fish_form">
                 <group>
-                    <field name='write_date'/>
-                    <field name='image_base64' widget="image" class="custom_full_width_image"/>
+                    <field name="write_date"/>
+                    <field name="image_base64" widget="image" class="custom_full_width_image"/>
                 </group>
             </form>
         </field>
@@ -19,6 +19,4 @@
         <field name="view_mode">form</field>
         <field name="views" eval="[(ref('view_purchase_report_form'), 'form')]"/>
     </record>
-    <menuitem id="purchase_report_main" name="Reporting" parent="fish_market.test_menu_root" sequence="99" groups="base.group_user"/>
-    <menuitem id="purchase_report" name="Purchase" parent="purchase_report_main" sequence="99" groups="base.group_user" action="action_purchase_order_report_all"/>
 </odoo>

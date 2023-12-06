@@ -14,7 +14,6 @@ class InheritedModel(models.Model):
     currency_id = fields.Many2one('res.currency', string='Currency', default=_default_currency)
 
 
-
 class PriceCollectionModel(models.Model):
     _name = 'test_model'
     _description = 'Collect fish prices here to make better purchase decisions.'
@@ -23,7 +22,7 @@ class PriceCollectionModel(models.Model):
     reference = fields.Char(default=datetime.now(namibia_tz).strftime("%d/%m/%Y %H:%M:%S"), string='Reference', readonly=True)
 
     date = fields.Date(default=fields.Date.context_today)
-    partner_id = fields.Many2one('res.partner', string="Vendor")
+    partner_id = fields.Many2one('res.partner', string="Vendor") # , default=lambda self: self.env.user.partner_id
     product_id = fields.Many2one('product.product', string='Product')
     size = fields.Float(string='Size')
     quantity = fields.Float(string='Quantity')
@@ -84,3 +83,11 @@ class WalvisBayPriceCollection(models.Model):
 class ZambiaPriceCollection(models.Model):
     _inherit = 'test_model'
     _name = 'zambia_price_collection_model'
+
+
+
+class CustomPartner(models.Model):
+    _inherit = 'res.partner'
+
+    # Add custom fields here
+    custom_field = fields.Char(string='Custom Field')
