@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_quant_kanban" model="ir.ui.view">
+        <field name="name">stock.quant.kanban</field>
+        <field name="model">stock.quant</field>
+        <field name="arch" type="xml">
+
+            <kanban default_group_by="location_id" class="o_kanban_small_column" js_class="hr_fleet_kanban_view_2">
+                <field name="location_id"/>
+                <attribute name="js_class">button_in_kanban</attribute>
+                <templates>
+                    <a href="#" name="sell_selected_action" type="object" string="Sell Selected">
+                        <div t-if="record.sell_selected_action.raw_value == false"/>
+                    </a>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <!-- Kanban card content -->
+                                <field name="selected_for_action" widget="boolean_toggle"/>
+                                <div><strong><field name="product_id"/></strong></div>
+                                <div>Quantity: <field name="quantity"/></div>
+                                <!-- More fields here -->
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="filter_internal_locations" model="ir.filters">
+        <field name="name">Internal Locations</field>
+        <field name="model_id">stock.quant</field>
+        <field name="domain">[('location_id.usage', '=', 'internal')]</field>
+        <field name="context">{'group_by': 'location_id'}</field>
+        <field name="user_id" eval="False"/>
+    </record>
+
+    <!-- Action to Open the Kanban View with Default Filter -->
+    <record id="action_inventory_kanban" model="ir.actions.act_window">
+        <field name="name">Inventory Kanban</field>
+        <field name="res_model">stock.quant</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="view_id" ref="view_stock_quant_kanban"/>
+        <field name="context">{'search_default_filter_internal_locations': 1}</field>
+    </record>
+</odoo>

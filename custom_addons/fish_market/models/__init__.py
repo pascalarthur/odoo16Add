@@ -6,3 +6,4 @@ from . import vendor_entry
 from . import custom_partner
 from . import custom_purchase
 from . import product
+from . import stock
