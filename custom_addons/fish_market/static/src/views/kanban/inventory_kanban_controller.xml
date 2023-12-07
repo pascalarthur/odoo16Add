@@ -2,7 +2,6 @@
 <templates>
     <t t-name="fish_market.KanbanController.Buttons" t-inherit="web.KanbanView.Buttons" t-inherit-mode="primary">
         <xpath expr="//div[hasclass('o_cp_buttons')]" position="inside">
-            <!-- <input type="file" multiple="true" t-ref="uploadFileInput" class="o_input_file o_hidden" t-on-change.stop="onInputChange"/> -->
             <button type="button" class="btn btn-primary" style="margin-left: 10px;"  t-on-click="OnTestClick">
                 Sell
             </button>

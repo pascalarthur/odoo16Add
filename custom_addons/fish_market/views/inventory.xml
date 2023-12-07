@@ -4,10 +4,8 @@
         <field name="name">stock.quant.kanban</field>
         <field name="model">stock.quant</field>
         <field name="arch" type="xml">
-
-            <kanban default_group_by="location_id" class="o_kanban_small_column" js_class="hr_fleet_kanban_view_2">
+            <kanban default_group_by="location_id" class="o_kanban_small_column" js_class="inventory_kanban_view">
                 <field name="location_id"/>
-                <attribute name="js_class">button_in_kanban</attribute>
                 <templates>
                     <a href="#" name="sell_selected_action" type="object" string="Sell Selected">
                         <div t-if="record.sell_selected_action.raw_value == false"/>
