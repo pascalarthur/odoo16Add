@@ -19,6 +19,7 @@
         'views/res_partner_supplier_views.xml',
         'views/custom_purchase_view.xml',
         'report/purchase_report_views.xml',
+        'views/sale_order_view.xml',
 
         'views/menus.xml',
     ],

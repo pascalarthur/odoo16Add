@@ -16,7 +16,6 @@
                             <div class="oe_kanban_details">
                                 <div><strong><field name="product_id"/></strong></div>
                                 <div>Quantity: <field name="quantity"/></div>
-                                <div>Selected: <field name="selected_for_action"/></div>
                             </div>
                         </div>
                     </t>
