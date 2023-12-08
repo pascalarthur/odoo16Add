@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="web.BooleanToggleField" t-inherit="web.BooleanField" t-inherit-mode="primary">
+        <!-- Replace the original CheckBox structure with a standard checkbox input -->
+        <xpath expr="//CheckBox" position="replace">
+            <input type="checkbox" t-att-checked="widget.value ? 'checked' : null" t-att-disabled="widget.mode === 'readonly' ? 'disabled' : null" class="o_field_boolean o_boolean_checkbox"/>
+        </xpath>
+    </t>
+
+</templates>

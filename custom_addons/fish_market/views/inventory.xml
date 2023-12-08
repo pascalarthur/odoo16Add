@@ -12,12 +12,11 @@
                     </a>
                     <t t-name="kanban-box">
                         <div class="oe_kanban_global_click">
+                            <field name="selected_for_action" widget="custom_checkbox_widget"/>
                             <div class="oe_kanban_details">
-                                <!-- Kanban card content -->
-                                <field name="selected_for_action" widget="boolean_toggle"/>
                                 <div><strong><field name="product_id"/></strong></div>
                                 <div>Quantity: <field name="quantity"/></div>
-                                <!-- More fields here -->
+                                <div>Selected: <field name="selected_for_action"/></div>
                             </div>
                         </div>
                     </t>

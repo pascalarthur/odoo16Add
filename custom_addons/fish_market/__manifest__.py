@@ -1,7 +1,7 @@
 {
     'name': "Fish_Market",
     'version': '1.0',
-    'depends': ['base', 'purchase', 'web', 'fleet', 'stock'],
+    'depends': ['base', 'purchase', 'web', 'fleet', 'stock', 'sale'],
     'author': "Author Name",
     'category': 'Category',
     'description': """

@@ -5,6 +5,7 @@ import { useBus, useService } from "@web/core/utils/hooks";
 import { useRef } from "@odoo/owl";
 
 
+
 export class InventoryKanbanController extends KanbanController {
     setup() {
         super.setup();
@@ -15,15 +16,21 @@ export class InventoryKanbanController extends KanbanController {
     async OnTestClick() {
         try {
             const action = await this.rpc("/fish_market/sell_selected_products");
-            console.log(this.model);
             if (action) {
-                this.actionService.doAction(action);
+                this.actionService.doAction(action, {
+                    additional_context: {
+                        'form_view_initial_mode': 'edit',
+                    },
+                    on_close: () => {
+                        console.log('Deleting content');
+                        this.rpc({
+                            model: 'sale.order',
+                            method: 'check_and_delete_order',
+                            args: [action.res_id, action.context.default_create_date],
+                        });
+                    }
+                });
             }
-            // if (result.updated_ids) {
-            //     this.model.reload().then(() => {
-            //         console.log('View reloaded');
-            //     });
-            // }
 
         } catch (error) {
             console.error('Error:', error);

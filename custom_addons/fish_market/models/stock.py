@@ -41,7 +41,10 @@ class StockQuant(models.Model):
             'view_mode': 'form',
             'views': [(False, 'form')],
             'res_id': sale_order.id,
-            'target': 'current',
+            'target': 'new',
+            'context': {
+                'default_create_date': fields.Datetime.now(),  # Store creation time
+            },
         }
 
 class StockQuantController(http.Controller):
