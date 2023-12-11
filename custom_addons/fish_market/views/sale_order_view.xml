@@ -10,8 +10,10 @@
             </xpath>
             <xpath expr="//sheet" position="before">
                 <header>
+                    <button name="set_transport_state" string="Transport" type="object" class="oe_highlight"/>
                     <button name="action_find_transport" string="Find Transport" type="object" class="oe_highlight"/>
-                    <button name="action_seal" string="Seal" type="object" class="oe_highlight"/>
+                    <button name="set_seal_state" string="Seal" type="object" class="oe_highlight"/>
+                    <button name="set_sent_state" string="Send Quotation" type="object" class="oe_highlight"/>
                 </header>
             </xpath>
         </field>

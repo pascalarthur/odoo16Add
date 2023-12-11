@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_route_supplier_communication_form" model="ir.ui.view">
+        <field name="name">route.demand.form</field>
+        <field name="model">route.demand</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="route_start"/>
+                            <field name="route_end"/>
+                            <field name="container_count"/>
+                            <field name="additional_details"/>
+                        </group>
+                        <group string="Select Suppliers">
+                            <field name="supplier_ids">
+                                <tree>
+                                    <field name="name"/>
+                                    <!-- Additional fields if needed -->
+                                </tree>
+                            </field>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Send Email" type="object" name="send_email_to_suppliers" class="btn-primary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="action_route_demand_form" model="ir.actions.act_window">
+        <field name="name">Route Demand</field>
+        <field name="res_model">route.demand</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="fish_market.view_route_supplier_communication_form"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="email_template_demand" model="mail.template">
+        <field name="name">Route Demand Email</field>
+        <field name="model_id" ref="fish_market.model_route_demand"/>
+        <field name="subject">Route Demand Details</field>
+        <field name="email_from">${object.company_id.email}</field>
+        <field name="email_to"></field>
+        <field name="body_html">
+            <![CDATA[
+            <p>Hello,</p>
+            <p>We have a new route demand:</p>
+            <p>Route Start: ${object.route_start}</p>
+            <p>Route End: ${object.route_end}</p>
+            <p>Container Count: ${object.container_count}</p>
+            <p>Additional Details: ${object.additional_details}</p>
+            ]]>
+        </field>
+    </record>
+</odoo>

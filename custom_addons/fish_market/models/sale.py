@@ -21,9 +21,34 @@ class SaleOrder(models.Model):
         return super(SaleOrder, self).create(vals)
 
     def action_find_transport(self):
-        # You can set a default stage here if needed
-        print('action_find_transport')
+        # Assuming the model of the new form is 'route.supplier.communication'
+        # and the ID of the form view is 'view_route_supplier_communication_form'
+        logistic_partner_ids = self.env['res.partner'].search([('category_id.name', '=', 'Logistic')]).ids
 
-    def action_seal(self):
-        # You can set a default stage here if needed
-        print('action_seal')
+        action = {
+            'type': 'ir.actions.act_window',
+            'name': 'Route Supplier Communication',
+            'view_mode': 'form',
+            'res_model': 'route.demand',
+            'view_id': self.env.ref('fish_market.view_route_supplier_communication_form').id,
+            'target': 'new',  # Open the form in a new window
+            'context': {
+                'default_supplier_ids': logistic_partner_ids,
+            },
+        }
+        return action
+
+    def set_transport_state(self):
+        self.ensure_one()
+        self.state = 'transport'
+
+    def set_seal_state(self):
+        # Change state to 'seal'
+        self.ensure_one()
+        self.state = 'seal'
+
+
+    def set_sent_state(self):
+        # Change state to 'seal'
+        self.ensure_one()
+        self.state = 'sent'

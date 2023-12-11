@@ -12,11 +12,14 @@
         'security/ir.model.access.csv',
 
         'data/email_template_suppliers.xml',
+        'data/email_template_logistics.xml',
 
         'views/inventory.xml',
+        'views/route.xml',
         'views/quotation_management_view.xml',
         'views/index.xml',
         'views/res_partner_supplier_views.xml',
+        'views/res_partner_logisitic_views.xml',
         'views/custom_purchase_view.xml',
         'report/purchase_report_views.xml',
         'views/sale_order_view.xml',
