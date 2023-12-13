@@ -6,3 +6,4 @@ access_fish_market_report,access_fish_market_report,model_fish_market_report,bas
 access_fish_market_report_image,access_fish_market_report_image,model_fish_market_report_image,base.group_user,1,1,1,1
 access_quotation_management,access_quotation_management,model_quotation_management,base.group_user,1,1,1,1
 access_route_demand,access_route_demand,model_route_demand,base.group_user,1,1,1,1
+access_access_token,access_access_token,model_access_token,base.group_user,1,1,1,1

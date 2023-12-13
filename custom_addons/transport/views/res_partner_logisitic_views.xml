@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_logistic_tree" model="ir.ui.view">
+        <field name="name">res.partner.tree.form.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button string="Email - Bid" class="oe_highlight" type="object" name="send_action_email_bid_logistics"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_res_partner_filter_logistic" model="ir.ui.view">
+        <field name="name">res.partner.logistic.filter</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Logistic" name="filter_logistic" domain="[('category_id.name', '=', 'Logistic')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_custom_partner_logistic_form" model="ir.actions.act_window">
+        <field name="name">Logisticians</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">tree,kanban</field>
+        <field name="view_id" ref="view_partner_logistic_tree"/>
+        <field name="search_view_id" ref="view_res_partner_filter_logistic"/>
+        <field name="context">{'search_default_filter_logistic': 1}</field>
+    </record>
+</odoo>

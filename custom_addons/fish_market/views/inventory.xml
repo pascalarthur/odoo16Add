@@ -4,7 +4,13 @@
         <field name="name">stock.quant.kanban</field>
         <field name="model">stock.quant</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="location_id" class="o_kanban_small_column" js_class="inventory_kanban_view" create="false">
+            <kanban default_group_by="location_id"
+                class="o_kanban_small_column"
+                js_class="inventory_kanban_view"
+                create="false"
+                group_create="false"
+                group_edit="false"
+                group_delete="false">
                 <field name="location_id"/>
                 <templates>
                     <a href="#" name="sell_selected_action" type="object" string="Sell Selected">
@@ -24,20 +30,23 @@
         </field>
     </record>
 
-    <record id="filter_internal_locations" model="ir.filters">
-        <field name="name">Internal Locations</field>
-        <field name="model_id">stock.quant</field>
-        <field name="domain">[('location_id.usage', '=', 'internal')]</field>
-        <field name="context">{'group_by': 'location_id'}</field>
-        <field name="user_id" eval="False"/>
+
+    <record id="filter_internal_location_ids" model="ir.ui.view">
+        <field name="name">stock.quant.location.filter</field>
+        <field name="model">stock.quant</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Internal" name="filter_locations" domain="[('location_id.usage', '=', 'internal')]"/>
+            </search>
+        </field>
     </record>
 
-    <!-- Action to Open the Kanban View with Default Filter -->
     <record id="action_inventory_kanban" model="ir.actions.act_window">
         <field name="name">Inventory Kanban</field>
         <field name="res_model">stock.quant</field>
         <field name="view_mode">kanban,tree,form</field>
         <field name="view_id" ref="view_stock_quant_kanban"/>
-        <field name="context">{'search_default_filter_internal_locations': 1}</field>
+        <field name="search_view_id" ref="filter_internal_location_ids"/>
+        <field name="context">{'search_default_filter_locations': 1}</field>
     </record>
 </odoo>

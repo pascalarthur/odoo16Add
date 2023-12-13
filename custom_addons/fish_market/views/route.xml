@@ -7,24 +7,44 @@
             <form>
                 <sheet>
                     <group>
-                        <group>
-                            <field name="route_start"/>
-                            <field name="route_end"/>
-                            <field name="container_count"/>
-                            <field name="additional_details"/>
+                        <group string="Start Address">
+                            <div class="o_address_format">
+                                <field name="route_start_street" placeholder="Street..." class="o_address_street"/>
+                                <field name="route_start_street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="route_start_city" placeholder="City" class="o_address_city"/>
+                                <field name="route_start_state_id" class="o_address_state" placeholder="State" options="{'no_open': True, 'no_quick_create': True}" context="{'default_country_id': route_start_country_id}"/>
+                                <field name="route_start_zip" placeholder="ZIP" class="o_address_zip"/>
+                                <field name="route_start_country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}'/>
+                            </div>
                         </group>
-                        <group string="Select Suppliers">
-                            <field name="supplier_ids">
-                                <tree>
-                                    <field name="name"/>
-                                    <!-- Additional fields if needed -->
-                                </tree>
-                            </field>
+
+                        <group string="Delivery Address">
+                            <div class="o_address_format">
+                                <field name="route_end_street" placeholder="Street..." class="o_address_street"/>
+                                <field name="route_end_street2" placeholder="Street 2..." class="o_address_street"/>
+                                <field name="route_end_city" placeholder="City" class="o_address_city"/>
+                                <field name="route_end_state_id" class="o_address_state" placeholder="State" options="{'no_open': True, 'no_quick_create': True}" context="{'default_country_id': route_end_country_id}"/>
+                                <field name="route_end_zip" placeholder="ZIP" class="o_address_zip"/>
+                                <field name="route_end_country_id" placeholder="Country" class="o_address_country" options='{"no_open": True, "no_create": True}'/>
+                            </div>
                         </group>
+
+                        <group string="Shipping Details">
+                            <field name="container_count" placeholder="Container Count..."/>
+                            <field name="additional_details" placeholder="Details..."/>
+                        </group>
+                    </group>
+                    <group string="Suppliers">
+                        <field name="supplier_ids">
+                            <tree>
+                                <field name="name"/>
+                                <field name="email"/>
+                            </tree>
+                        </field>
                     </group>
                 </sheet>
                 <footer>
-                    <button string="Send Email" type="object" name="send_email_to_suppliers" class="btn-primary"/>
+                    <button string="Send Email - Request for Transport" type="object" name="send_email_to_suppliers" class="btn-primary"/>
                 </footer>
             </form>
         </field>

@@ -4,12 +4,9 @@
         <menuitem id="test_first_level_menu" name="Price Collection">
             <menuitem id="fish_prices_walvis_bay_menu_action" action="fish_prices_walvis_bay_action"/>
             <menuitem id="fish_prices_zimbabwe_menu_action" action="fish_prices_zimbabwe_action"/>
-        </menuitem>
-        <menuitem id="suppliers_menu_main" name="Suppliers">
-            <menuitem id="Suplliers" action="action_custom_partner_form" sequence="10"/>
-        </menuitem>
-        <menuitem id="logisticians_menu_main" name="Logisticians">
-            <menuitem id="Logisticians" action="action_custom_partner_logistic_form" sequence="10"/>
+            <menuitem id="menu_partners_config" sequence="30" name="Partners">
+                <menuitem id="Suplliers" action="action_custom_partner_supplier_form" sequence="10"/>
+            </menuitem>
         </menuitem>
         <menuitem id="purchase_report_main" name="Reporting" sequence="99" groups="base.group_user">
             <menuitem id="purchase_report" name="Fish Prices" sequence="99" groups="base.group_user" action="action_purchase_order_report_all"/>
@@ -17,6 +14,5 @@
         <menuitem id="inventory_report_main" name="Inventory" sequence="99" groups="base.group_user">
             <menuitem id="menu_inventory_kanban" name="Inventory Kanban" action="action_inventory_kanban"/>
         </menuitem>
-
     </menuitem>
 </odoo>

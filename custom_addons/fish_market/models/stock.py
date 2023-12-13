@@ -16,6 +16,8 @@ class StockQuant(models.Model):
         SaleOrder = self.env['sale.order']
         sale_order = SaleOrder.create({
             'partner_id': self.env.user.partner_id.id,  # Example: setting the current user's partner
+            'location_id': selected_quants[0].location_id.id,
+
             # Add other necessary fields for the sale.order
         })
 
@@ -31,10 +33,8 @@ class StockQuant(models.Model):
                 })]
             })
 
-        # Reset the selection
         selected_quants.write({'selected_for_action': False})
 
-        # Return the ID of the created sales order
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'sale.order',

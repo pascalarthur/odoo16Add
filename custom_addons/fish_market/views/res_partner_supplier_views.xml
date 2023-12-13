@@ -12,11 +12,23 @@
             </xpath>
         </field>
     </record>
-    <record id="action_custom_partner_form" model="ir.actions.act_window">
+
+    <record id="view_res_partner_filter_supplier" model="ir.ui.view">
+        <field name="name">res.partner.supplier.filter</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Supplier" name="filter_supplier" domain="[('category_id.name', '=', 'Supplier')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_custom_partner_supplier_form" model="ir.actions.act_window">
         <field name="name">Suppliers</field>
         <field name="res_model">res.partner</field>
-        <field name="view_mode">tree</field>
-        <field name="domain">[('category_id.name', '=', 'Supplier')]</field>
+        <field name="view_mode">tree,kanban</field>
         <field name="view_id" ref="view_partner_supplier_tree"/>
+        <field name="search_view_id" ref="view_res_partner_filter_supplier"/>
+        <field name="context">{'search_default_filter_supplier': 1}</field>
     </record>
 </odoo>
