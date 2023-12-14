@@ -11,6 +11,8 @@
     'data': [
         'security/ir.model.access.csv',
 
+        'data/logisitc_form_template.xml',
+
         'views/route.xml',
         'views/res_partner_logisitic_views.xml',
 

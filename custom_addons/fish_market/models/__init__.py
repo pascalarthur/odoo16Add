@@ -8,5 +8,6 @@ from . import custom_purchase
 from . import product
 from . import stock
 from . import sale
+from . import sale_meta
 from . import route
 from . import access_token

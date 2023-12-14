@@ -1,5 +1,6 @@
 from odoo import models, api, fields, http
 
+
 class StockQuant(models.Model):
     _inherit = 'stock.quant'
 

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="public_form_template" name="Public Form">
+        <form action="/submit_form" method="post">
+            <input type="hidden" name="token" t-att-value="token"/>
+
+            <!-- Display transport order information -->
+            <div>
+                <label>Route Start Street:</label>
+                <span t-esc="transport_order.route_start_street"/>
+            </div>
+            <div>
+                <label>Route Start Street2:</label>
+                <span t-esc="transport_order.route_start_street2"/>
+            </div>
+            <div>
+                <label>Route Start City:</label>
+                <span t-esc="transport_order.route_start_city"/>
+            </div>
+            <div>
+                <label>Route Start State:</label>
+                <span t-esc="transport_order.route_start_state_id"/>
+            </div>
+            <div>
+                <label>Route Start Zip:</label>
+                <span t-esc="transport_order.route_start_zip"/>
+            </div>
+            <div>
+                <label>Route Start Country:</label>
+                <span t-esc="transport_order.route_start_country_id"/>
+            </div>
+
+            <div>
+                <label>Route End Street:</label>
+                <span t-esc="transport_order.route_end_street"/>
+            </div>
+            <div>
+                <label>Route End Street2:</label>
+                <span t-esc="transport_order.route_end_street2"/>
+            </div>
+            <div>
+                <label>Route End City:</label>
+                <span t-esc="transport_order.route_end_city"/>
+            </div>
+            <div>
+                <label>Route End State:</label>
+                <span t-esc="transport_order.route_end_state_id"/>
+            </div>
+            <div>
+                <label>Route End Zip:</label>
+                <span t-esc="transport_order.route_end_zip"/>
+            </div>
+            <div>
+                <label>Route End Country:</label>
+                <span t-esc="transport_order.route_end_country_id"/>
+            </div>
+
+            <div>
+                <label>Number of Containers:</label>
+                <span t-esc="transport_order.container_count"/>
+            </div>
+
+            <div>
+                <label>Additional Details:</label>
+                <span t-esc="transport_order.additional_details"/>
+            </div>
+
+
+
+
+            <div>
+                <label for="price">Price:</label>
+                <input type="number" name="price" id="price"/>
+            </div>
+
+            <!-- Submit Button -->
+            <input type="submit" value="Confirm Price"/>
+        </form>
+    </template>
+</odoo>

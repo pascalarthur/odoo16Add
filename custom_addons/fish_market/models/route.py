@@ -36,26 +36,7 @@ class RouteDemand(models.Model):
         for partner in self.supplier_ids:
             # Send the email
 
-            token_record = self.env['access.token'].create([{
-                'partner_id': partner.id,
-                'expiry_date': fields.Datetime.add(datetime.now(), days=1)  # example for 1 day validity
-            }])
-
-            email_body = """
-                <p>Hello {partner_name},</p>
-                <p>We have a new route demand. Please fill in your price details by following the link below:</p>
-                <a href="{token_url}">Submit Price</a>
-            """.format(partner_name=partner.name, token_url=f'https://afromergeodoo.site/transport_order/{token_record.token}')
-
-            # Send email with token link
-            template = self.env.ref('fish_market.email_template_demand')
-            template.with_context(token_url=f'https://afromergeodoo.site/transport_order/{token_record.token}').send_mail(
-                self.id,
-                email_values={'email_to': partner.email, 'email_from': my_company_email, 'body_html': email_body},
-                force_send=True
-            )
-            # Create a transport.order record for each email sent
-            self.env['transport.order'].create({
+            transport_order_id = self.env['transport.order'].create({
                 'route_start_street': self.route_start_street,
                 'route_start_street2': self.route_start_street2,
                 'route_start_city': self.route_start_city,
@@ -72,3 +53,23 @@ class RouteDemand(models.Model):
                 'additional_details': self.additional_details,
                 'supplier_id': partner.id,
             })
+
+            token_record = self.env['access.token'].create([{
+                'partner_id': partner.id,
+                'expiry_date': fields.Datetime.add(datetime.now(), days=1),  # example for 1 day validity
+                'transport_order_id': transport_order_id.id,
+            }])
+
+            email_body = """
+                <p>Hello {partner_name},</p>
+                <p>We have a new route demand. Please fill in your price details by following the link below:</p>
+                <a href="{token_url}">Submit Price</a>
+            """.format(partner_name=partner.name, token_url=f'https://afromergeodoo.site/transport_order/{token_record.token}')
+
+            # Send email with token link
+            template = self.env.ref('fish_market.email_template_demand')
+            template.with_context(token_url=f'https://afromergeodoo.site/transport_order/{token_record.token}').send_mail(
+                self.id,
+                email_values={'email_to': partner.email, 'email_from': my_company_email, 'body_html': email_body},
+                force_send=True
+            )
