@@ -7,6 +7,23 @@ TRANSPORT_ORDER_STATE =[
     ('received', 'Offer Received'),
 ]
 
+
+class TruckDetail(models.Model):
+    _name = 'truck.detail'
+    _description = 'Truck Detail'
+
+    transport_order_id  = fields.Many2one('transport.order', string='Transport Order')
+
+    truck_number = fields.Char(string='Truck Number')
+    horse_number = fields.Char(string='Horse Number')
+    container_number = fields.Char(string='Container Number')
+    driver_name = fields.Char(string='Driver Name')
+    telephone_number = fields.Char(string='Telephone Number')
+
+    price = fields.Float(string='Price')
+    max_load = fields.Float(string='Max Load [kg]')
+
+
 class TransportOrder(models.Model):
     _name = 'transport.order'
     _description = 'Transport Order'
@@ -16,6 +33,8 @@ class TransportOrder(models.Model):
         required=True, copy=False, readonly=False,
         index='trigram',
         default=lambda self: self._default_name())
+
+    meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
 
     route_start_street = fields.Char()
     route_start_street2 = fields.Char()
@@ -34,7 +53,7 @@ class TransportOrder(models.Model):
     container_count = fields.Integer(string='Container Count')
     additional_details = fields.Text(string='Additional Details')
 
-    supplier_id = fields.Many2one('res.partner')
+    partner_id = fields.Many2one('res.partner')
 
     state = fields.Selection(
         selection=TRANSPORT_ORDER_STATE,
@@ -43,11 +62,12 @@ class TransportOrder(models.Model):
         tracking=3,
         default='sent')
 
+    truck_ids = fields.One2many('truck.detail', 'transport_order_id', string='Truck Details')
+
     price = fields.Float(string='Price')
 
     def confirm_price(self):
         self.state = 'received'
-
 
     @api.model
     def _default_name(self):

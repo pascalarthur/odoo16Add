@@ -17,7 +17,7 @@ class TransportOrderController(http.Controller):
             transport_order = token_record.transport_order_id
 
             # Pass transport order data to the template
-            return http.request.render('transport.public_form_template', {
+            return http.request.render('fish_market.public_form_template', {
                 'supplier': token_record.partner_id,
                 'transport_order': transport_order,
                 'token': token,
@@ -29,8 +29,6 @@ class TransportOrderController(http.Controller):
     def submit_form(self, **post):
         token = post.get('token')
         price = post.get('price')
-
-        print(price)
 
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:

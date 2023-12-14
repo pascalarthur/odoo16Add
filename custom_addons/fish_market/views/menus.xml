@@ -13,6 +13,13 @@
         </menuitem>
         <menuitem id="inventory_report_main" name="Inventory" sequence="99" groups="base.group_user">
             <menuitem id="menu_inventory_kanban" name="Inventory Kanban" action="action_inventory_kanban"/>
+            <menuitem id="menu_sales_meta" name="Meta Sales" action="action_sales_meta"/>
+        </menuitem>
+        <menuitem id="transport_first_level_menu" name="Transport">
+            <menuitem id="transport_order_menu" action="action_transport_order_form"/>
+            <menuitem id="menu_partners_config" sequence="30" name="Partners">
+                <menuitem id="Logisticians" action="action_custom_partner_logistic_form"/>
+            </menuitem>
         </menuitem>
     </menuitem>
 </odoo>

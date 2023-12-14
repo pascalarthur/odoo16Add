@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_meta_sale_order_form" model="ir.ui.view">
+        <field name="name">meta.sale.order.form</field>
+        <field name="model">meta.sale.order</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="set_transport_state" string="Transport" type="object" class="oe_highlight" invisible="state not in ['draft']"/>
+                    <button name="action_find_transporters" string="Find Transport" type="object" class="oe_highlight" invisible="state not in ['transport']"/>
+                    <field name="sale_order_ids" invisible="state not in ['send_invoices','handle_overload']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,transport,optional_storage,send_confirmation,notify_suppliers,seal_trucks,send_invoices,handle_overload"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="partner_id" string='Customer'/>
+                        <field name="order_line_ids">
+                            <tree>
+                                <field name="product_id"/>
+                                <field name="quantity"/>
+                            </tree>
+                        </field>
+                        <field name="transport_order_ids">
+                            <tree>
+                                <field name="partner_id"/>
+                                <field name="container_count"/>
+                                <field name="price"/>
+                                <field name="state" widget="statusbar"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_sales_meta" model="ir.actions.act_window">
+        <field name="name">Sale Meta</field>
+        <field name="res_model">meta.sale.order</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

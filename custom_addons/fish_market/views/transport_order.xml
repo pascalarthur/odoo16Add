@@ -32,8 +32,15 @@
                     <field name="additional_details" placeholder="Details..."/>
                 </group>
                 <group string="Logistician">
-                    <field name="supplier_id"/>
+                    <field name="partner_id"/>
                 </group>
+                <field name="truck_ids">
+                            <tree>
+                                <field name="truck_number"/>
+                                <field name="max_load"/>
+                                <field name="price"/>
+                            </tree>
+                        </field>
                 <group string="Logistician Information">
                     <field name="price" readonly="state in 'received'"/>
                 </group>
@@ -50,7 +57,7 @@
 
                 <field name="container_count"/>
                 <field name="additional_details"/>
-                <field name="supplier_id"/>
+                <field name="partner_id"/>
                 <field name="price"/>
                 <field name="state" widget="statusbar"/>
 

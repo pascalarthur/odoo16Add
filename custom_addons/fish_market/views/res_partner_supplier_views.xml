@@ -26,7 +26,7 @@
     <record id="action_custom_partner_supplier_form" model="ir.actions.act_window">
         <field name="name">Suppliers</field>
         <field name="res_model">res.partner</field>
-        <field name="view_mode">tree,kanban</field>
+        <field name="view_mode">tree,kanban,form</field>
         <field name="view_id" ref="view_partner_supplier_tree"/>
         <field name="search_view_id" ref="view_res_partner_filter_supplier"/>
         <field name="context">{'search_default_filter_supplier': 1}</field>

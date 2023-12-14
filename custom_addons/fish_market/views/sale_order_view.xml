@@ -5,21 +5,21 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='state']" position="replace">
+            <!-- <xpath expr="//field[@name='state']" position="replace">
                 <field name="state" widget="statusbar" statusbar_visible="draft,transport,seal,sent,sale"/>
-            </xpath>
-            <xpath expr="//sheet" position="before">
+            </xpath> -->
+            <!-- <xpath expr="//sheet" position="before">
                 <header>
                     <button name="set_transport_state" string="Transport" type="object" class="oe_highlight" invisible="state in ['transport', 'seal', 'sent']"/>
                     <button name="action_find_transport" string="Find Transport" type="object" class="oe_highlight" invisible="state not in ['transport']"/>
                     <button name="set_seal_state" string="Seal" type="object" class="oe_highlight" invisible="state in ['seal', 'sent']"/>
                     <button name="set_sent_state" string="Send Quotation" type="object" class="oe_highlight" invisible="state in ['sent']"/>
                 </header>
-            </xpath>
+            </xpath> -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <group>
-                    <field name="transport_company_ids" widget="many2many_tags" invisible="state in ['draft']" readonly="state != 'transport'"/>
-                    <field name="seal_number" invisible="state in ['draft', 'transport']" readonly="state != 'seal'"/>
+                    <field name="transport_company_id" widget="many2one_tags"/>
+                    <field name="seal_number"/>
                 </group>
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="before">

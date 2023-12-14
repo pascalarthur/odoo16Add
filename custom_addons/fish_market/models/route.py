@@ -23,20 +23,21 @@ class RouteDemand(models.Model):
     container_count = fields.Integer(string='Container Count')
     additional_details = fields.Text(string='Additional Details')
 
-    supplier_ids = fields.Many2many('res.partner')
+    meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
+    partner_ids = fields.Many2many('res.partner')
 
     def send_email_to_suppliers(self):
-        if not self.supplier_ids:
+        if not self.partner_ids:
             raise Exception('No suppliers found.')
 
         my_company_email = self.env.user.company_id.email
         if not my_company_email:
             raise Exception('Invalid or missing email address for the company.')
 
-        for partner in self.supplier_ids:
-            # Send the email
+        for partner in self.partner_ids:
 
-            transport_order_id = self.env['transport.order'].create({
+            transport_order_dict = {
+                'meta_sale_order_id': self.meta_sale_order_id.id,
                 'route_start_street': self.route_start_street,
                 'route_start_street2': self.route_start_street2,
                 'route_start_city': self.route_start_city,
@@ -51,8 +52,10 @@ class RouteDemand(models.Model):
                 'route_end_country_id': self.route_end_country_id.id,
                 'container_count': self.container_count,
                 'additional_details': self.additional_details,
-                'supplier_id': partner.id,
-            })
+                'partner_id': partner.id,
+            }
+
+            transport_order_id = self.env['transport.order'].create(transport_order_dict)
 
             token_record = self.env['access.token'].create([{
                 'partner_id': partner.id,

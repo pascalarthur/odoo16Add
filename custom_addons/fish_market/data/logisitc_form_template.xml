@@ -19,7 +19,7 @@
             </div>
             <div>
                 <label>Route Start State:</label>
-                <span t-esc="transport_order.route_start_state_id"/>
+                <span t-esc="transport_order.route_start_state_id.name"/>
             </div>
             <div>
                 <label>Route Start Zip:</label>
@@ -27,7 +27,7 @@
             </div>
             <div>
                 <label>Route Start Country:</label>
-                <span t-esc="transport_order.route_start_country_id"/>
+                <span t-esc="transport_order.route_start_country_id.name"/>
             </div>
 
             <div>
@@ -44,7 +44,7 @@
             </div>
             <div>
                 <label>Route End State:</label>
-                <span t-esc="transport_order.route_end_state_id"/>
+                <span t-esc="transport_order.route_end_state_id.name"/>
             </div>
             <div>
                 <label>Route End Zip:</label>
@@ -52,7 +52,7 @@
             </div>
             <div>
                 <label>Route End Country:</label>
-                <span t-esc="transport_order.route_end_country_id"/>
+                <span t-esc="transport_order.route_end_country_id.name"/>
             </div>
 
             <div>
@@ -64,9 +64,6 @@
                 <label>Additional Details:</label>
                 <span t-esc="transport_order.additional_details"/>
             </div>
-
-
-
 
             <div>
                 <label for="price">Price:</label>
