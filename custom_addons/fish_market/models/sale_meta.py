@@ -1,5 +1,18 @@
 from collections import defaultdict
-from odoo import models, fields, api
+from ..utils.model_utils import default_name
+from odoo import models, fields, api, exceptions
+
+
+META_SALE_STATES = [
+    ('draft', 'Draft'),
+    ('transport', 'Transport'),
+    ('allocated', 'Allocated'),
+    ('send_confirmations', 'Send Confirmations'),
+    ('seal_trucks', 'Seal Trucks'),
+    ('send_invoices', 'Send Invoices'),
+    ('handle_overload', 'Handle Overload'),
+    ('done', 'Done'),
+]
 
 
 class MetaSaleOrderLine(models.Model):
@@ -16,24 +29,19 @@ class MetaSaleOrder(models.Model):
     _name = 'meta.sale.order'
     _description = 'Meta Sale Order'
 
-    name = fields.Char(string='Reference', required=True, default=lambda self: _('New'))
-    state = fields.Selection([
-        ('draft', 'Draft'),
-        ('transport', 'Transport'),
-        ('allocated', 'Allocated'),
-        ('send_confirmations', 'Send Confirmations'),
-        ('seal_trucks', 'Seal Trucks'),
-        ('send_invoices', 'Send Invoices'),
-        ('handle_overload', 'Handle Overload'),
-        ('done', 'Done')
-    ], string='Status', readonly=True, index=True, copy=False, default='draft', tracking=True)
-    partner_id = fields.Many2one('res.partner', string='Customer')
+    name = fields.Char(
+        string="Meta Sale Reference",
+        required=True, copy=False, readonly=False,
+        index='trigram',
+        default=lambda self: default_name(self, prefix='MS'))
+
+    state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft', tracking=True)
+    partner_id = fields.Many2one('res.partner', string='Customer', required=True)
 
     sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders')
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
     truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
-
 
     @api.model
     def get_warehouse(self, warehouse_id):
@@ -42,7 +50,6 @@ class MetaSaleOrder(models.Model):
     def set_transport_state(self):
         self.ensure_one()
         self.state = 'transport'
-        return self.stay_on_dialog()
 
     def action_find_transporters(self):
         # Logic to find transporters
@@ -79,13 +86,18 @@ class MetaSaleOrder(models.Model):
         }
 
     def action_allocate_transporters(self):
-        # Step 1: Clear existing allocations
+
+        # Step 1: Raise a warning if no transporter replied yet
+        if not self.transport_order_ids or not any(self.transport_order_ids.mapped('truck_ids')):
+            raise exceptions.UserError("No transport offers have been received yet.")
+
+        # Step 2: Clear existing allocations
         for transport_order in self.transport_order_ids:
             for truck in transport_order.truck_ids:
                 # Assuming truck.load_line_ids is the One2many field linking to TruckLoadLine
                 truck.load_line_ids.unlink()  # This will delete the TruckLoadLine records
 
-        # Step 2: Proceed with new allocations
+        # Step 3: Proceed with new allocations
         for order_line in self.order_line_ids:
             product = order_line.product_id
             location_id = order_line.location_id
@@ -172,22 +184,33 @@ class MetaSaleOrder(models.Model):
 
     def action_send_invoices(self):
         SaleOrder = self.env['sale.order']
+        SaleOrderLine = self.env['sale.order.line']
+
         for transport_order in self.transport_order_ids:
             for truck in transport_order.truck_ids:
-                # Create a sale order for each truck
-                sale_order_vals = {
-                    'partner_id': self.partner_id.id,
-                    'truck_detail_id': truck.id,
-                    # Add other necessary fields and values
-                }
-                SaleOrder.create(sale_order_vals)
+                if len(truck.load_line_ids) > 0:
+                    # Create a sale order for each truck
+                    sale_order_vals = {
+                        'meta_sale_order_id': self.id,
+                        'partner_id': self.partner_id.id,
+                        'truck_detail_id': truck.id,
+                        # Add other necessary fields and values
+                    }
+                    sale_order = SaleOrder.create(sale_order_vals)
+
+                    for load_line in truck.load_line_ids:
+                        sale_order_line_vals = {
+                            'order_id': sale_order.id,
+                            'product_id': load_line.product_id.id,
+                            'product_uom_qty': load_line.quantity,
+                            # Ensure to include other necessary fields like product_uom, price_unit, etc.
+                        }
+                        SaleOrderLine.create(sale_order_line_vals)
         self.state = 'handle_overload'
 
-    def set_sent_state(self):
-        # Change state to 'seal'
+    def action_set_done(self):
         self.ensure_one()
-        self.state = 'sent'
-        return self.stay_on_dialog()
+        self.state = 'done'
 
     def stay_on_dialog(self):
         return {

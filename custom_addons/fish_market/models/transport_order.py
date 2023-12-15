@@ -1,4 +1,6 @@
 from odoo import models, fields, api, _
+from ..utils.model_utils import default_name
+
 
 TRUCK_STATES =[
     ('offer', 'Offer'),
@@ -90,7 +92,7 @@ class TransportOrder(models.Model):
         string="Transport Reference",
         required=True, copy=False, readonly=False,
         index='trigram',
-        default=lambda self: self._default_name())
+        default=lambda self: default_name(self, prefix='T'))
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
 
@@ -133,16 +135,3 @@ class TransportOrder(models.Model):
     def _compute_container_offer(self):
         for record in self:
             record.container_offer = len(record.truck_ids)
-
-    @api.model
-    def _default_name(self):
-        # Retrieve the last number used
-        last_order = self.search([], order='id desc', limit=1)
-        if last_order and last_order.name.startswith('T'):
-            last_number = int(last_order.name[1:])
-            new_number = last_number + 1
-        else:
-            new_number = 1
-
-        # Format the new number with leading zeros
-        return 'T{:05d}'.format(new_number)

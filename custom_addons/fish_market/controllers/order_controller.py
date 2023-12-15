@@ -1,6 +1,5 @@
 from odoo import http, fields
 from odoo.http import request
-from datetime import datetime
 
 
 class TransportOrderController(http.Controller):

@@ -1,9 +1,11 @@
 from odoo import api, models, fields
 
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
+
     location_id = fields.Many2one('stock.location', string='Origin Location')
     truck_detail_id = fields.Many2one('truck.detail', string='Truck Detail')
     truck_number = fields.Char('Truck Number', related='truck_detail_id.truck_number',store=True)

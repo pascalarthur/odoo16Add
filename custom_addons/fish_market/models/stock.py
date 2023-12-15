@@ -14,10 +14,7 @@ class StockQuant(models.Model):
 
         # Create a new meta sale order
         MetaSaleOrder = self.env['meta.sale.order']
-        meta_sale_order = MetaSaleOrder.create({
-            'name': 'MSO/' + str(fields.Datetime.now()),  # Example naming
-            # Add other necessary fields for the meta.sale.order
-        })
+        meta_sale_order = MetaSaleOrder.create({})
 
         # Add selected products as order lines
         for quant in selected_quants:
