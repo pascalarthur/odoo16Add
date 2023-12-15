@@ -37,23 +37,25 @@ class TransportOrderController(http.Controller):
 
             # Process each truck detail
             truck_numbers = request.httprequest.form.getlist('truck_number[]')
+            horse_numbers = request.httprequest.form.getlist('horse_number[]')
+            container_numbers = request.httprequest.form.getlist('container_number[]')
             driver_names = request.httprequest.form.getlist('driver_name[]')
             telephone_numbers = request.httprequest.form.getlist('telephone_number[]')
             prices_per_truck = request.httprequest.form.getlist('price_per_truck[]')
+            max_loads = request.httprequest.form.getlist('max_load_per_truck[]')
 
-            truck_details_data = []
             for ii in range(len(truck_numbers)):
                 truck_detail = {
                     'truck_number': truck_numbers[ii],
+                    'horse_number': horse_numbers[ii],
+                    'container_number': container_numbers[ii],
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
                     'price': float(prices_per_truck[ii]) if prices_per_truck[ii] else 0.0,
-                    'transport_order_id': transport_order.id
+                    'max_load': float(max_loads[ii]),
+                    'transport_order_id': transport_order.id,
+                    'meta_sale_order_id': transport_order.meta_sale_order_id.id,
                 }
-                truck_details_data.append(truck_detail)
-
-            # Create or update truck details
-            for truck_detail in truck_details_data:
                 request.env['truck.detail'].create(truck_detail)
 
             transport_order.write({
@@ -62,7 +64,7 @@ class TransportOrderController(http.Controller):
             })
 
             # Optionally, mark the token as used
-            # token_record.is_used = True
+            token_record.is_used = True
 
             return "Form submitted successfully!"
         else:

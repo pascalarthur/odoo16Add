@@ -18,13 +18,15 @@
             </xpath> -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <group>
-                    <field name="transport_company_id" widget="many2one_tags"/>
-                    <field name="seal_number"/>
+                    <field name="truck_number" string="Truck Number"/>
+                    <field name="horse_number" string="Horse Number"/>
+                    <field name="container_number" string="Container Number"/>
+                    <field name="seal_number" string="Seal Number"/>
+                    <field name="driver_name" string="Driver Name"/>
+                    <field name="telephone_number" string="Telephone Number"/>
                 </group>
             </xpath>
-            <xpath expr="//field[@name='partner_id']" position="before">
-                <field name="location_id"/>
-            </xpath>
+
         </field>
     </record>
 </odoo>

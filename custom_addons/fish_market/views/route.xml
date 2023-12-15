@@ -30,7 +30,7 @@
                         </group>
 
                         <group string="Shipping Details">
-                            <field name="container_count" placeholder="Container Count..."/>
+                            <field name="container_demand" placeholder="Container Demand"/>
                             <field name="additional_details" placeholder="Details..."/>
                         </group>
                     </group>

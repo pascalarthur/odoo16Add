@@ -11,6 +11,7 @@
     'data': [
         'security/ir.model.access.csv',
 
+        'data/email_template.xml',
         'data/email_template_suppliers.xml',
         'data/email_template_logistics.xml',
         'data/logisitc_form_template.xml',
@@ -26,6 +27,7 @@
         'views/custom_purchase_view.xml',
         'report/purchase_report_views.xml',
 
+        'views/truck_view.xml',
         'views/sale_meta_view.xml',
         'views/sale_order_view.xml',
 

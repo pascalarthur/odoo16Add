@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Create a new form view for truck.detail -->
+    <record id="view_truck_detail_form" model="ir.ui.view">
+        <field name="name">truck.detail.form</field>
+        <field name="model">truck.detail</field>
+        <field name="arch" type="xml">
+            <form>
+                <!-- Define the fields you want to display -->
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <group>
+                    <field name="truck_number"/>
+                    <field name="horse_number"/>
+                    <field name="container_number"/>
+                    <field name="driver_name"/>
+                    <field name="telephone_number"/>
+                    <field name="price"/>
+                    <field name="max_load"/>
+                    <field name="price_per_kg"/>
+                </group>
+
+                <field name="load_line_ids">
+                    <tree>
+                        <field name="product_id"/>
+                        <field name="location_id"/>
+                        <field name="quantity"/>
+                    </tree>
+                </field>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -28,19 +28,27 @@
                 </group>
 
                 <group string="Shipping Details">
-                    <field name="container_count" placeholder="Container Count..."/>
+                    <field name="container_demand" placeholder="Container Demand"/>
+                    <field name="container_offer"/>
                     <field name="additional_details" placeholder="Details..."/>
                 </group>
                 <group string="Logistician">
                     <field name="partner_id"/>
                 </group>
-                <field name="truck_ids">
+                    <field name="truck_ids">
+                        <tree>
+                            <field name="truck_number"/>
+                            <field name="max_load"/>
+                            <field name="price"/>
+                            <field name="price_per_kg" string="USD/kg"/>
+                            <field name="load_line_ids">
                             <tree>
-                                <field name="truck_number"/>
-                                <field name="max_load"/>
-                                <field name="price"/>
+                                <field name="product_id"/>
+                                <field name="quantity"/>
                             </tree>
                         </field>
+                        </tree>
+                    </field>
                 <group string="Logistician Information">
                     <field name="price" readonly="state in 'received'"/>
                 </group>
@@ -55,7 +63,8 @@
             <tree>
                 <field name="name"/>
 
-                <field name="container_count"/>
+                <field name="container_demand"/>
+                <field name="container_offer"/>
                 <field name="additional_details"/>
                 <field name="partner_id"/>
                 <field name="price"/>

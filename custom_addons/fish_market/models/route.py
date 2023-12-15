@@ -20,7 +20,7 @@ class RouteDemand(models.Model):
     route_end_state_id = fields.Many2one('res.country.state', string='State')
     route_end_country_id = fields.Many2one('res.country', string='Country')
 
-    container_count = fields.Integer(string='Container Count')
+    container_demand = fields.Integer(string='Container demand')
     additional_details = fields.Text(string='Additional Details')
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
@@ -50,7 +50,7 @@ class RouteDemand(models.Model):
                 'route_end_zip': self.route_end_zip,
                 'route_end_state_id': self.route_end_state_id.id,
                 'route_end_country_id': self.route_end_country_id.id,
-                'container_count': self.container_count,
+                'container_demand': self.container_demand,
                 'additional_details': self.additional_details,
                 'partner_id': partner.id,
             }

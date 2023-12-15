@@ -57,7 +57,7 @@
 
             <div>
                 <label>Number of Containers:</label>
-                <span t-esc="transport_order.container_count"/>
+                <span t-esc="transport_order.container_demand"/>
             </div>
 
             <div>
@@ -85,9 +85,12 @@
             truckDetail.classList.add('truck-detail');
             truckDetail.innerHTML = `
                 <input type="text" name="truck_number[]" placeholder="Truck Number"/>
+                <input type="text" name="horse_number[]" placeholder="Horse Number"/>
+                <input type="text" name="container_number[]" placeholder="Container Number"/>
                 <input type="text" name="driver_name[]" placeholder="Driver Name"/>
                 <input type="text" name="telephone_number[]" placeholder="Telephone Number"/>
-                <input type="number" name="price_per_truck[]" placeholder="Price"/>
+                <input type="number" name="price_per_truck[]" placeholder="Price in USD"/>
+                <input type="number" name="max_load_per_truck[]" placeholder="Max. Load [kg]"/>
                 <button type="button" onclick="removeTruckDetail(this)">Remove</button>
             `;
             container.appendChild(truckDetail);
