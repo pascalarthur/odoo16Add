@@ -1,4 +1,5 @@
 from collections import defaultdict
+from math import floor
 from ..utils.model_utils import default_name
 from odoo import models, fields, api, exceptions
 
@@ -21,6 +22,7 @@ class MetaSaleOrderLine(models.Model):
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Product', required=True)
+    product_weight = fields.Float('Product Weight [kg]', related='product_id.weight',store=True)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
 
@@ -101,7 +103,8 @@ class MetaSaleOrder(models.Model):
         for order_line in self.order_line_ids:
             product = order_line.product_id
             location_id = order_line.location_id
-            required_quantity = order_line.quantity  # Assuming 'quantity' is the correct field
+
+            required_quantity = order_line.quantity # Assuming 'quantity' is the correct field
             allocated_quantity = 0.0
 
             for transport_order in self.transport_order_ids:
@@ -111,8 +114,11 @@ class MetaSaleOrder(models.Model):
                         break
 
                     # Assuming 'max_load' represents the capacity and there's a field to track allocated capacity
-                    available_capacity = truck.max_load - sum(line.quantity for line in truck.load_line_ids)
-                    if available_capacity > 0:
+                    available_capacity = truck.max_load - sum(line.quantity * line.product_id.weight for line in truck.load_line_ids)
+                    available_capacity = floor(available_capacity / product.weight)  # Convert to product quantity
+
+                    # It is only worthwile to pick up 10 boxes or more
+                    if available_capacity > 10:
                         quantity_to_allocate = min(required_quantity - allocated_quantity, available_capacity)
                         truck.allocate_product(product, location_id, quantity_to_allocate)
                         allocated_quantity += quantity_to_allocate
@@ -138,7 +144,7 @@ class MetaSaleOrder(models.Model):
                             'subject': 'Transport Order Confirmation',
                             'body_html': self._prepare_email_content_for_transporter(truck),
                         }
-                        # template.send_mail(self.id, email_values=email_values, force_send=True)
+                        template.send_mail(self.id, email_values=email_values, force_send=True)
 
         location_load_map = defaultdict(list)
         for transport_order in self.transport_order_ids:

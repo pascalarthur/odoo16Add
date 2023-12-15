@@ -16,6 +16,8 @@
         'data/email_template_logistics.xml',
         'data/logisitc_form_template.xml',
 
+        'views/truck_redistribution_wizard.xml',
+
         'views/transport_order.xml',
         'views/res_partner_logisitic_views.xml',
 

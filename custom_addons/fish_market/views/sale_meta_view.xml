@@ -22,6 +22,7 @@
                             <tree editable="bottom">
                                 <field name="location_id"/>
                                 <field name="product_id"/>
+                                <field name="product_weight"/>
                                 <field name="quantity"/>
                             </tree>
                         </field>
@@ -49,6 +50,8 @@
                                         <field name="quantity"/>
                                     </tree>
                                 </field>
+
+                                <button name="action_handle_overload" string="Handle Overload" type="object" class="oe_highlight"/>
                             </tree>
                         </field>
                         <field name="sale_order_ids" invisible="state not in ['send_invoices','handle_overload', 'done']"/>

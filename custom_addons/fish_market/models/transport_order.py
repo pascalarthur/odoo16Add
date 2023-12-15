@@ -58,7 +58,7 @@ class TruckDetail(models.Model):
     @api.depends('load_line_ids.quantity', 'max_load')
     def _compute_truck_utilization(self):
         for record in self:
-            total_allocated_quantity = sum(line.quantity for line in record.load_line_ids)
+            total_allocated_quantity = sum(line.quantity * line.product_id.weight for line in record.load_line_ids)
             if record.max_load > 0:
                 record.truck_utilization = (total_allocated_quantity / record.max_load) * 100
             else:
@@ -82,6 +82,18 @@ class TruckDetail(models.Model):
             'quantity': quantity,
         })
 
+    def action_handle_overload(self):
+        return {
+            'name': 'Handle Overload',
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'truck.redistribution.wizard',
+            'target': 'new',
+            'context': {
+                'default_truck_id': self.id,
+                'default_meta_sale_order_id': self.meta_sale_order_id.id,
+            }
+        }
 
 
 class TransportOrder(models.Model):

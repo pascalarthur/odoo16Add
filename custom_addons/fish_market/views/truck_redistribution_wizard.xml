@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_truck_redistribution_wizard_form" model="ir.ui.view">
+        <field name="name">truck.redistribution.wizard.form</field>
+        <field name="model">truck.redistribution.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="action_selection" class="oe_inline" widget="radio"/>
+                </group>
+                <field name="truck_id"/>
+                <group name="redistribute_details" invisible="action_selection not in ('zambia_stock')">
+                    <field name="location_redistribution_lines">
+                        <tree editable="top">
+                            <!-- <field name="meta_sale_order_id"/> -->
+                            <field name="product_id"/>
+                            <field name="target_location_id"/>
+                            <field name="quantity"/>
+                        </tree>
+                    </field>
+                </group>
+                <group name="redistribute_details" invisible="action_selection not in ('redistribute')">
+                    <field name="truck_redistribution_lines">
+                        <tree editable="top">
+                            <field name="meta_sale_order_id"/>
+                            <field name="product_id"/>
+                            <field name="target_truck_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id)]"/>
+                            <field name="quantity"/>
+                        </tree>
+                    </field>
+                </group>
+                <footer>
+                    <button string="Confirm" type="object" name="confirm_action" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_truck_redistribution_wizard" model="ir.actions.act_window">
+        <field name="name">Truck Redistribution</field>
+        <field name="res_model">truck.redistribution.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_truck_redistribution_wizard_form"/>
+        <field name="target">new</field>
+    </record>
+</odoo>
