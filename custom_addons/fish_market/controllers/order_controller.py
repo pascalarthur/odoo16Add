@@ -1,5 +1,7 @@
 from odoo import http, fields
+from odoo.http import request
 from datetime import datetime
+
 
 class TransportOrderController(http.Controller):
 
@@ -28,19 +30,39 @@ class TransportOrderController(http.Controller):
     @http.route('/submit_form', type='http', auth='public', methods=['POST'], csrf=False)
     def submit_form(self, **post):
         token = post.get('token')
-        price = post.get('price')
 
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
             transport_order = token_record.transport_order_id
 
+            # Process each truck detail
+            truck_numbers = request.httprequest.form.getlist('truck_number[]')
+            driver_names = request.httprequest.form.getlist('driver_name[]')
+            telephone_numbers = request.httprequest.form.getlist('telephone_number[]')
+            prices_per_truck = request.httprequest.form.getlist('price_per_truck[]')
+
+            truck_details_data = []
+            for ii in range(len(truck_numbers)):
+                truck_detail = {
+                    'truck_number': truck_numbers[ii],
+                    'driver_name': driver_names[ii],
+                    'telephone_number': telephone_numbers[ii],
+                    'price': float(prices_per_truck[ii]) if prices_per_truck[ii] else 0.0,
+                    'transport_order_id': transport_order.id
+                }
+                truck_details_data.append(truck_detail)
+
+            # Create or update truck details
+            for truck_detail in truck_details_data:
+                request.env['truck.detail'].create(truck_detail)
+
             transport_order.write({
                 'state': 'received',
-                'price': float(price) if price else 0.0
+                # Handle the overall price if needed
             })
 
             # Optionally, mark the token as used
-            token_record.is_used = True
+            # token_record.is_used = True
 
             return "Form submitted successfully!"
         else:

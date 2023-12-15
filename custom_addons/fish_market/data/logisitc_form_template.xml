@@ -1,58 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="public_form_template" name="Public Form">
-        <form action="/submit_form" method="post">
+        <form action="/submit_form" method="post" id="transport_order_form">
             <input type="hidden" name="token" t-att-value="token"/>
 
-            <!-- Display transport order information -->
+            <!-- Transport Order Information -->
+            <!-- [Existing fields for route details, container count, etc.] -->
+                        <!-- Display transport order information -->
             <div>
-                <label>Route Start Street:</label>
-                <span t-esc="transport_order.route_start_street"/>
-            </div>
-            <div>
-                <label>Route Start Street2:</label>
-                <span t-esc="transport_order.route_start_street2"/>
-            </div>
-            <div>
-                <label>Route Start City:</label>
-                <span t-esc="transport_order.route_start_city"/>
-            </div>
-            <div>
-                <label>Route Start State:</label>
-                <span t-esc="transport_order.route_start_state_id.name"/>
-            </div>
-            <div>
-                <label>Route Start Zip:</label>
-                <span t-esc="transport_order.route_start_zip"/>
-            </div>
-            <div>
-                <label>Route Start Country:</label>
-                <span t-esc="transport_order.route_start_country_id.name"/>
+                <label>Start Address:</label>
+                <span>
+                    <t t-if="transport_order.route_start_street">
+                        <t t-esc="transport_order.route_start_street"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_start_street2">
+                        <t t-esc="transport_order.route_start_street2"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_start_city">
+                        <t t-esc="transport_order.route_start_city"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_start_state_id">
+                        <t t-esc="transport_order.route_start_state_id.name"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_start_zip">
+                        <t t-esc="transport_order.route_start_zip"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_start_country_id">
+                        <t t-esc="transport_order.route_start_country_id.name"/><br/>
+                    </t>
+                </span>
             </div>
 
             <div>
-                <label>Route End Street:</label>
-                <span t-esc="transport_order.route_end_street"/>
-            </div>
-            <div>
-                <label>Route End Street2:</label>
-                <span t-esc="transport_order.route_end_street2"/>
-            </div>
-            <div>
-                <label>Route End City:</label>
-                <span t-esc="transport_order.route_end_city"/>
-            </div>
-            <div>
-                <label>Route End State:</label>
-                <span t-esc="transport_order.route_end_state_id.name"/>
-            </div>
-            <div>
-                <label>Route End Zip:</label>
-                <span t-esc="transport_order.route_end_zip"/>
-            </div>
-            <div>
-                <label>Route End Country:</label>
-                <span t-esc="transport_order.route_end_country_id.name"/>
+                <label>End Address:</label>
+                <span>
+                    <t t-if="transport_order.route_end_street">
+                        <t t-esc="transport_order.route_end_street"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_end_street2">
+                        <t t-esc="transport_order.route_end_street2"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_end_city">
+                        <t t-esc="transport_order.route_end_city"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_end_state_id">
+                        <t t-esc="transport_order.route_end_state_id.name"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_end_zip">
+                        <t t-esc="transport_order.route_end_zip"/><br/>
+                    </t>
+                    <t t-if="transport_order.route_end_country_id">
+                        <t t-esc="transport_order.route_end_country_id.name"/><br/>
+                    </t>
+                </span>
             </div>
 
             <div>
@@ -65,13 +65,53 @@
                 <span t-esc="transport_order.additional_details"/>
             </div>
 
-            <div>
-                <label for="price">Price:</label>
-                <input type="number" name="price" id="price"/>
+
+            <!-- Truck Details Section -->
+            <div id="truck_details_section">
+                <label>Truck Details:</label>
+                <div id="truck_details_container">
+                    <!-- Dynamic truck detail entries will be added here -->
+                </div>
+                <button type="button" onclick="addTruckDetail()">Add Truck</button>
             </div>
 
             <!-- Submit Button -->
             <input type="submit" value="Confirm Price"/>
         </form>
+    <script type="text/javascript">
+        function addTruckDetail() {
+            var container = document.getElementById('truck_details_container');
+            var truckDetail = document.createElement('div');
+            truckDetail.classList.add('truck-detail');
+            truckDetail.innerHTML = `
+                <input type="text" name="truck_number[]" placeholder="Truck Number"/>
+                <input type="text" name="driver_name[]" placeholder="Driver Name"/>
+                <input type="text" name="telephone_number[]" placeholder="Telephone Number"/>
+                <input type="number" name="price_per_truck[]" placeholder="Price"/>
+                <button type="button" onclick="removeTruckDetail(this)">Remove</button>
+            `;
+            container.appendChild(truckDetail);
+            console.log(container);
+        }
+
+        function removeTruckDetail(element) {
+            element.parentNode.remove();
+        }
+    </script>
+    <style>
+        .truck-detail {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .truck-detail input {
+            margin-right: 10px;
+        }
+        #truck_details_section {
+            margin-top: 20px;
+        }
+    </style>
     </template>
+
 </odoo>
