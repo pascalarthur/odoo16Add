@@ -15,6 +15,7 @@
         'data/email_template_suppliers.xml',
         'data/email_template_logistics.xml',
         'data/logisitc_form_template.xml',
+        'data/supplier_form_template.xml',
 
         'views/truck_redistribution_wizard.xml',
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="public_form_template" name="Public Form">
+    <template id="logistic_form_template" name="Public Form">
         <form action="/submit_form" method="post" id="transport_order_form">
             <input type="hidden" name="token" t-att-value="token"/>
 

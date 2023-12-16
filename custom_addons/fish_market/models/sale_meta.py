@@ -146,7 +146,7 @@ class MetaSaleOrder(models.Model):
         return True
 
     def action_send_confirmations(self):
-        template = self.env.ref('fish_market.email_template')  # Replace with your email template
+        template = self.env.ref('fish_market.email_template') 
         my_company_email = self.env.user.company_id.email
 
         # Send confirmation to transporters

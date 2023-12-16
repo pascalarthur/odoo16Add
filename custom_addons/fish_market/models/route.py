@@ -28,7 +28,7 @@ class RouteDemand(models.Model):
 
     def send_email_to_suppliers(self):
         if not self.partner_ids:
-            raise Exception('No suppliers found.')
+            raise Exception('No transporters found.')
 
         my_company_email = self.env.user.company_id.email
         if not my_company_email:

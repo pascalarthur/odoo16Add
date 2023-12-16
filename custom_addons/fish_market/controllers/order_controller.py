@@ -18,7 +18,7 @@ class TransportOrderController(http.Controller):
             transport_order = token_record.transport_order_id
 
             # Pass transport order data to the template
-            return http.request.render('fish_market.public_form_template', {
+            return http.request.render('fish_market.logistic_form_template', {
                 'supplier': token_record.partner_id,
                 'transport_order': transport_order,
                 'token': token,

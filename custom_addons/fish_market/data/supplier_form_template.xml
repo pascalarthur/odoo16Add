@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="supplier_form_template" name="Public Form">
+        <form action="/supplier_bid" method="post" id="supplier_order_form">
+            <input type="hidden" name="token" t-att-value="token"/>
+            <div id="product_details_section">
+                <label>Product Details:</label>
+                <div id="product_details_container"/>
+                <button type="button" onclick="addProductDetail()">Add Product</button>
+            </div>
+
+            <div>
+                <label>Pick-Up Address:</label>
+                <select name="delivery_address" id="delivery_address_dropdown"/>
+            </div>
+            <div>
+                <label for="pickup_address">Optional Pick-Up Address:</label>
+                <input type="text" id="pickup_address" name="pickup_address" placeholder="Enter pick-up address"/>
+            </div>
+
+
+            <input type="submit" value="Confirm"/>
+
+        </form>
+    <script type="text/javascript">
+        var productList = <t t-raw="json.dumps(products)"/>;
+        var addressList = <t t-raw="json.dumps(addresses)"/>;
+
+        function populateAddressDropdown() {
+            var dropdown = document.getElementById('delivery_address_dropdown');
+            dropdown.innerHTML = `<option value="">Select an address...</option>`;
+            addressList.forEach(function(address) {
+                dropdown.innerHTML += `<option value="${address}">${address}</option>`;
+            });
+        }
+
+        // Call the function on page load
+        window.onload = function() {
+            populateAddressDropdown();
+            // Any other onload functions
+        };
+
+        function addProductDetail() {
+            var container = document.getElementById('product_details_container');
+            var productDetail = document.createElement('div');
+            productDetail.classList.add('product-detail');
+
+            var selectHTML = `<select name="product_id[]">
+                                    <option value="">Select a product...</option>`;
+            productList.forEach(function(product) {
+                selectHTML += `<option value="${product[0]}">${product[1]}</option>`;
+            });
+            selectHTML += `</select>`;
+
+            productDetail.innerHTML = selectHTML +
+                `<input type="number" name="product_quantity[]" placeholder="Quantity [kg]"/>
+                    <input type="number" name="product_price[]" placeholder="Unit Price [USD]"/>
+                    <button type="button" onclick="removeProductDetail(this)">Remove</button>`;
+            container.appendChild(productDetail);
+        }
+
+        function removeProductDetail(element) {
+            element.parentNode.remove();
+        }
+    </script>
+    <style>
+        /* Existing styles */
+        .product-detail {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .product-detail input, .product-detail select {
+            margin-right: 10px;
+        }
+        #product_details_section {
+            margin-top: 20px;
+        }
+    </style>
+    </template>
+</odoo>

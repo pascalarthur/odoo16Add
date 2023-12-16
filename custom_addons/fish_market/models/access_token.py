@@ -7,7 +7,7 @@ class AccessToken(models.Model):
 
     partner_id = fields.Many2one('res.partner', string='Supplier', required=True)
     expiry_date = fields.Datetime('Expiry Date', required=True)
-    transport_order_id = fields.Many2one('transport.order', string='Transport Order', required=True)
+    transport_order_id = fields.Many2one('transport.order', string='Transport Order')
 
     token = fields.Char('Token', required=True, default=lambda self: secrets.token_urlsafe(16))
     is_used = fields.Boolean('Used', default=False)
