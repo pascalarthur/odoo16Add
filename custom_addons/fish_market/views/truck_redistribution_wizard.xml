@@ -5,26 +5,25 @@
         <field name="model">truck.redistribution.wizard</field>
         <field name="arch" type="xml">
             <form>
-                <group>
-                    <field name="action_selection" class="oe_inline" widget="radio"/>
-                </group>
                 <field name="truck_id"/>
-                <group name="redistribute_details" invisible="action_selection not in ('zambia_stock')">
-                    <field name="location_redistribution_lines">
+                <group name="trucks_redistribute_details">
+                    <field name="move_to_stock" string='Move to Stock'/>
+                    <field name="location_redistribution_lines" invisible="not move_to_stock">
                         <tree editable="top">
                             <!-- <field name="meta_sale_order_id"/> -->
                             <field name="product_id"/>
-                            <field name="target_location_id"/>
+                            <field name="location_dest_id"/>
                             <field name="quantity"/>
                         </tree>
                     </field>
                 </group>
-                <group name="redistribute_details" invisible="action_selection not in ('redistribute')">
-                    <field name="truck_redistribution_lines">
+                <group name="locations_redistribute_details">
+                    <field name="redistribute" string='Redistribute to another truck'/>
+                    <field name="truck_redistribution_lines" invisible="not redistribute">
                         <tree editable="top">
-                            <field name="meta_sale_order_id"/>
+                            <!-- <field name="target_truck_domain" invisible="True"/> -->
                             <field name="product_id"/>
-                            <field name="target_truck_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id)]"/>
+                            <field name="target_truck_id"/>
                             <field name="quantity"/>
                         </tree>
                     </field>

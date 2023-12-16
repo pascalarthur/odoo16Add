@@ -1,4 +1,4 @@
-from odoo import models, api, fields, http
+from odoo import models, api, fields, http, _
 
 
 class StockQuant(models.Model):
@@ -13,8 +13,7 @@ class StockQuant(models.Model):
             return False  # No selected products
 
         # Create a new meta sale order
-        MetaSaleOrder = self.env['meta.sale.order']
-        meta_sale_order = MetaSaleOrder.create({})
+        meta_sale_order = self.env['meta.sale.order'].create({})
 
         # Add selected products as order lines
         for quant in selected_quants:
@@ -36,6 +35,7 @@ class StockQuant(models.Model):
             'target': 'new',
             'context': {'default_create_date': fields.Datetime.now()},
         }
+
 
 class StockQuantController(http.Controller):
     @http.route('/fish_market/sell_selected_products', type="json", auth="user")

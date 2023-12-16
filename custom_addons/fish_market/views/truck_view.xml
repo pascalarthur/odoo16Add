@@ -19,6 +19,7 @@
                     <field name="price"/>
                     <field name="max_load"/>
                     <field name="price_per_kg"/>
+                    <field name="seal_number"/>
                 </group>
 
                 <field name="load_line_ids">

@@ -21,6 +21,7 @@ class TruckLoadLine(models.Model):
 
     truck_detail_id = fields.Many2one('truck.detail', string='Truck Detail', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Product', required=True)
+    unit_price = fields.Float('Unit Price', required=True)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
 
@@ -30,6 +31,12 @@ class TruckDetail(models.Model):
     _name = 'truck.detail'
     _description = 'Truck Detail'
 
+    name = fields.Char(
+        string="Truck Reference",
+        required=True, copy=False, readonly=False,
+        index='trigram',
+        default=lambda self: default_name(self, prefix='TR'))
+
     state = fields.Selection(
         selection=TRUCK_STATES,
         string="Status",
@@ -38,6 +45,7 @@ class TruckDetail(models.Model):
         default='offer')
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
+    partner_id = fields.Many2one('res.partner')
     transport_order_id  = fields.Many2one('transport.order', string='Transport Order')
 
     truck_number = fields.Char(string='Truck Number')
@@ -72,28 +80,45 @@ class TruckDetail(models.Model):
             else:
                 record.price_per_kg = 0.0
 
-    def allocate_product(self, product, location_id, quantity):
+    def allocate_product(self, product, unit_price, location_id, quantity):
         self.ensure_one()
         self.state = 'confirmed'
         self.env['truck.detail.line'].create({
             'truck_detail_id': self.id,
             'product_id': product.id,
+            'unit_price': unit_price,
             'location_id': location_id.id,
             'quantity': quantity,
         })
 
     def action_handle_overload(self):
+        truck_redistribution = self.env['truck.redistribution.wizard'].create({
+                'truck_id': self.id,
+                'meta_sale_order_id': self.meta_sale_order_id.id,
+            })
+
         return {
-            'name': 'Handle Overload',
             'type': 'ir.actions.act_window',
-            'view_mode': 'form',
             'res_model': 'truck.redistribution.wizard',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'res_id': truck_redistribution.id,
             'target': 'new',
-            'context': {
-                'default_truck_id': self.id,
-                'default_meta_sale_order_id': self.meta_sale_order_id.id,
-            }
+            'context': {},
         }
+
+
+        # return {
+        #     'name': 'Handle Overload',
+        #     'type': 'ir.actions.act_window',
+        #     'view_mode': 'form',
+        #     'res_model': 'truck.redistribution.wizard',
+        #     'target': 'new',
+        #     'context': {
+        #         'default_truck_id': self.id,
+        #         'default_meta_sale_order_id': self.meta_sale_order_id.id,
+        #     }
+        # }
 
 
 class TransportOrder(models.Model):

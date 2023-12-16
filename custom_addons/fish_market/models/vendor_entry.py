@@ -13,8 +13,7 @@ class PriceCollectionModel(models.Model):
     date = fields.Date(default=fields.Date.context_today)
     partner_id = fields.Many2one('res.partner', string='Supplier') # , default=lambda self: self.env.user.partner_id
     product_id = fields.Many2one('product.product', string='Product')
-    size = fields.Float(string='Size')
-    quantity = fields.Float(string='Quantity')
+    quantity = fields.Float(string='Quantity [Boxes]')
 
     def _default_currency(self):
         return self.env['res.currency'].search([('name', '=', 'N$')], limit=1).id

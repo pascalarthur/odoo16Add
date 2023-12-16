@@ -12,7 +12,6 @@
                 <field name="date"/>
                 <field name="partner_id"/>
                 <field name="product_id"/>
-                <field name="size"/>
                 <field name="price"/>
             </tree>
         </field>
@@ -31,7 +30,6 @@
                         <field name="reference"/>
                         <field name="price"/>
                         <field name="currency_id"/>
-                        <field name="size"/>
                         <field name="date"/>
                         <field name="partner_id"/>
                         <field name="product_id"/>

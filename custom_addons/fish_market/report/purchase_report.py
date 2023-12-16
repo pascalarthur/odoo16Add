@@ -80,14 +80,12 @@ class PurchaseReport(models.Model):
                     sub.date,
                     sub.date as write_date,
                     sub.price,
-                    sub.size,
                     sub.product_id,
                     sub.location_id
                 FROM (
                     SELECT
                         pc.date as date,
                         pc.price as price,
-                        pc.size as size,
                         pc.product_id as product_id,
                         'Walvis' as location_id
                     FROM
@@ -96,7 +94,6 @@ class PurchaseReport(models.Model):
                     SELECT
                         zc.date as date,
                         zc.price as price,
-                        zc.size as size,
                         zc.product_id as product_id,
                         'Zambia' as location_id
                     FROM

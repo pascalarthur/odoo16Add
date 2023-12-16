@@ -1,5 +1,4 @@
 from collections import defaultdict
-from math import floor
 from ..utils.model_utils import default_name
 from odoo import models, fields, api, exceptions
 
@@ -22,7 +21,8 @@ class MetaSaleOrderLine(models.Model):
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Product', required=True)
-    product_weight = fields.Float('Product Weight [kg]', related='product_id.weight',store=True)
+    product_weight = fields.Float('Product Weight [kg]', related='product_id.weight', store=True)
+    unit_price = fields.Float('Unit Price', required=True)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
 
@@ -38,12 +38,26 @@ class MetaSaleOrder(models.Model):
         default=lambda self: default_name(self, prefix='MS'))
 
     state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft', tracking=True)
-    partner_id = fields.Many2one('res.partner', string='Customer', required=True)
+    partner_id = fields.Many2one('res.partner', string='Customer')
 
-    sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders')
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
     truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
+    truck_ids_with_load = fields.One2many('truck.detail', compute='_compute_truck_ids_with_load')
+
+    sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders')
+
+    container_demand = fields.Integer(string='Container Demand', compute='_compute_container_demand')
+
+    @api.depends('order_line_ids')
+    def _compute_container_demand(self):
+        for record in self:
+            total_weight = sum(line.quantity * line.product_id.weight for line in record.order_line_ids)
+            record.container_demand = -(-total_weight // 35000) # ceil
+
+    def _compute_truck_ids_with_load(self):
+        for record in self:
+            record.truck_ids_with_load = record.truck_ids.filtered(lambda t: t.load_line_ids)
 
     @api.model
     def get_warehouse(self, warehouse_id):
@@ -51,6 +65,8 @@ class MetaSaleOrder(models.Model):
 
     def set_transport_state(self):
         self.ensure_one()
+        if not self.partner_id:
+            raise exceptions.UserError("Please select a customer first.")
         self.state = 'transport'
 
     def action_find_transporters(self):
@@ -70,6 +86,7 @@ class MetaSaleOrder(models.Model):
             'context': {
                 'default_meta_sale_order_id': self.id,
                 'default_partner_ids': logistic_partner_ids,
+                'default_container_demand': self.container_demand,
 
                 'default_route_start_street': warehouse.partner_id.street,
                 'default_route_start_street2': warehouse.partner_id.street2,
@@ -115,12 +132,12 @@ class MetaSaleOrder(models.Model):
 
                     # Assuming 'max_load' represents the capacity and there's a field to track allocated capacity
                     available_capacity = truck.max_load - sum(line.quantity * line.product_id.weight for line in truck.load_line_ids)
-                    available_capacity = floor(available_capacity / product.weight)  # Convert to product quantity
+                    available_capacity = available_capacity // product.weight  # Convert to product quantity
 
                     # It is only worthwile to pick up 10 boxes or more
                     if available_capacity > 10:
                         quantity_to_allocate = min(required_quantity - allocated_quantity, available_capacity)
-                        truck.allocate_product(product, location_id, quantity_to_allocate)
+                        truck.allocate_product(product, order_line.unit_price, location_id, quantity_to_allocate)
                         allocated_quantity += quantity_to_allocate
 
         self.ensure_one()
@@ -185,6 +202,9 @@ class MetaSaleOrder(models.Model):
 
     def action_confirm_seals(self):
         self.ensure_one()
+        # for truck_id in self.truck_ids_with_load:
+        #     if not truck_id.seal_number:
+        #         raise exceptions.UserError(f"Please enter a seal number for truck {truck_id.name}")
         self.state = 'send_invoices'
         self.action_send_invoices()
 
@@ -209,6 +229,7 @@ class MetaSaleOrder(models.Model):
                             'order_id': sale_order.id,
                             'product_id': load_line.product_id.id,
                             'product_uom_qty': load_line.quantity,
+                            'price_unit': load_line.unit_price,
                             # Ensure to include other necessary fields like product_uom, price_unit, etc.
                         }
                         SaleOrderLine.create(sale_order_line_vals)

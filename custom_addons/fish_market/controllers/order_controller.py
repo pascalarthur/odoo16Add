@@ -53,6 +53,7 @@ class TransportOrderController(http.Controller):
                     'price': float(prices_per_truck[ii]) if prices_per_truck[ii] else 0.0,
                     'max_load': float(max_loads[ii]),
                     'transport_order_id': transport_order.id,
+                    'partner_id': transport_order.partner_id.id,
                     'meta_sale_order_id': transport_order.meta_sale_order_id.id,
                 }
                 request.env['truck.detail'].create(truck_detail)
