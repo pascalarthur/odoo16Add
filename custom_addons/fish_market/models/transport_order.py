@@ -59,7 +59,7 @@ class TruckDetail(models.Model):
     price = fields.Float(string='Price')
     max_load = fields.Float(string='Max. Load [kg]')
     price_per_kg = fields.Float(string='Price per Kg', compute='_compute_price_per_kg', digits=(4, 4))
-    truck_utilization = fields.Float(string='Truck Utilization (%)', compute='_compute_truck_utilization')
+    truck_utilization = fields.Float(string='Truck Utilization (%)', compute='_compute_truck_utilization', store=True)
 
     load_line_ids = fields.One2many('truck.detail.line', 'truck_detail_id', string='Load Lines')
 
@@ -105,23 +105,24 @@ class TruckDetail(models.Model):
             'res_id': truck_redistribution.id,
             'target': 'new',
             'context': {
-                'default_meta_sale_order_id': self.meta_sale_order_id.id,
-                'default_truck_id': self.id,
             },
         }
 
+    def action_set_seal_number(self):
+        truck_redistribution = self.env['seal.wizard'].create({
+                'truck_id': self.id,
+            })
 
-        # return {
-        #     'name': 'Handle Overload',
-        #     'type': 'ir.actions.act_window',
-        #     'view_mode': 'form',
-        #     'res_model': 'redistribution.wizard',
-        #     'target': 'new',
-        #     'context': {
-        #         'default_truck_id': self.id,
-        #         'default_meta_sale_order_id': self.meta_sale_order_id.id,
-        #     }
-        # }
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'seal.wizard',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'res_id': truck_redistribution.id,
+            'target': 'new',
+            'context': {
+            },
+        }
 
 
 class TransportOrder(models.Model):

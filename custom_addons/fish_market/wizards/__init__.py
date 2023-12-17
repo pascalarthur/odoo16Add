@@ -3,3 +3,4 @@
 
 from . import truck_redistribution_wizard
 from . import route_wizard
+from . import seal_wizard

@@ -202,9 +202,9 @@ class MetaSaleOrder(models.Model):
 
     def action_confirm_seals(self):
         self.ensure_one()
-        # for truck_id in self.truck_ids_with_load:
-        #     if not truck_id.seal_number:
-        #         raise exceptions.UserError(f"Please enter a seal number for truck {truck_id.name}")
+        for truck_id in self.truck_ids_with_load:
+            if not truck_id.seal_number:
+                raise exceptions.UserError(f"Please enter a seal number for truck {truck_id.name}")
         self.state = 'send_invoices'
         self.action_send_invoices()
 
@@ -233,6 +233,7 @@ class MetaSaleOrder(models.Model):
                             # Ensure to include other necessary fields like product_uom, price_unit, etc.
                         }
                         SaleOrderLine.create(sale_order_line_vals)
+                    sale_order.action_quotation_send_programmatically()
         self.state = 'handle_overload'
 
     def action_set_done(self):

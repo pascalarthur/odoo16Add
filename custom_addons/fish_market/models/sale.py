@@ -22,3 +22,17 @@ class SaleOrder(models.Model):
         # Check if the order was not modified (you might need to adjust this logic)
         if order.create_date == fields.Datetime.from_string(creation_date):
             order.unlink()  # Delete the order
+
+    def action_quotation_send_programmatically(self):
+        self.ensure_one()
+        self.order_line._validate_analytic_distribution()
+        mail_template = self._find_mail_template()
+        ctx = {
+            'model': 'sale.order',
+            'res_ids': self.ids,
+            'template_id': mail_template.id if mail_template else None,
+            'composition_mode': 'comment',
+            'email_layout_xmlid': 'mail.mail_notification_layout_with_responsible_signature',
+        }
+        msg = self.env['mail.compose.message'].create(ctx)
+        msg.action_send_mail()

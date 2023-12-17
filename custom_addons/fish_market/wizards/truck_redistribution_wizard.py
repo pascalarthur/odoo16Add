@@ -1,5 +1,4 @@
 from odoo import models, fields, api
-from lxml import etree
 
 
 class TruckRedistributionWizardLine(models.TransientModel):
@@ -13,11 +12,7 @@ class TruckRedistributionWizardLine(models.TransientModel):
     product_id = fields.Many2one('product.product', string='Product')
     quantity = fields.Integer(string='Quantity')
 
-    target_truck_id = fields.Many2one(
-        'truck.detail',
-        string='Target Truck',
-    )
-
+    target_truck_id = fields.Many2one('truck.detail', string='Target Truck')
 
 
 class LocationRedistributionWizardLine(models.TransientModel):
@@ -61,6 +56,8 @@ class RedistributionWizard(models.TransientModel):
                 source_load_line = self.truck_id.load_line_ids.filtered(lambda l: l.product_id == truck_line.product_id)
                 if source_load_line:
                     source_load_line.quantity -= truck_line.quantity
+                    if source_load_line.quantity == 0:
+                        source_load_line.unlink()
 
                 # Increase quantity in target truck
                 target_load_line = truck_line.target_truck_id.load_line_ids.filtered(lambda l: l.product_id == truck_line.product_id)
@@ -76,9 +73,12 @@ class RedistributionWizard(models.TransientModel):
 
         if self.move_to_stock:
             for location_line in self.location_redistribution_lines:
+                load_lines_to_unlink = []
                 for load_line in self.truck_id.load_line_ids:
                     if load_line.product_id == location_line.product_id:
                         load_line.quantity -= location_line.quantity
+                        if load_line.quantity == 0:
+                            load_lines_to_unlink.append(load_line)
                         break
 
                 picking = StockPicking.create({
@@ -98,6 +98,8 @@ class RedistributionWizard(models.TransientModel):
                     'location_id': load_line.location_id.id,
                     'location_dest_id': location_line.location_dest_id.id,
                 })
+                for load_line in load_lines_to_unlink:
+                    load_line.unlink()
 
     def _get_picking_type(self):
         # Return the picking type (e.g., internal transfer)

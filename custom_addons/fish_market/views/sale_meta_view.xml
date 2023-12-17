@@ -52,6 +52,7 @@
 
                                 <field name="load_line_ids"/>
 
+                                <button name="action_set_seal_number" string="Seal" type="object" class="oe_highlight"/>
                                 <button name="action_handle_overload" string="Handle Overload" type="object" class="oe_highlight"/>
                             </tree>
                         </field>
