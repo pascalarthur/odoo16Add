@@ -7,19 +7,16 @@ class TruckRedistributionWizardLine(models.TransientModel):
 
     wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
     meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
+    truck_id = fields.Many2one(related='wizard_id.truck_id')
 
-    target_truck_id = fields.Many2one('truck.detail', string='Target Truck') #, domain=lambda self: self._compute_domain())
     product_id = fields.Many2one('product.product', string='Product')
     quantity = fields.Integer(string='Quantity')
 
-    def _compute_domain(self):
-        print(self)
-        for record in self:
-            print(record)
-        if self.wizard_id.meta_sale_order_id:
-            print(self.target_truck_id.ids)
-            self.target_truck_id = self.target_truck_id.filtered(lambda t: t.id in self.wizard_id.meta_sale_order_id.truck_ids_with_load.ids)
-            print(self.target_truck_id.ids)
+    target_truck_id = fields.Many2one(
+        'truck.detail',
+        string='Target Truck',
+    )
+
 
 
 class LocationRedistributionWizardLine(models.TransientModel):
