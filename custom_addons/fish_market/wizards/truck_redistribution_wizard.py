@@ -2,10 +2,10 @@ from odoo import models, fields, api
 
 
 class TruckRedistributionWizardLine(models.TransientModel):
-    _name = 'truck_to_truck.redistribution.wizard.line'
+    _name = 'truck.redistribution.wizard.line'
     _description = 'Truck Redistribution Wizard Line'
 
-    wizard_id = fields.Many2one('truck.redistribution.wizard', string='Wizard', readonly=True)
+    wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
     meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
 
     target_truck_id = fields.Many2one('truck.detail', string='Target Truck') #, domain=lambda self: self._compute_domain())
@@ -26,7 +26,7 @@ class LocationRedistributionWizardLine(models.TransientModel):
     _name = 'location.redistribution.wizard.line'
     _description = 'Location Redistribution Wizard Line'
 
-    wizard_id = fields.Many2one('truck.redistribution.wizard', string='Wizard', readonly=True)
+    wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
     meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
 
     location_dest_id = fields.Many2one('stock.location', string='Target Location')
@@ -35,7 +35,7 @@ class LocationRedistributionWizardLine(models.TransientModel):
 
 
 class RedistributionWizard(models.TransientModel):
-    _name = 'truck.redistribution.wizard'
+    _name = 'redistribution.wizard'
     _description = 'Redistribution Wizard'
 
     move_to_stock = fields.Boolean(default=False)
@@ -45,7 +45,7 @@ class RedistributionWizard(models.TransientModel):
     meta_sale_order_id = fields.Many2one('meta.sale.order', string="Meta Sale Order", readonly=True)
 
     truck_redistribution_lines = fields.One2many(
-        'truck_to_truck.redistribution.wizard.line', 'wizard_id', string='Redistribution Trucks'
+        'truck.redistribution.wizard.line', 'wizard_id', string='Redistribution Trucks'
     )
 
     location_redistribution_lines = fields.One2many(

@@ -92,14 +92,14 @@ class TruckDetail(models.Model):
         })
 
     def action_handle_overload(self):
-        truck_redistribution = self.env['truck.redistribution.wizard'].create({
+        truck_redistribution = self.env['redistribution.wizard'].create({
                 'truck_id': self.id,
                 'meta_sale_order_id': self.meta_sale_order_id.id,
             })
 
         return {
             'type': 'ir.actions.act_window',
-            'res_model': 'truck.redistribution.wizard',
+            'res_model': 'redistribution.wizard',
             'view_mode': 'form',
             'views': [(False, 'form')],
             'res_id': truck_redistribution.id,
@@ -112,7 +112,7 @@ class TruckDetail(models.Model):
         #     'name': 'Handle Overload',
         #     'type': 'ir.actions.act_window',
         #     'view_mode': 'form',
-        #     'res_model': 'truck.redistribution.wizard',
+        #     'res_model': 'redistribution.wizard',
         #     'target': 'new',
         #     'context': {
         #         'default_truck_id': self.id,
