@@ -80,8 +80,8 @@ class MetaSaleOrder(models.Model):
             'type': 'ir.actions.act_window',
             'name': 'Route Supplier Communication',
             'view_mode': 'form',
-            'res_model': 'route.demand',
-            'view_id': self.env.ref('fish_market.view_route_supplier_communication_form').id,
+            'res_model': 'route.demand.wizard',
+            'view_id': self.env.ref('fish_market.view_route_demand_wizard_form').id,
             'target': 'new',  # Open the form in a new window
             'context': {
                 'default_meta_sale_order_id': self.id,
@@ -146,7 +146,7 @@ class MetaSaleOrder(models.Model):
         return True
 
     def action_send_confirmations(self):
-        template = self.env.ref('fish_market.email_template') 
+        template = self.env.ref('fish_market.email_template')
         my_company_email = self.env.user.company_id.email
 
         # Send confirmation to transporters

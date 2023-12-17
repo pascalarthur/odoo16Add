@@ -2,9 +2,9 @@ from odoo import models, fields, api
 from datetime import datetime
 
 
-class RouteDemand(models.Model):
-    _name = 'route.demand'
-    _description = 'Route Demand'
+class RouteDemandWizard(models.TransientModel):
+    _name = 'route.demand.wizard'
+    _description = 'Route Demand Wizard'
 
     route_start_street = fields.Char()
     route_start_street2 = fields.Char()

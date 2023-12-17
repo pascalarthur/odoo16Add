@@ -23,7 +23,7 @@
         'views/res_partner_logisitic_views.xml',
 
         'views/inventory.xml',
-        'views/route.xml',
+        'views/route_wizard.xml',
         'views/quotation_management_view.xml',
         'views/index.xml',
         'views/res_partner_supplier_views.xml',

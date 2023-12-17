@@ -5,7 +5,7 @@ access_zambia_price_collection_model,access_zambia_price_collection_model,model_
 access_fish_market_report,access_fish_market_report,model_fish_market_report,base.group_user,1,1,1,1
 access_fish_market_report_image,access_fish_market_report_image,model_fish_market_report_image,base.group_user,1,1,1,1
 access_quotation_management,access_quotation_management,model_quotation_management,base.group_user,1,1,1,1
-access_route_demand,access_route_demand,model_route_demand,base.group_user,1,1,1,1
+access_route_demand_wizard,access_route_demand_wizard,model_route_demand_wizard,base.group_user,1,1,1,1
 access_access_token,access_access_token,model_access_token,base.group_user,1,1,1,1
 access_meta_sale_order,access_meta_sale_order,model_meta_sale_order,base.group_user,1,1,1,1
 access_meta_sale_order_line,access_meta_sale_order_line,model_meta_sale_order_line,base.group_user,1,1,1,1
