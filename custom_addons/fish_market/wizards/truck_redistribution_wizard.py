@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from lxml import etree
 
 
 class TruckRedistributionWizardLine(models.TransientModel):

@@ -21,8 +21,8 @@
                     <field name="redistribute" string='Redistribute to another truck'/>
                     <field name="truck_redistribution_lines" invisible="not redistribute">
                         <tree editable="top">
-                            <field name="meta_sale_order_id" invisible="1"/>
-                            <field name="truck_id" invisible="1"/>
+                            <field name="meta_sale_order_id" column_invisible="1"/>
+                            <field name="truck_id" column_invisible="1"/>
                             <field name="product_id"/>
                             <field name="target_truck_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_id)]"/>
                             <field name="quantity"/>

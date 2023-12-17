@@ -104,7 +104,10 @@ class TruckDetail(models.Model):
             'views': [(False, 'form')],
             'res_id': truck_redistribution.id,
             'target': 'new',
-            'context': {},
+            'context': {
+                'default_meta_sale_order_id': self.meta_sale_order_id.id,
+                'default_truck_id': self.id,
+            },
         }
 
 
