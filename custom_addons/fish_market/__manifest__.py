@@ -22,6 +22,8 @@
         'views/transport_order.xml',
         'views/res_partner_logisitic_views.xml',
 
+        'views/report_invoice.xml',
+
         'views/inventory.xml',
         'views/route_wizard.xml',
         'views/quotation_management_view.xml',

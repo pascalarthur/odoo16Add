@@ -64,7 +64,6 @@ class PurchaseReport(models.Model):
 
     # reference = fields.Char('Reference', readonly=True)
 
-    size = fields.Float('Fish Size', readonly=True)
     # quantity = fields.Float('Number of Tons', readonly=True)
     price = fields.Float('Price', readonly=True)
     date = fields.Date('Date', readonly=True)

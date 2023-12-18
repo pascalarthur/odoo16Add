@@ -22,7 +22,7 @@ class MetaSaleOrderLine(models.Model):
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Product', required=True)
     product_weight = fields.Float('Product Weight [kg]', related='product_id.weight', store=True)
-    unit_price = fields.Float('Unit Price', required=True)
+    unit_price = fields.Float('Unit Price', default=0.0)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
 

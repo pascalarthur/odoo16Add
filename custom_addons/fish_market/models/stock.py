@@ -32,7 +32,7 @@ class StockQuant(models.Model):
             'view_mode': 'form',
             'views': [(False, 'form')],
             'res_id': meta_sale_order.id,
-            'target': 'new',
+            'target': 'current',
             'context': {'default_create_date': fields.Datetime.now()},
         }
 
