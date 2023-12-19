@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pricelist_wizard_form" model="ir.ui.view">
+        <field name="name">supplier.price.wizard.form</field>
+        <field name="model">supplier.price.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="pricelist_id"/>
+                </group>
+                <footer>
+                    <button string="Confirm" type="object" name="confirm_selection" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

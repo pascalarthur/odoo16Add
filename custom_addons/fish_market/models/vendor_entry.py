@@ -3,23 +3,11 @@ from datetime import datetime
 from odoo import fields, models
 
 
-class PriceCollectionModel(models.Model):
-    _name = 'test_model'
+class PriceCollectionItem(models.Model):
+    _inherit = 'product.pricelist.item'
     _description = 'Collect fish prices here to make better purchase decisions.'
 
-    namibia_tz = pytz.timezone('Africa/Windhoek')
-    reference = fields.Char(default=datetime.now(namibia_tz).strftime("%d/%m/%Y %H:%M:%S"), string='Reference', readonly=True)
-
-    date = fields.Date(default=fields.Date.context_today)
-    partner_id = fields.Many2one('res.partner', string='Supplier') # , default=lambda self: self.env.user.partner_id
-    product_id = fields.Many2one('product.product', string='Product')
-    quantity = fields.Float(string='Quantity [Boxes]')
-
-    def _default_currency(self):
-        return self.env['res.currency'].search([('name', '=', 'N$')], limit=1).id
-
-    price = fields.Monetary(currency_field='currency_id', string='Price', default=0.0)
-    currency_id = fields.Many2one('res.currency', string='Currency', default=_default_currency)
+    partner_id = fields.Many2one('res.partner', string='Supplier')
 
     def action_buy(self):
         if not self:
@@ -81,14 +69,3 @@ class PriceCollectionModel(models.Model):
         return {
             'type': 'ir.actions.act_window_close'
         }
-
-
-class WalvisBayPriceCollection(models.Model):
-    _inherit = 'test_model'
-    _name = 'walvis_bay_price_collection_model'
-
-
-class ZambiaPriceCollection(models.Model):
-    _inherit = 'test_model'
-    _name = 'zambia_price_collection_model'
-

@@ -1,61 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="tree_view" model="ir.ui.view">
-        <field name="name">tree</field>
-        <field name="model">test_model</field>
+    <record id="view_partner_logistic_tree" model="ir.ui.view">
+        <field name="name">product.pricelist.item.tree.inherit</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_tree_view"/>
         <field name="arch" type="xml">
-            <tree string="Fish Prices">
+            <xpath expr="//tree" position="inside">
                 <header>
                     <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
                 </header>
-                <field name="reference"/>
-                <field name="date"/>
                 <field name="partner_id"/>
-                <field name="product_id"/>
-                <field name="quantity"/>
-                <field name="price"/>
-            </tree>
+            </xpath>
         </field>
     </record>
 
-    <record id="form_view" model="ir.ui.view">
-        <field name="name">form</field>
-        <field name="model">test_model</field>
-        <field name="arch" type="xml">
-            <form string="Test" duplicate="false">
-                <header>
-                    <button string="Save" class="oe_highlight" type="object" name="action_save"/>
-                </header>
-                <sheet>
-                    <group>
-                        <field name="reference"/>
-                        <field name="price"/>
-                        <field name="currency_id"/>
-                        <field name="date"/>
-                        <field name="partner_id"/>
-                        <field name="product_id"/>
-                        <field name="quantity"/>
-                    </group>
-                </sheet>
-            </form>
-      </field>
-    </record>
-
-   <record id="fish_prices_walvis_bay_action" model="ir.actions.act_window">
-        <field name="name">Fish Prices - Walvis Bay</field>
-        <field name="res_model">walvis_bay_price_collection_model</field>
+    <record id="fish_prices_walvis_bay_action" model="ir.actions.act_window">
+        <field name="name">Pricelist - Walvis Bay</field>
+        <field name="res_model">product.pricelist.item</field>
         <field name="view_mode">tree,form</field>
-        <field name="view_ids" eval="[(5, 0, 0),
-                                   (0, 0, {'view_mode': 'tree', 'view_id': ref('tree_view')}),
-                                   (0, 0, {'view_mode': 'form', 'view_id': ref('form_view')})]"/>
+        <field name="domain">[('pricelist_id.name', '=', 'WvB USD pricelist')]</field>
     </record>
 
     <record id="fish_prices_zimbabwe_action" model="ir.actions.act_window">
-        <field name="name">Fish Prices - Zimbabwe</field>
-        <field name="res_model">zambia_price_collection_model</field>
+        <field name="name">Pricelist - Zimbabwe</field>
+        <field name="res_model">product.pricelist.item</field>
         <field name="view_mode">tree,form</field>
-        <field name="view_ids" eval="[(5, 0, 0),
-                                   (0, 0, {'view_mode': 'tree', 'view_id': ref('tree_view')}),
-                                   (0, 0, {'view_mode': 'form', 'view_id': ref('form_view')})]"/>
+        <field name="domain">[('pricelist_id.name', '=', 'Zambia USD Pricelist')]</field>
     </record>
 </odoo>

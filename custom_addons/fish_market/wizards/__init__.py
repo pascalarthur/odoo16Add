@@ -4,3 +4,4 @@
 from . import truck_redistribution_wizard
 from . import route_wizard
 from . import seal_wizard
+from . import supplier_price_wizard

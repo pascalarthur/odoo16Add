@@ -1,7 +1,4 @@
 id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
-access_test_model,access_test_model,model_test_model,base.group_user,1,1,1,1
-access_walvis_bay_price_collection_model,access_walvis_bay_price_collection_model,model_walvis_bay_price_collection_model,base.group_user,1,1,1,1
-access_zambia_price_collection_model,access_zambia_price_collection_model,model_zambia_price_collection_model,base.group_user,1,1,1,1
 access_fish_market_report,access_fish_market_report,model_fish_market_report,base.group_user,1,1,1,1
 access_fish_market_report_image,access_fish_market_report_image,model_fish_market_report_image,base.group_user,1,1,1,1
 access_quotation_management,access_quotation_management,model_quotation_management,base.group_user,1,1,1,1
@@ -16,3 +13,4 @@ access_redistribution_wizard,access_redistribution_wizard,model_redistribution_w
 access_truck_redistribution_wizard_line,access_truck_redistribution_wizard_line,model_truck_redistribution_wizard_line,base.group_user,1,1,1,1
 access_location_redistribution_wizard_line,access_location_redistribution_wizard_line,model_location_redistribution_wizard_line,base.group_user,1,1,1,1
 access_seal_wizard,access_seal_wizard,model_seal_wizard,base.group_user,1,1,1,1
+access_supplier_price_wizard,access_supplier_price_wizard,model_supplier_price_wizard,base.group_user,1,1,1,1
