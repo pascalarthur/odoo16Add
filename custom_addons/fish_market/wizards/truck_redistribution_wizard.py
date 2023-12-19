@@ -1,45 +1,36 @@
 from odoo import models, fields, api, exceptions
 
 
-class LocationRedistributionWizardLine(models.TransientModel):
+class RedistributionWizardLineBase(models.TransientModel):
+    _name = 'redistribution.wizard.line.base'
+    _description = 'Redistribution Wizard Line Base'
+
+    wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
+    meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
+    truck_id = fields.Many2one(related='wizard_id.truck_id')
+    load_line_ids = fields.One2many(related='wizard_id.truck_id.load_line_ids')
+    product_ids_from_load_lines = fields.Many2many('product.product', compute='_compute_product_ids_from_load_lines')
+
+    @api.depends('load_line_ids')
+    def _compute_product_ids_from_load_lines(self):
+        for record in self:
+            product_ids = record.load_line_ids.mapped('product_id.id')
+            record.product_ids_from_load_lines = [(6, 0, product_ids)]
+
+    product_id = fields.Many2one('product.product', string='Product')
+    quantity = fields.Integer(string='Quantity')
+
+
+class LocationRedistributionWizardLine(RedistributionWizardLineBase):
     _name = 'location.redistribution.wizard.line'
     _description = 'Location Redistribution Wizard Line'
 
-    wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
-    meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
-    truck_id = fields.Many2one(related='wizard_id.truck_id')
-    load_line_ids = fields.One2many(related='wizard_id.truck_id.load_line_ids')
-    product_ids_from_load_lines = fields.Many2many('product.product', compute='_compute_product_ids_from_load_lines')
-
-    @api.depends('load_line_ids')
-    def _compute_product_ids_from_load_lines(self):
-        for record in self:
-            product_ids = record.load_line_ids.mapped('product_id.id')
-            record.product_ids_from_load_lines = [(6, 0, product_ids)]
-
     location_dest_id = fields.Many2one('stock.location', string='Target Location')
-    product_id = fields.Many2one('product.product', string='Product')
-    quantity = fields.Integer(string='Quantity')
 
 
-class TruckRedistributionWizardLine(models.TransientModel):
+class TruckRedistributionWizardLine(RedistributionWizardLineBase):
     _name = 'truck.redistribution.wizard.line'
     _description = 'Truck Redistribution Wizard Line'
-
-    wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
-    meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
-    truck_id = fields.Many2one(related='wizard_id.truck_id')
-    load_line_ids = fields.One2many(related='wizard_id.truck_id.load_line_ids')
-    product_ids_from_load_lines = fields.Many2many('product.product', compute='_compute_product_ids_from_load_lines')
-
-    @api.depends('load_line_ids')
-    def _compute_product_ids_from_load_lines(self):
-        for record in self:
-            product_ids = record.load_line_ids.mapped('product_id.id')
-            record.product_ids_from_load_lines = [(6, 0, product_ids)]
-
-    product_id = fields.Many2one('product.product', string='Product')
-    quantity = fields.Integer(string='Quantity')
 
     target_truck_id = fields.Many2one('truck.detail', string='Target Truck')
 
