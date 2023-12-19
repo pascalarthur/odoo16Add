@@ -5,29 +5,44 @@
         <field name="model">redistribution.wizard</field>
         <field name="arch" type="xml">
             <form>
-                <field name="truck_id"/>
-                <group name="trucks_redistribute_details">
-                    <field name="move_to_stock" string='Move to Stock'/>
-                    <field name="location_redistribution_lines" invisible="not move_to_stock">
-                        <tree editable="top">
-                            <!-- <field name="meta_sale_order_id"/> -->
+                <group>
+                    <field name="truck_id"/>
+                    <field name="load_line_ids">
+                        <tree>
                             <field name="product_id"/>
-                            <field name="location_dest_id"/>
+                            <field name="unit_price"/>
+                            <field name="location_id"/>
                             <field name="quantity"/>
                         </tree>
                     </field>
                 </group>
-                <group name="locations_redistribute_details">
-                    <field name="redistribute" string='Redistribute to another truck'/>
-                    <field name="truck_redistribution_lines" invisible="not redistribute">
-                        <tree editable="top">
-                            <field name="meta_sale_order_id" column_invisible="1"/>
-                            <field name="truck_id" column_invisible="1"/>
-                            <field name="product_id"/>
-                            <field name="target_truck_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_id)]"/>
-                            <field name="quantity"/>
-                        </tree>
-                    </field>
+                <group>
+                    <group name="trucks_redistribute_details" colspan="4">
+                        <field name="move_to_stock" string='Move to Stock'/>
+                        <field name="location_redistribution_lines" invisible="not move_to_stock">
+                            <tree editable="top">
+                                <field name="meta_sale_order_id" column_invisible="1"/>
+                                <field name="truck_id" column_invisible="1"/>
+                                <field name="product_ids_from_load_lines" column_invisible="1"/>
+                                <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
+                                <field name="location_dest_id"/>
+                                <field name="quantity"/>
+                            </tree>
+                        </field>
+                    </group>
+                    <group name="locations_redistribute_details" colspan="4">
+                        <field name="redistribute" string='Redistribute to another truck'/>
+                        <field name="truck_redistribution_lines" invisible="not redistribute">
+                            <tree editable="top">
+                                <field name="meta_sale_order_id" column_invisible="1"/>
+                                <field name="truck_id" column_invisible="1"/>
+                                <field name="product_ids_from_load_lines" column_invisible="1"/>
+                                <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
+                                <field name="target_truck_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_id)]"/>
+                                <field name="quantity"/>
+                            </tree>
+                        </field>
+                    </group>
                 </group>
                 <footer>
                     <button string="Confirm" type="object" name="confirm_action" class="btn-primary"/>

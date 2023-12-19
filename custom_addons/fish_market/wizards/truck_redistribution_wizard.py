@@ -1,4 +1,25 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, exceptions
+
+
+class LocationRedistributionWizardLine(models.TransientModel):
+    _name = 'location.redistribution.wizard.line'
+    _description = 'Location Redistribution Wizard Line'
+
+    wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
+    meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
+    truck_id = fields.Many2one(related='wizard_id.truck_id')
+    load_line_ids = fields.One2many(related='wizard_id.truck_id.load_line_ids')
+    product_ids_from_load_lines = fields.Many2many('product.product', compute='_compute_product_ids_from_load_lines')
+
+    @api.depends('load_line_ids')
+    def _compute_product_ids_from_load_lines(self):
+        for record in self:
+            product_ids = record.load_line_ids.mapped('product_id.id')
+            record.product_ids_from_load_lines = [(6, 0, product_ids)]
+
+    location_dest_id = fields.Many2one('stock.location', string='Target Location')
+    product_id = fields.Many2one('product.product', string='Product')
+    quantity = fields.Integer(string='Quantity')
 
 
 class TruckRedistributionWizardLine(models.TransientModel):
@@ -8,23 +29,19 @@ class TruckRedistributionWizardLine(models.TransientModel):
     wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
     meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
     truck_id = fields.Many2one(related='wizard_id.truck_id')
+    load_line_ids = fields.One2many(related='wizard_id.truck_id.load_line_ids')
+    product_ids_from_load_lines = fields.Many2many('product.product', compute='_compute_product_ids_from_load_lines')
+
+    @api.depends('load_line_ids')
+    def _compute_product_ids_from_load_lines(self):
+        for record in self:
+            product_ids = record.load_line_ids.mapped('product_id.id')
+            record.product_ids_from_load_lines = [(6, 0, product_ids)]
 
     product_id = fields.Many2one('product.product', string='Product')
     quantity = fields.Integer(string='Quantity')
 
     target_truck_id = fields.Many2one('truck.detail', string='Target Truck')
-
-
-class LocationRedistributionWizardLine(models.TransientModel):
-    _name = 'location.redistribution.wizard.line'
-    _description = 'Location Redistribution Wizard Line'
-
-    wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
-    meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
-
-    location_dest_id = fields.Many2one('stock.location', string='Target Location')
-    product_id = fields.Many2one('product.product', string='Product')
-    quantity = fields.Integer(string='Quantity')
 
 
 class RedistributionWizard(models.TransientModel):
@@ -36,6 +53,7 @@ class RedistributionWizard(models.TransientModel):
 
     truck_id = fields.Many2one('truck.detail', string='Truck', readonly=True)
     meta_sale_order_id = fields.Many2one('meta.sale.order', string="Meta Sale Order", readonly=True)
+    load_line_ids = fields.One2many(related='truck_id.load_line_ids')
 
     truck_redistribution_lines = fields.One2many(
         'truck.redistribution.wizard.line', 'wizard_id', string='Redistribution Trucks'
@@ -47,6 +65,15 @@ class RedistributionWizard(models.TransientModel):
 
     def confirm_action(self):
         self.ensure_one()
+
+        for load_line in self.truck_id.load_line_ids:
+            loaded_quantity = sum(self.truck_id.load_line_ids.filtered(lambda l: l.product_id == load_line.product_id).mapped('quantity'))
+            desired_unload_quantity = sum(self.location_redistribution_lines.filtered(lambda l: l.product_id == load_line.product_id).mapped('quantity'))
+            desired_unload_quantity += sum(self.truck_redistribution_lines.filtered(lambda l: l.product_id == load_line.product_id).mapped('quantity'))
+
+            if desired_unload_quantity > loaded_quantity:
+                raise exceptions.UserError(f"The quantity of product {load_line.product_id.name} to be unloaded is greater than the quantity loaded")
+
         StockPicking = self.env['stock.picking']
         StockMove = self.env['stock.move']
 
