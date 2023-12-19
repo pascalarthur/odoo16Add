@@ -9,7 +9,7 @@ META_SALE_STATES = [
     ('allocated', 'Allocated'),
     ('send_confirmations', 'Send Confirmations'),
     ('seal_trucks', 'Seal Trucks'),
-    ('send_invoices', 'Send Invoices'),
+    ('send_invoice', 'Send Invoices'),
     ('handle_overload', 'Handle Overload'),
     ('done', 'Done'),
 ]
@@ -45,7 +45,7 @@ class MetaSaleOrder(models.Model):
     truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
     truck_ids_with_load = fields.One2many('truck.detail', compute='_compute_truck_ids_with_load')
 
-    sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders')
+    sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
 
     container_demand = fields.Integer(string='Container Demand', compute='_compute_container_demand')
 
@@ -182,7 +182,7 @@ class MetaSaleOrder(models.Model):
                 template.send_mail(self.id, email_values=email_values, force_send=True)
 
         self.ensure_one()
-        self.state = 'seal_trucks'
+        self.action_send_order_confirmation()
 
     def _prepare_email_content_for_transporter(self, truck):
         # Prepare the email content for the transporter
@@ -200,15 +200,7 @@ class MetaSaleOrder(models.Model):
             content += f"Truck {truck.truck_number} will pick up: Product {line.product_id.name}, Quantity: {line.quantity}<br/>"
         return content
 
-    def action_confirm_seals(self):
-        self.ensure_one()
-        for truck_id in self.truck_ids_with_load:
-            if not truck_id.seal_number:
-                raise exceptions.UserError(f"Please enter a seal number for truck {truck_id.name}")
-        self.state = 'send_invoices'
-        self.action_send_invoices()
-
-    def action_send_invoices(self):
+    def action_send_order_confirmation(self):
         SaleOrder = self.env['sale.order']
         SaleOrderLine = self.env['sale.order.line']
 
@@ -234,6 +226,23 @@ class MetaSaleOrder(models.Model):
                         }
                         SaleOrderLine.create(sale_order_line_vals)
                     sale_order.action_quotation_send_programmatically()
+                    sale_order.state = 'sent'
+
+        self.state = 'seal_trucks'
+
+    def action_confirm_seals(self):
+        self.ensure_one()
+        for truck_id in self.truck_ids_with_load:
+            if not truck_id.seal_number:
+                raise exceptions.UserError(f"Please enter a seal number for truck {truck_id.name}")
+        self.state = 'send_invoice'
+
+    def action_send_invoice(self):
+        self.ensure_one()
+        for sale_id in self.sale_order_ids:
+            if sale_id.state == 'draft':
+                sale_id.action_confirm()
+            # sale_id.create_invoices()
         self.state = 'handle_overload'
 
     def action_set_done(self):

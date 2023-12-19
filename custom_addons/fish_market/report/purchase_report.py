@@ -9,10 +9,9 @@ from datetime import datetime
 import pandas as pd
 
 
-class AnalyticsReport(models.Model):
+class AnalyticsReport(models.TransientModel):
     _name = "fish_market.report.image"
     _description = "Fish Price Report"
-    _auto = False
 
     def fetch_data(self):
         # Fetch data from fish_market.report

@@ -10,9 +10,10 @@
                     <button name="action_find_transporters" string="Find Transport" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                     <button name="action_allocate_transporters" string="Allocate Trucks" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                     <button name="action_send_confirmations" string="Send Confirmations" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
-                    <button name="action_confirm_seals" string="Confirm Seals" type="object" class="oe_highlight" invisible="state not in ['seal_trucks', 'handle_overload']"/>
+                    <button name="action_confirm_seals" string="Confirm Seals" type="object" class="oe_highlight" invisible="state not in ['seal_trucks']"/>
+                    <button name="action_send_invoice" string="Send Invoice" type="object" class="oe_highlight" invisible="state not in ['send_invoice']"/>
                     <button name="action_set_done" string="Done" type="object" class="oe_highlight" invisible="state not in ['handle_overload']"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,transport,allocated,send_confirmations,seal_trucks,send_invoices,handle_overload,done"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,transport,allocated,send_confirmations,seal_trucks,send_invoice,handle_overload,done"/>
                 </header>
                 <sheet>
                     <group>
@@ -57,7 +58,7 @@
                             </tree>
                         </field>
 
-                        <field name="sale_order_ids" invisible="state not in ['send_invoices','handle_overload', 'done']"/>
+                        <field name="sale_order_ids" invisible="state not in ['send_invoice','handle_overload', 'done']"/>
                     </group>
                 </sheet>
             </form>
