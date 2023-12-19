@@ -56,10 +56,11 @@ class SupplierBidOrderController(http.Controller):
                     'applied_on': '1_product',
                     'fixed_price': float(product_prices[i]),
                     'min_quantity': float(product_quantities[i]),
+                    'date_start': fields.Datetime.now(),
                 }
                 request.env['product.pricelist.item'].create(product_detail)
 
-            # token_record.is_used = True
+            token_record.is_used = True
 
             return "Form submitted successfully!"
         else:

@@ -5,11 +5,19 @@
         <field name="model">product.pricelist.item</field>
         <field name="inherit_id" ref="product.product_pricelist_item_tree_view"/>
         <field name="arch" type="xml">
-            <xpath expr="//tree" position="inside">
-                <header>
-                    <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
-                </header>
-                <field name="partner_id"/>
+            <xpath expr="//tree" position="replace">
+                <tree>
+                    <header>
+                        <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
+                    </header>
+                    <field name="product_tmpl_id"/>
+                    <field name="partner_id"/>
+                    <field name="price"/>
+                    <field name="min_quantity" colspan="4"/>
+                    <field name="date_start" optional="hide"/>
+                    <field name="date_end" optional="hide"/>
+                    <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                </tree>
             </xpath>
         </field>
     </record>

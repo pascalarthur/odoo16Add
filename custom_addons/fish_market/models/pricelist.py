@@ -1,5 +1,3 @@
-import pytz
-from datetime import datetime
 from odoo import fields, models
 
 
@@ -13,8 +11,8 @@ class PriceCollectionItem(models.Model):
         if not self:
             return
 
-        purchase_order_obj = self.env['purchase.order']
-        purchase_order_line_obj = self.env['purchase.order.line']
+        Purchase_order_obj = self.env['purchase.order']
+        Purchase_order_line_obj = self.env['purchase.order.line']
 
         # Group records by partner_id
         partner_groups = {}
@@ -31,7 +29,7 @@ class PriceCollectionItem(models.Model):
                 'date_order': fields.Date.context_today(self),
                 # Other necessary fields
             }
-            order = purchase_order_obj.create(order_vals)
+            order = Purchase_order_obj.create(order_vals)
             orders.append(order.id)
 
             # Add a line to the purchase order for each record
@@ -40,29 +38,23 @@ class PriceCollectionItem(models.Model):
                     'order_id': order.id,
                     'product_id': record.product_id.id,
                     'name': 'Fish',
-                    'product_qty': record.quantity,
+                    'product_qty': record.min_quantity,
                     'product_uom': record.product_id.uom_id.id,
-                    'price_unit': record.price,
+                    'price_unit': record.fixed_price,
                     'date_planned': fields.Date.context_today(record),
                     'currency_id': record.currency_id.id,
                     # Other necessary fields
                 }
-                purchase_order_line_obj.create(line_vals)
+                print(line_vals)
+                Purchase_order_line_obj.create(line_vals)
 
-        quotation_management = self.env['quotation.management'].create({
-            'name': 'Your Reference Name',
-            'purchase_order_ids': [(6, 0, orders)],  # 'orders' is a list of purchase order IDs
-        })
-
-        # Redirect to the new form view
         return {
             'type': 'ir.actions.act_window',
-            'name': 'Quotation Management',
-            'res_model': 'quotation.management',
-            'res_id': quotation_management.id,
-            'view_mode': 'form',
+            'name': 'Purchase Orders',
+            'res_model': 'purchase.order',
+            'view_mode': 'tree,form',
+            'target': 'current',
         }
-
 
 
     def action_save(self):

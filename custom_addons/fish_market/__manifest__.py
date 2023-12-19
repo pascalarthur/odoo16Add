@@ -28,7 +28,7 @@
         'views/inventory.xml',
         'views/route_wizard.xml',
         'views/quotation_management_view.xml',
-        'views/index.xml',
+        'views/pricelist.xml',
         'views/res_partner_supplier_views.xml',
         'views/custom_purchase_view.xml',
         'report/purchase_report_views.xml',

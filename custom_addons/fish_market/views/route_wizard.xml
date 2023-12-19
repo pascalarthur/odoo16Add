@@ -7,7 +7,7 @@
             <form>
                 <sheet>
                     <group>
-                        <group string="Start Address">
+                        <group string="Start Address"  colspan="4">
                             <div class="o_address_format">
                                 <field name="route_start_street" placeholder="Street..." class="o_address_street"/>
                                 <field name="route_start_street2" placeholder="Street 2..." class="o_address_street"/>
@@ -18,7 +18,7 @@
                             </div>
                         </group>
 
-                        <group string="Delivery Address">
+                        <group string="Delivery Address"  colspan="4">
                             <div class="o_address_format">
                                 <field name="route_end_street" placeholder="Street..." class="o_address_street"/>
                                 <field name="route_end_street2" placeholder="Street 2..." class="o_address_street"/>
