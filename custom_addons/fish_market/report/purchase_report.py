@@ -18,7 +18,7 @@ class AnalyticsReport(models.TransientModel):
         dates, prices, location_ids = [], [], []
         pricelist_items_wvb_id = self.env['product.pricelist.item'].search([('pricelist_id.name', 'in', ["WvB USD pricelist", "Zambia USD Pricelist"])])
         for record in pricelist_items_wvb_id:
-            dates.extend(record.mapped('create_date'))
+            dates.extend([date.strftime('%Y-%m-%d') for date in record.mapped('create_date')])
             prices.extend(record.mapped('fixed_price'))
             location_ids.extend(record.mapped('pricelist_id.name'))
         return dates, prices, location_ids
@@ -43,7 +43,7 @@ class AnalyticsReport(models.TransientModel):
 
         return image_base64
 
-    image_base64 = fields.Image(string="Report", default=create_image, readonly=True, _log_access = True)
+    image_base64 = fields.Image(string="Report", default=create_image, readonly=True)
 
     namibia_tz = pytz.timezone('Africa/Windhoek')
     write_date = fields.Char(default=datetime.now(namibia_tz).strftime("%d/%m/%Y"), string='Report - Date', readonly=True)

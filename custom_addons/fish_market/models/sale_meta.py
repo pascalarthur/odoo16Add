@@ -37,7 +37,7 @@ class MetaSaleOrder(models.Model):
         index='trigram',
         default=lambda self: default_name(self, prefix='MS'))
 
-    state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft', tracking=True)
+    state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft')
     partner_id = fields.Many2one('res.partner', string='Customer')
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')

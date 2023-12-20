@@ -29,8 +29,8 @@
         <field name="domain">[('pricelist_id.name', '=', 'WvB USD pricelist')]</field>
     </record>
 
-    <record id="fish_prices_zimbabwe_action" model="ir.actions.act_window">
-        <field name="name">Pricelist - Zimbabwe</field>
+    <record id="fish_prices_zambia_action" model="ir.actions.act_window">
+        <field name="name">Pricelist - Zambia</field>
         <field name="res_model">product.pricelist.item</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[('pricelist_id.name', '=', 'Zambia USD Pricelist')]</field>

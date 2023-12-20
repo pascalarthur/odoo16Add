@@ -41,7 +41,6 @@ class TruckDetail(models.Model):
         selection=TRUCK_STATES,
         string="Status",
         readonly=True, copy=False, index=True,
-        tracking=3,
         default='offer')
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
@@ -141,15 +140,15 @@ class TransportOrder(models.Model):
     route_start_street2 = fields.Char()
     route_start_city = fields.Char()
     route_start_zip = fields.Char()
-    route_start_state_id = fields.Many2one('res.country.state', string='State')
-    route_start_country_id = fields.Many2one('res.country', string='Country')
+    route_start_state_id = fields.Many2one('res.country.state')
+    route_start_country_id = fields.Many2one('res.country')
 
     route_end_street = fields.Char()
     route_end_street2 = fields.Char()
     route_end_city = fields.Char()
     route_end_zip = fields.Char()
-    route_end_state_id = fields.Many2one('res.country.state', string='State')
-    route_end_country_id = fields.Many2one('res.country', string='Country')
+    route_end_state_id = fields.Many2one('res.country.state')
+    route_end_country_id = fields.Many2one('res.country')
 
     truck_ids = fields.One2many('truck.detail', 'transport_order_id', string='Truck Details')
 
@@ -163,7 +162,6 @@ class TransportOrder(models.Model):
         selection=TRANSPORT_ORDER_STATES,
         string="Status",
         readonly=True, copy=False, index=True,
-        tracking=3,
         default='sent')
 
     price = fields.Float(string='Price')
