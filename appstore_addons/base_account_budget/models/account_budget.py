@@ -89,7 +89,6 @@ class Budget(models.Model):
         self.write({'state': 'cancel'})
 
     def action_budget_done(self):
-        print('Hello World')
         self.write({'state': 'done'})
 
 
