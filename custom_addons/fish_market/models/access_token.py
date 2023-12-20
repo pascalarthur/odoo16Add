@@ -5,7 +5,7 @@ class AccessToken(models.Model):
     _name = 'access.token'
     _description = 'Access Token'
 
-    partner_id = fields.Many2one('res.partner', string='Supplier', required=True)
+    partner_id = fields.Many2one('res.partner', string='Supplier', required=True, ondelete='cascade')
     expiry_date = fields.Datetime('Expiry Date', required=True)
     transport_order_id = fields.Many2one('transport.order', string='Transport Order')
     pricelist_id = fields.Many2one('product.pricelist', string='Pricelist')
