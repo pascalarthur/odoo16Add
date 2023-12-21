@@ -7,4 +7,3 @@ class InheritedModel(models.Model):
         return self.env['res.currency'].search([('name', '=', 'N$')], limit=1).id
 
     currency_id = fields.Many2one('res.currency', string='Currency', default=_default_currency)
-    quotation_management_id = fields.Many2one('quotation.management', string='Quotation Management')

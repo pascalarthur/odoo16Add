@@ -20,7 +20,7 @@ class TruckLoadLine(models.Model):
     _description = 'Truck Detail Line'
 
     truck_detail_id = fields.Many2one('truck.detail', string='Truck Detail', ondelete='cascade')
-    product_id = fields.Many2one('product.product', string='Product', required=True)
+    product_id = fields.Many2one('product.product', string='Product', required=True, ondelete='cascade')
     unit_price = fields.Float('Unit Price', default=0.0)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
@@ -43,9 +43,9 @@ class TruckDetail(models.Model):
         readonly=True, copy=False, index=True,
         default='offer')
 
-    meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
+    meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     partner_id = fields.Many2one('res.partner')
-    transport_order_id  = fields.Many2one('transport.order', string='Transport Order')
+    transport_order_id  = fields.Many2one('transport.order', string='Transport Order', ondelete='cascade')
 
     truck_number = fields.Char(string='Truck Number')
     horse_number = fields.Char(string='Horse Number')
