@@ -21,12 +21,19 @@ class SupplierBidOrderController(http.Controller):
             product_variants = http.request.env['product.product'].sudo().search([])
             attribute_values = http.request.env['product.template.attribute.value'].sudo().search([])
 
-            attribute_values_map = {attr_val.id: [attr_val.attribute_id.name, attr_val.name] for attr_val in attribute_values}
-            print(attribute_values_map)
+            attribute_values_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
+            product_variants_map = {attr_val.id: attr_val.attribute_id.name for attr_val in attribute_values}
+            unique_variants_ids = set(product_variants_map.values())
             # Assign variants to product templates -> Create str for variants
-            product_template_variants = defaultdict(dict)
+
+            product_template_variants = defaultdict(list)
+            product_template_variants['categories'] = defaultdict(list)
             for variant_id in product_variants:
-                product_template_variants[variant_id.product_tmpl_id.id][variant_id.id] = [attribute_values_map[int(idx)] for idx in variant_id.combination_indices.split(',')]
+                product_template_variants['product_template_id'].append(variant_id.product_tmpl_id.id)
+                product_template_variants['product_product_id'].append(variant_id.id)
+                for key in map(int, variant_id.combination_indices.split(',')):
+                    product_template_variants['categories'][product_variants_map[key]].append(attribute_values_map[key])
+                product_template_variants['product_product_str'].append("; ".join([f'{cat}: {lst[-1]}' for cat, lst in product_template_variants['categories'].items()]))
 
             addresses = [f'{token_record.partner_id.street}, {token_record.partner_id.city}, {token_record.partner_id.country_id.name}']
 
@@ -51,6 +58,7 @@ class SupplierBidOrderController(http.Controller):
         if self.check_token(token_record) is True:
             # Process product details
             product_template_ids = request.httprequest.form.getlist('product_id[]')
+            product_ids = request.httprequest.form.getlist('variant_id[]')
             product_quantities = request.httprequest.form.getlist('product_quantity[]')
             product_prices = request.httprequest.form.getlist('product_price[]')
 
@@ -62,15 +70,16 @@ class SupplierBidOrderController(http.Controller):
                     'pricelist_id': token_record.pricelist_id.id,
                     'partner_id': token_record.partner_id.id,
                     'product_tmpl_id': int(product_template_ids[i]),
+                    'product_id': int(product_ids[i]),
                     'compute_price': 'fixed',
-                    'applied_on': '1_product',
+                    'applied_on': '0_product_variant',
                     'fixed_price': float(product_prices[i]),
                     'min_quantity': float(product_quantities[i]),
                     'date_start': fields.Datetime.now(),
                 }
                 request.env['product.pricelist.item'].create(product_detail)
 
-            token_record.is_used = True
+            # token_record.is_used = True
 
             return "Form submitted successfully!"
         else:

@@ -11,6 +11,7 @@
                         <button string="Buy" class="oe_highlight" type="object" name="action_buy"/>
                     </header>
                     <field name="product_tmpl_id"/>
+                    <field name="product_id"/>
                     <field name="partner_id"/>
                     <field name="price"/>
                     <field name="min_quantity" colspan="4"/>
@@ -22,17 +23,39 @@
         </field>
     </record>
 
+    <record id="view_pricelist_filter_wvb" model="ir.ui.view">
+        <field name="name">product.pricelist.item.wvb.filter</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Walvisbay" name="filter_walvisbay" domain="[('pricelist_id.name', '=', 'WvB USD pricelist')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_pricelist_filter_zambia" model="ir.ui.view">
+        <field name="name">product.pricelist.item.zambia.filter</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Zambia" name="filter_zambia" domain="[('pricelist_id.name', '=', 'Zambia USD Pricelist')]"/>
+            </search>
+        </field>
+    </record>
+
     <record id="fish_prices_walvis_bay_action" model="ir.actions.act_window">
         <field name="name">Pricelist - Walvis Bay</field>
         <field name="res_model">product.pricelist.item</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[('pricelist_id.name', '=', 'WvB USD pricelist')]</field>
+        <field name="search_view_id" ref="view_pricelist_filter_wvb"/>
+        <field name="context">{'search_default_filter_walvisbay': 1}</field>
     </record>
 
     <record id="fish_prices_zambia_action" model="ir.actions.act_window">
         <field name="name">Pricelist - Zambia</field>
         <field name="res_model">product.pricelist.item</field>
         <field name="view_mode">tree,form</field>
-        <field name="domain">[('pricelist_id.name', '=', 'Zambia USD Pricelist')]</field>
+        <field name="search_view_id" ref="view_pricelist_filter_zambia"/>
+        <field name="context">{'search_default_filter_zambia': 1}</field>
     </record>
 </odoo>

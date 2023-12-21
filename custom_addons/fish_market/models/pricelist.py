@@ -55,9 +55,3 @@ class PriceCollectionItem(models.Model):
             'view_mode': 'tree,form',
             'target': 'current',
         }
-
-
-    def action_save(self):
-        return {
-            'type': 'ir.actions.act_window_close'
-        }
