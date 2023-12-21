@@ -5,7 +5,7 @@
             <menuitem id="fish_prices_walvis_bay_menu_action" action="fish_prices_walvis_bay_action"/>
             <menuitem id="fish_prices_zambia_menu_action" action="fish_prices_zambia_action"/>
             <menuitem id="menu_partners_config_1" sequence="30" name="Partners">
-                <menuitem id="Suplliers" action="action_custom_partner_supplier_form" sequence="10"/>
+                <menuitem id="Suplliers" action="action_custom_partner_supplier_form" sequence="10" name="Suplliers"/>
             </menuitem>
         </menuitem>
         <menuitem id="purchase_report_main" name="Reporting" sequence="99" groups="base.group_user">

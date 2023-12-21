@@ -1,4 +1,4 @@
-from odoo import models, fields
+from odoo import models, fields, exceptions
 from datetime import datetime
 
 
@@ -18,7 +18,7 @@ class PricelistWizard(models.TransientModel):
 
         my_company_email = self.env.user.company_id.email
         if not my_company_email:
-            raise Exception('Invalid or missing email address for the company.')
+            raise exceptions.UserError(f'Please specify a valid email address for company: {self.env.user.name}.')
 
         for partner_id in logistic_partner_ids:
             token_record = self.env['access.token'].create([{
@@ -29,7 +29,7 @@ class PricelistWizard(models.TransientModel):
 
             email_body = """
                 <p>Hello {partner_name},</p>
-                <p>We have a new route demand. Please fill in your price details by following the link below:</p>
+                <p>Do you have new prices or products. Please fill in your price details by following the link below:</p>
                 <a href="{token_url}">Submit Price</a>
             """.format(partner_name=partner_id.name, token_url=f'https://afromergeodoo.site/supplier_bid/{token_record.token}')
 

@@ -5,8 +5,8 @@
             <input type="hidden" name="token" t-att-value="token"/>
             <div id="product_details_section">
                 <label>Product Details:</label>
-                <div id="product_details_container"/>
-                <button type="button" onclick="addProductDetail()">Add Product</button>
+                <div id="product_templates_container"></div>
+                <button type="button" onclick="addProductTemplate()">Add Product</button>
             </div>
 
             <div>
@@ -23,7 +23,8 @@
 
         </form>
     <script type="text/javascript">
-        var productList = <t t-raw="json.dumps(products)"/>;
+        var productList = <t t-raw="json.dumps(product_templates)"/>;
+        var productVariantList = <t t-raw="json.dumps(product_template_variants)"/>;
         var addressList = <t t-raw="json.dumps(addresses)"/>;
 
         function populateAddressDropdown() {
@@ -34,34 +35,81 @@
             });
         }
 
-        // Call the function on page load
-        window.onload = function() {
-            populateAddressDropdown();
-            // Any other onload functions
-        };
+        function addProductTemplate() {
+            var container = document.getElementById('product_templates_container');
+            var productTemplateDetail = document.createElement('div');
+            productTemplateDetail.classList.add('product-template-detail');
 
-        function addProductDetail() {
-            var container = document.getElementById('product_details_container');
-            var productDetail = document.createElement('div');
-            productDetail.classList.add('product-detail');
+            var controlsContainer = document.createElement('div');
+            controlsContainer.classList.add('controls-container');
 
-            var selectHTML = `<select name="product_id[]">
-                                    <option value="">Select a product...</option>`;
+            var selectHTML = `<select class="product-select" name="product_id[]">
+                                <option value="">Select a product...</option>`;
             productList.forEach(function(product) {
                 selectHTML += `<option value="${product[0]}">${product[1]}</option>`;
             });
             selectHTML += `</select>`;
 
-            productDetail.innerHTML = selectHTML +
-                `<input type="number" name="product_quantity[]" placeholder="Quantity [kg]"/>
-                    <input type="number" name="product_price[]" placeholder="Unit Price [USD]"/>
-                    <button type="button" onclick="removeProductDetail(this)">Remove</button>`;
-            container.appendChild(productDetail);
+            controlsContainer.innerHTML = selectHTML +
+                `<button type="button" onclick="removeProductTemplate(this)">Remove Product</button>`;
+
+            var variantsContainer = document.createElement('div');
+            variantsContainer.classList.add('variants-container');
+
+            productTemplateDetail.appendChild(controlsContainer);
+            productTemplateDetail.appendChild(variantsContainer);
+            container.appendChild(productTemplateDetail);
+
+            // Add button to add variants
+            var addVariantButton = document.createElement('button');
+            addVariantButton.type = 'button';
+            addVariantButton.textContent = 'Add Variant';
+            addVariantButton.onclick = function() { addVariantCombination(controlsContainer.querySelector('.product-select')) };
+            productTemplateDetail.appendChild(addVariantButton);
         }
 
-        function removeProductDetail(element) {
-            element.parentNode.remove();
+        function addVariantCombination(productSelect) {
+            var templateId = productSelect.value;
+            if (!templateId) return; // Exit if no product template is selected
+
+            var productTemplateDetail = productSelect.closest('.product-template-detail');
+            var variantsContainer = productTemplateDetail.querySelector('.variants-container');
+
+            var variantCombination = document.createElement('div');
+            variantCombination.classList.add('variant-combination');
+
+            var variantSelectHTML = `<select name="product_variant_id[]">
+                                        <option value="">Select a variant...</option>`;
+            Object.keys(productVariantList[templateId] || {}).forEach(function(key) {
+                variantSelectHTML += `<option value="${key}">${productVariantList[templateId][key].map(attr => attr.join(' ')).join(', ')}</option>`;
+            });
+            variantSelectHTML += `</select>`;
+
+            // Add input fields for quantity and price
+            var quantityInputHTML = `<input type="number" name="product_quantity[]" placeholder="Quantity [kg]" style="margin-left: 10px;"/>`;
+            var priceInputHTML = `<input type="number" name="product_price[]" placeholder="Unit Price [USD]" style="margin-left: 10px;"/>`;
+
+            variantCombination.innerHTML = variantSelectHTML + quantityInputHTML + priceInputHTML +
+                `<button type="button" onclick="removeVariantCombination(this)" style="margin-left: 10px;">Remove Variant</button>`;
+
+            variantsContainer.appendChild(variantCombination);
         }
+
+
+
+        function removeVariantCombination(button) {
+            button.parentNode.remove();
+        }
+
+        function removeProductTemplate(button) {
+            button.parentNode.remove();
+        }
+
+        // Call these functions to initialize the form
+        window.onload = function() {
+            populateAddressDropdown(); // Populate the address dropdown on load
+            addProductTemplate(); // Add at least one product template dropdown on load
+        };
     </script>
     <style>
         /* Existing styles */
@@ -76,6 +124,35 @@
         }
         #product_details_section {
             margin-top: 20px;
+        }
+        .variant-combination {
+            display: flex; /* Use flexbox to layout children inline */
+            align-items: center; /* Align children vertically */
+            margin-bottom: 10px; /* Margin at the bottom of each variant combination */
+        }
+
+        .variant-combination select {
+            flex-grow: 1; /* Dropdown takes up the available space */
+            margin-right: 10px; /* Margin between the dropdown and the button */
+        }
+
+        .variant-combination button {
+            white-space: nowrap; /* Prevent the button text from wrapping */
+        }
+
+        .controls-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .controls-container select {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        .controls-container button {
+            white-space: nowrap;
         }
     </style>
     </template>

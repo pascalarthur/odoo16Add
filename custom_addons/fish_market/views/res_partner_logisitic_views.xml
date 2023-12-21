@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="view_partner_logistic_tree" model="ir.ui.view">
+        <field name="name">res.partner.tree.form.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
+        </field>
+    </record>
     <record id="view_res_partner_filter_logistic" model="ir.ui.view">
         <field name="name">res.partner.logistic.filter</field>
         <field name="model">res.partner</field>
@@ -14,6 +24,7 @@
         <field name="name">Logisticians</field>
         <field name="res_model">res.partner</field>
         <field name="view_mode">tree,kanban,form</field>
+        <field name="view_id" ref="view_partner_logistic_tree"/>
         <field name="search_view_id" ref="view_res_partner_filter_logistic"/>
         <field name="context">{'search_default_filter_logistic': 1}</field>
     </record>

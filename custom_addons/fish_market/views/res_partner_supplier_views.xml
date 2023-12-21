@@ -10,6 +10,9 @@
                     <button string="Email - Bid" class="oe_highlight" type="object" name="send_action_email_bid_suppliers"/>
                 </header>
             </xpath>
+            <xpath expr="//field[@name='category_id']" position="attributes">
+                <attribute name="optional">show</attribute>
+            </xpath>
         </field>
     </record>
 
@@ -24,7 +27,7 @@
     </record>
 
     <record id="action_custom_partner_supplier_form" model="ir.actions.act_window">
-        <field name="name">Suppliers</field>
+        <field name="name">Suppliers (Tag: "Supplier")</field>
         <field name="res_model">res.partner</field>
         <field name="view_mode">tree,kanban,form</field>
         <field name="view_id" ref="view_partner_supplier_tree"/>

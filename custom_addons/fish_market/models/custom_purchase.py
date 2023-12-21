@@ -3,8 +3,6 @@ from odoo import fields, models
 class InheritedModel(models.Model):
     _inherit = "purchase.order"
 
-    new_field = fields.Char(string="New Field")
-
     def _default_currency(self):
         return self.env['res.currency'].search([('name', '=', 'N$')], limit=1).id
 
