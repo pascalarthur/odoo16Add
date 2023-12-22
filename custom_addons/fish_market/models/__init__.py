@@ -6,7 +6,8 @@ from . import custom_partner
 from . import custom_purchase
 from . import product
 from . import stock
-from . import sale
+from . import sale_order
+from . import account_move
 from . import sale_meta
 from . import access_token
 from . import transport_order

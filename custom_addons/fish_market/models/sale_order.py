@@ -36,3 +36,22 @@ class SaleOrder(models.Model):
         }
         msg = self.env['mail.compose.message'].create(ctx)
         msg.action_send_mail()
+
+    @api.model
+    def _create_invoices(self, grouped=False, final=False):
+        # Call the super method to get the invoices created by the original method
+        invoices = super(SaleOrder, self)._create_invoices(grouped, final)
+
+        # Iterate over the created invoices
+        for invoice in invoices:
+            # Set custom fields on each invoice
+            invoice.write({
+                'truck_number': self.truck_number,
+                'horse_number': self.horse_number,
+                'container_number': self.container_number,
+                'seal_number': self.seal_number,
+                'driver_name': self.driver_name,
+                'telephone_number': self.telephone_number,
+            })
+
+        return invoices

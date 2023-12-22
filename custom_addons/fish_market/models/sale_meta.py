@@ -119,6 +119,9 @@ class MetaSaleOrder(models.Model):
         # Step 3: Proceed with new allocations
         for order_line in self.order_line_ids:
             product = order_line.product_id
+            if product.weight == 0.0:
+                raise exceptions.UserError(f"Please specify a weight for product: {product.display_name}")
+
             location_id = order_line.location_id
 
             required_quantity = order_line.quantity # Assuming 'quantity' is the correct field

@@ -29,12 +29,12 @@
         'views/route_wizard.xml',
         'views/pricelist.xml',
         'views/res_partner_supplier_views.xml',
-        'views/custom_purchase_view.xml',
         'report/purchase_report_views.xml',
 
         'views/truck_view.xml',
         'views/sale_meta_view.xml',
         'views/sale_order_view.xml',
+        'views/account_move_view.xml',
 
         'views/menus.xml',
     ],
