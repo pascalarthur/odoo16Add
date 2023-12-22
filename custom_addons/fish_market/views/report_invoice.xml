@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="report_invoice_document_custom" inherit_id="account.report_invoice_document">
-        <xpath expr="//div[@id='right-elements']" position="after">
-            <!-- <t t-set="pos_orders" t-value="o.sudo().pos_order_ids"/>
-            <t t-set="pos_orders" t-value="o.sudo().pos_order_ids"/>
-            <t t-set="pos_orders" t-value="o.sudo().pos_order_ids"/>
-            <t t-set="pos_orders" t-value="o.sudo().pos_order_ids"/> -->
-        </xpath>
-    </template>
+    <data>
+        <template id="invoice_cop" inherit_id="account.report_invoice_document">
+            <xpath expr="//div[hasclass('page')]" position="after">
+                <table>
+                    <tr t-if="o.truck_number">
+                        <td style="padding-right: 10px;"><strong>Truck Number:</strong></td>
+                        <td><span t-field="o.truck_number"/></td>
+                    </tr>
+                    <tr t-if="o.horse_number">
+                        <td style="padding-right: 10px;"><strong>Horse Number:</strong></td>
+                        <td><span t-field="o.horse_number"/></td>
+                    </tr>
+                    <tr t-if="o.container_number">
+                        <td style="padding-right: 10px;"><strong>Container Number:</strong></td>
+                        <td><span t-field="o.container_number"/></td>
+                    </tr>
+                    <tr t-if="o.seal_number">
+                        <td style="padding-right: 10px;"><strong>Seal Number:</strong></td>
+                        <td><span t-field="o.seal_number"/></td>
+                    </tr>
+                </table>
+            </xpath>
+        </template>
+    </data>
 </odoo>
