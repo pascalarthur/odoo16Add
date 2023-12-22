@@ -215,6 +215,12 @@ class MetaSaleOrder(models.Model):
                         'meta_sale_order_id': self.id,
                         'partner_id': self.partner_id.id,
                         'truck_detail_id': truck.id,
+                        'truck_number': truck.truck_number,
+                        'horse_number': truck.horse_number,
+                        'container_number': truck.container_number,
+                        'seal_number': truck.seal_number,
+                        'driver_name': truck.driver_name,
+                        'telephone_number': truck.telephone_number,
                         # Add other necessary fields and values
                     }
                     sale_order = SaleOrder.create(sale_order_vals)
