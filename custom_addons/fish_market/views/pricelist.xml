@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_partner_logistic_tree" model="ir.ui.view">
+    <record id="view_product_pricelist_item_tree_tree" model="ir.ui.view">
         <field name="name">product.pricelist.item.tree.inherit</field>
         <field name="model">product.pricelist.item</field>
         <field name="inherit_id" ref="product.product_pricelist_item_tree_view"/>
