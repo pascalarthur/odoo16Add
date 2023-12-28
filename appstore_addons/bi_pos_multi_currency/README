@@ -1,0 +1,6 @@
+
+Version 16.0.0.1 :
+		- Change the char field name in pos payment and account statement line.
+
+Version 16.0.0.2 : (01/09/2023)
+		- change field name in xml side as per declare in py for pos payment.

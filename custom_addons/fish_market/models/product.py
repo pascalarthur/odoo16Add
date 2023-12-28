@@ -10,4 +10,5 @@ class ProductTemplate(models.Model):
     type = fields.Selection(selection_add=[
         ('product', 'Storable Product')
     ], ondelete={'product': 'set consu'}, default='product')
-    
+
+    box_weight = fields.Float(string='Box Weight [kg]')
