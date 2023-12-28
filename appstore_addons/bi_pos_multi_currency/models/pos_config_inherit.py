@@ -51,7 +51,7 @@ class CurrencyInherit(models.Model):
 		# the subquery selects the last rate before 'date' for the given currency/company
 		currency_rates = (self + to_currency)._get_rates(self.env.company, date)
 		for currency in self:
-			currency.rate = currency_rates.get(to_currency.id) / (currency_rates.get(currency.id) or 1.0)
+			currency.rate = currency_rates.get(to_currency.id) * (currency_rates.get(currency.id) or 1.0)
 			currency.inverse_rate = 1 / currency.rate
 			if currency != company.currency_id:
 				currency.rate_string = '1 %s = %.6f %s' % (to_currency.name, currency.rate, currency.name)
