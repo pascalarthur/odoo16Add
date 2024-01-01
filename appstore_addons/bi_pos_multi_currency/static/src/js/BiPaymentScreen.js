@@ -32,7 +32,7 @@ patch(PaymentScreen.prototype, {
 		$(".js_multi").toggleClass("highlight");
 		if(this.mobile_multi == true){
 			$('#details_mobile').hide()
-			
+
 			this.mobile_multi = false
 		}else{
 			$('#details_mobile').show()

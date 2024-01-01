@@ -35,14 +35,7 @@
 }
 
 input:checked + .slider {
-  background-color: #2196F3;<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <template id="button_toggle" inherit_id="point_of_sale.assets" name="button add">
-        <xpath expr="." position="inside">
-            <link rel="stylesheet" href="/bi_pos_currency_rate/static/src/css/button.css"/>
-        </xpath>
-    </template>
-</odoo>
+  background-color: #2196F3;
 }
 
 input:focus + .slider {

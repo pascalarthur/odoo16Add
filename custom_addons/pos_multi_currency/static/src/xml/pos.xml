@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="add_currency_conversation">
+	<t t-name="CustomProductCard" t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
+		<xpath expr="//span[contains(@class, 'price-tag')]" position="after">
+			<t t-if="props.pricesInOtherCurrencies">
+				<t t-foreach="props.pricesInOtherCurrencies" t-as="price" t-key="price.id">
+					<span class="additional-price-tag text-primary py-1 fw-bolder" t-esc="price.formattedPrice"/>
+				</t>
+			</t>
+		</xpath>
+	</t>
+
+	<t t-name="CustomProductsWidget" t-inherit="point_of_sale.ProductsWidget" t-inherit-mode="extension">
+		<xpath expr="//div[hasclass('product-list-container')]" position="replace">
+			<div class="product-list-container flex-grow-1 overflow-y-auto">
+                <div t-if="productsToDisplay.length != 0 and pos.posHasValidProduct()" t-attf-class="product-list {{this.pos.productListViewMode}} p-1">
+                    <t t-foreach="productsToDisplay" t-as="product" t-key="product.id">
+                        <ProductCard
+                            class="pos.productViewMode"
+                            name="product.display_name"
+                            productId="product.id"
+                            price="product.getFormattedUnitPrice()"
+                            imageUrl="product.getImageUrl()"
+                            onClick="() =>this.pos.addProductToCurrentOrder(product)"
+                            productInfo="true"
+                            onProductInfoClick="() => this.onProductInfoClick(product)"
+							pricesInOtherCurrencies="product.getPricesInOtherCurrencies()"
+                        />
+                    </t>
+                </div>
+				<div t-if="searchWord" class="search-more-button d-flex justify-content-center">
+                    <button class="btn btn-primary btn-lg" t-on-click="onPressEnterKey">Search more</button>
+                </div>
+                <div class="portal search-database-button no-results-message" t-att-class="{ 'd-none':  !shouldShowButton }"></div>
+            </div>
+		</xpath>
+	</t>
+</templates>

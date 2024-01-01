@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="add_currency_conversation">
 
-	
+
 	<t t-name="PaymentScreen" t-inherit="point_of_sale.PaymentScreenTop" t-inherit-mode="extension" owl="1">
 		<xpath expr="//h2" position="after">
 			<t t-if = "pos.config.multi_currency">
 				<label class="switch">
 					<input type="checkbox" id="cur-switch" class="cur-switch" name="cur-switch" tabindex="0" checked="checked"/>
-					<span class="slider round" 
+					<span class="slider round"
 						t-on-click="() => this._UpdateDetails()"
 						></span>
 				</label>
@@ -42,7 +42,7 @@
 						</div>
 						<br/>
 						<label class="container">
-							Payment amount in <span class="currency_name" /> 
+							Payment amount in <span class="currency_name" />
 							<input type="text" class="edit-amount" name="pos_amount" id="pos_amount" style="width: 95%;    margin-top: 5px;"/>
 						</label>
 					</div>
@@ -60,7 +60,7 @@
 							</div>
 						</t>
 						<div>
-							<button class='button-getamount' data-action="" style="border-radius:5px; font-size:15px; background-color: #43996E;color: white; margin-left: 18px;" 
+							<button class='button-getamount' data-action="" style="border-radius:5px; font-size:15px; background-color: #43996E;color: white; margin-left: 18px;"
 								t-on-click="() => this._UpdateAmountt()"
 								>
 								Update Amount
@@ -105,12 +105,12 @@
 						</div>
 						<br/>
 						<div class="container">
-							Payment amount in <span class="currency_name" /> 
+							Payment amount in <span class="currency_name" />
 							<input type="text" class="edit-amount" name="pos_amount" id="pos_amount"/>
 						</div>
 						<br/>
 						<div>
-							<button class='button-getamount' data-action="" style="border-radius:5px; font-size:15px; background-color: #43996E;color: white;" 
+							<button class='button-getamount' data-action="" style="border-radius:5px; font-size:15px; background-color: #43996E;color: white;"
 								t-on-click="() => this._UpdateAmountt()"
 								>
 								Update Amount
@@ -161,5 +161,4 @@
 			<br/>
 		</xpath>
 	</t>
-
 </templates>

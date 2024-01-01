@@ -10,16 +10,14 @@
     # data files always loaded at installation
     'data': [
         'security/ir.model.access.csv',
-
-        'views/pos_session_view.xml',
     ],
 
     'installable': True,
 
     'assets': {
-        'web.assets_backend': [
-            'pos_multi_currency/static/src/views/**/*',
-            'pos_multi_currency/static/src/scss/*.scss',
+        'point_of_sale._assets_pos': [
+            'pos_multi_currency/static/src/js/pos_data.js',
+            'pos_multi_currency/static/src/xml/**/*',
         ],
     },
     'license': 'LGPL-3',
