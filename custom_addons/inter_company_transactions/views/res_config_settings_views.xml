@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.inter.company.custom</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='companies']" position="before">
+                <block title="Inter-Company Transactions" id="custom_inter_company_block">
+                    <setting id="custom_inter_company" string="Enable Inter-Company Transactions" help="Automatically generate counterpart documents for orders/invoices between companies">
+                        <field name="f"/>
+                    </setting>
+                </block>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

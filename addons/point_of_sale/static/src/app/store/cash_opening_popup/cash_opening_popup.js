@@ -46,6 +46,7 @@ export class CashOpeningPopup extends AbstractAwaitablePopup {
             moneyDetails: this.moneyDetails,
             action: action,
         });
+        console.log('openDetailsPopup', confirmed, payload);
         if (confirmed) {
             const { total, moneyDetails, moneyDetailsNotes } = payload;
             this.state.openingCash = this.env.utils.formatCurrency(total, false);

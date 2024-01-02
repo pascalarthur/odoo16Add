@@ -2,7 +2,7 @@
     'name': "Fish_Market",
     'version': '1.0',
     'depends': ['base', 'purchase', 'web', 'fleet', 'stock', 'sale_management'],
-    'author': "Author Name",
+    'author': "Ludwig Gräf",
     'category': 'Category',
     'description': """
     Description text

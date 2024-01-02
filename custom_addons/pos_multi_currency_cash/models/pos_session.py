@@ -1,6 +1,6 @@
 from typing import List
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError, UserError
 
 class PosOrder(models.Model):
     _inherit = 'pos.order'
@@ -58,5 +58,46 @@ class PosSession(models.Model):
             alternative_cash_journal_ids = session.payment_method_ids.filtered('is_cash_count')[1:].mapped('journal_id')
             session.alternative_cash_journal_ids = alternative_cash_journal_ids
 
-    def set_cashbox_pos_multi_currency(self, cashbox_value: List[int]):
-        print(cashbox_value)
+    def set_cashbox_pos_multi_currency(self, cashbox_values: List[dict]):
+        for cashbox in cashbox_values:
+            print(cashbox)
+            openingCash = float(cashbox['openingCash'])
+            self.sudo()._post_statement_difference_multi_currency(openingCash, True, cashbox['journal_id'])
+
+    def _post_statement_difference_multi_currency(self, amount, is_opening, journal_id):
+        if amount:
+            journal_id = self.env['account.journal'].browse(journal_id)
+
+            if self.config_id.cash_control:
+                st_line_vals = {
+                    'journal_id': journal_id.id,
+                    'amount': amount,
+                    'date': self.statement_line_ids.sorted()[-1:].date or fields.Date.context_today(self),
+                    'pos_session_id': self.id,
+                }
+
+            if amount < 0.0:
+                if not journal_id.loss_account_id:
+                    raise UserError(
+                        _('Please go on the %s journal and define a Loss Account. This account will be used to record cash difference.',
+                          journal_id.name))
+
+                st_line_vals['payment_ref'] = _("Cash difference observed during the counting (Loss)") + (_(' - opening') if is_opening else _(' - closing'))
+                st_line_vals['counterpart_account_id'] = journal_id.loss_account_id.id
+            else:
+                # self.cash_register_difference  > 0.0
+                if not journal_id.profit_account_id:
+                    raise UserError(
+                        _('Please go on the %s journal and define a Profit Account. This account will be used to record cash difference.',
+                          journal_id.name))
+
+                st_line_vals['payment_ref'] = _("Cash difference observed during the counting (Profit)") + (_(' - opening') if is_opening else _(' - closing'))
+                st_line_vals['counterpart_account_id'] = journal_id.profit_account_id.id
+
+            self.env['account.bank.statement.line'].create(st_line_vals)
+
+    def get_opening_control_data(self):
+        return {
+            'journal_ids': self.payment_method_ids.mapped('journal_id').mapped('id'),
+            'currency_ids': self.payment_method_ids.mapped('journal_id').mapped('currency_id').mapped('id'),
+        }

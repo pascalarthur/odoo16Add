@@ -95,4 +95,34 @@
             </div>
 		</xpath>
 	</t>
+
+    <t t-name="CustomCashOpeningPopup" t-inherit="point_of_sale.CashOpeningPopup" t-inherit-mode="extension">
+		<xpath expr="//div[contains(@class, 'cash-input-sub-section')]" position="after">
+            <table class="text-start">
+                <thead>
+                    <tr class="text-dark">
+                        <th>Payment Method</th>
+                        <th>Payment Method</th>
+                        <th>Payment Method</th>
+                        <th>Payment Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="alternative_currency_states" t-as="alt_state" t-key="alt_state.id">
+                        <td t-esc="alt_state.currency_id"/>
+                        <td t-esc="alt_state.openingCash"/>
+                        <td>
+                            <Input tModel="[alt_state, 'openingCash']" isValid.bind="env.utils.isValidFloat"/>
+                        </td>
+                        <td>
+                            <div class="button icon btn btn-secondary" t-on-click="openDetailsPopup">
+                                <i class="fa fa-money fa-2x" role="img" title="Open the money details popup"/>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+		</xpath>
+	</t>
+
 </templates>
