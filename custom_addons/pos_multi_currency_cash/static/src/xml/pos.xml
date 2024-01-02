@@ -68,8 +68,8 @@
                                                 <i class="fa fa-money fa-2x" role="img" title="Open the money details popup"/>
                                             </div>
                                         </td>
-                                        <td t-esc="env.utils.formatCurrency(getDifference(props.default_cash_details.id))"
-                                            t-att-class="{'warning text-danger fw-bolder': !env.utils.floatIsZero(getDifference(props.default_cash_details.id))}"/>
+                                        <td t-esc="env.utils.formatCurrency(getDifference(pm.id))"
+                                            t-att-class="{'warning text-danger fw-bolder': !env.utils.floatIsZero(getDifference(pm.id))}"/>
                                     </t>
                                 </tr>
                             </tbody>
@@ -78,15 +78,17 @@
                     </t>
                     <tbody t-if="props.other_payment_methods.length > 0">
                         <tr t-foreach="props.other_payment_methods" t-as="pm" t-key="pm.id">
-                            <td t-esc="pm.name"/>
-                            <td t-esc="env.utils.formatCurrency(pm.amount)"/>
-                            <t t-set="_showDiff" t-value="pm.type === 'bank' and pm.number !== 0" />
-                            <td t-if="_showDiff">
-                                <Input tModel="[state.payments[pm.id], 'counted']"
-                                    isValid.bind="env.utils.isValidFloat" />
-                            </td>
-                            <td t-if="_showDiff" t-esc="env.utils.formatCurrency(getDifference(pm.id))"
-                                t-att-class="{'warning text-danger fw-bolder': getDifference(pm.id)}"/>
+                            <t t-if="pm.type != 'cash'">
+                                <td t-esc="pm.name"/>
+                                <td t-esc="env.utils.formatCurrency(pm.amount)"/>
+                                <t t-set="_showDiff" t-value="pm.type === 'bank' and pm.number !== 0" />
+                                <td t-if="_showDiff">
+                                    <Input tModel="[state.payments[pm.id], 'counted']"
+                                        isValid.bind="env.utils.isValidFloat" />
+                                </td>
+                                <td t-if="_showDiff" t-esc="env.utils.formatCurrency(getDifference(pm.id))"
+                                    t-att-class="{'warning text-danger fw-bolder': getDifference(pm.id)}"/>
+                            </t>
                         </tr>
                     </tbody>
                 </table>

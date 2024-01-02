@@ -1,15 +1,12 @@
 /** @odoo-module */
 
 import { ClosePosPopup } from "@point_of_sale/app/navbar/closing_popup/closing_popup";
+import { CashOpeningPopup } from "@point_of_sale/app/store/cash_opening_popup/cash_opening_popup";
 import { patch } from "@web/core/utils/patch";
+import { useState } from "@odoo/owl";
 
 
 patch(ClosePosPopup.prototype, {
-	setup() {
-		super.setup();
-		this.alternative_currencies = this.getPricesInOtherCurrencies();
-	},
-
     //@override
 	getInitialState() {
 		const initialState = super.getInitialState();
@@ -24,23 +21,38 @@ patch(ClosePosPopup.prototype, {
 		console.log(initialState)
         return initialState;
     },
+});
 
-	getPricesInOtherCurrencies() {
-		let alternative_currencies = [];
-		const currencyId = this.pos.currency;
-		const currencies = this.pos.poscurrency;
+patch(CashOpeningPopup.prototype, {
+	setup() {
+		super.setup();
 
-		console.log(this.pos);
-		console.log(this.props.other_payment_methods);
+		let states = this.get_alternative_currency_states();
+		this.alternative_currency_states = useState(states);
+	},
 
-		currencies.forEach(currency => {
-			if (currency.id !== currencyId.id) { // Skip the base currency
-				alternative_currencies.push({
-					id: currency.id,
-					name: currency.name
+	get_alternative_currency_states() {
+		let states = {};
+		this.pos.poscurrency.forEach(currency => {
+			if (currency.id != this.pos.currency.id) {
+				states[currency.id] = useState({
+					notes: "",
+					openingCash: 0.0
 				});
 			}
+
 		});
-		return alternative_currencies;
-    },
+		return states;
+	},
+
+    //@override
+	async confirm() {
+        this.pos.pos_session.state = "opened";
+		console.log(this.alternative_currency_states)
+        this.orm.call("pos.session", "set_cashbox_pos_multi_currency", [
+            this.pos.pos_session.id,
+			this.alternative_currency_states,
+        ]);
+        super.confirm();
+    }
 });
