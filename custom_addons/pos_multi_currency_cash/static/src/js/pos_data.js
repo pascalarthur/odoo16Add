@@ -44,7 +44,7 @@ patch(CashOpeningPopup.prototype, {
 		let states = [];
 
 		this.props.other_payment_methods.forEach(pm => {
-			if (pm.currency_id != this.pos.currency.id) {
+			if (pm.type === 'cash' && pm.currency_id != this.pos.currency.id) {
 				states.push({
 					id: pm.id,
 					pm_id: pm.id,
