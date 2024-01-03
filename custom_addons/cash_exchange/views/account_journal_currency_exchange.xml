@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Create a new form view for account.journal.currency.exchange -->
+    <record id="view_account_journal_currency_exchange_form" model="ir.ui.view">
+        <field name="name">account.journal.currency.exchange.form</field>
+        <field name="model">account.journal.currency.exchange</field>
+        <field name="arch" type="xml">
+            <form>
+                <!-- Define the fields you want to display -->
+                <header>
+                    <button type="object" name="action_confirm" class="btn btn-primary">Confirm</button>
+                    <button type="object" name="action_done" class="btn btn-primary">Done</button>
+                    <button type="object" name="action_cancel" class="btn btn-primary">Cancel</button>
+
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <group>
+                    <field name="location_id"/>
+                    <field name="exchange_partner_id"/>
+                    <field name="journal_id"/>
+                    <field name="destination_journal_id"/>
+                    <field name="amount"/>
+                    <field name="exchange_rate"/>
+                    <field name="currency_id"/>
+                    <field name="destination_currency_id"/>
+                    <field name="date"/>
+                    <field name="note"/>
+                    <field name="account_move_line_id"/>
+                    <field name="account_move_line_destination_id"/>
+                    <field name="account_move_id"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_account_journal_currency_exchange_tree" model="ir.ui.view">
+        <field name="name">account.journal.currency.exchange.tree</field>
+        <field name="model">account.journal.currency.exchange</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="location_id"/>
+                <field name="exchange_partner_id"/>
+                <field name="journal_id"/>
+                <field name="destination_journal_id"/>
+                <field name="amount"/>
+                <field name="exchange_rate"/>
+                <field name="currency_id"/>
+                <field name="destination_currency_id"/>
+                <field name="date"/>
+                <field name="note"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_account_journal_currency_exchange_tree" model="ir.actions.act_window">
+        <field name="name">Exchange Transactions</field>
+        <field name="res_model">account.journal.currency.exchange</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

@@ -60,7 +60,6 @@ class PosSession(models.Model):
 
     def set_cashbox_pos_multi_currency(self, cashbox_values: List[dict]):
         for cashbox in cashbox_values:
-            print(cashbox)
             openingCash = float(cashbox['openingCash'])
             self.sudo()._post_statement_difference_multi_currency(openingCash, True, cashbox['journal_id'])
 
@@ -96,8 +95,60 @@ class PosSession(models.Model):
 
             self.env['account.bank.statement.line'].create(st_line_vals)
 
+    @api.depends('payment_method_ids', 'order_ids', 'cash_register_balance_start')
+    def _compute_cash_balance(self):
+        for session in self:
+            cash_payment_method = session.payment_method_ids.filtered('is_cash_count')[:1]
+            if cash_payment_method:
+                total_cash_payment = 0.0
+                last_session = session.search([('config_id', '=', session.config_id.id), ('id', '<', session.id)], limit=1)
+                result = self.env['pos.payment']._read_group([('session_id', '=', session.id), ('payment_method_id', '=', cash_payment_method.id)], aggregates=['amount:sum'])
+                total_cash_payment = result[0][0] or 0.0
+                if session.state == 'closed':
+                    session.cash_register_total_entry_encoding = session.cash_real_transaction + total_cash_payment
+                else:
+                    session.cash_register_total_entry_encoding = sum(session.statement_line_ids.filtered(lambda pm: pm.journal_id == cash_payment_method.journal_id).mapped('amount')) + total_cash_payment
+
+                session.cash_register_balance_end = last_session.cash_register_balance_end_real + session.cash_register_total_entry_encoding
+                session.cash_register_difference = session.cash_register_balance_end_real - session.cash_register_balance_end
+                print('_compute_cash_balance 2', session.cash_register_balance_end, session.cash_register_difference)
+            else:
+                session.cash_register_total_entry_encoding = 0.0
+                session.cash_register_balance_end = 0.0
+                session.cash_register_difference = 0.0
+
     def get_opening_control_data(self):
-        return {
-            'journal_ids': self.payment_method_ids.mapped('journal_id').mapped('id'),
-            'currency_ids': self.payment_method_ids.mapped('journal_id').mapped('currency_id').mapped('id'),
+        cash_payment_method_ids = self.payment_method_ids.filtered(lambda pm: pm.type == 'cash')
+        default_cash_payment_method_id = cash_payment_method_ids[0] if cash_payment_method_ids else None
+        other_payment_method_ids = self.payment_method_ids - default_cash_payment_method_id if default_cash_payment_method_id else self.payment_method_ids
+
+        return {'other_payment_methods': [{
+                'name': pm.name,
+                'journal_id': pm.journal_id.id,
+                'currency_id': pm.journal_id.currency_id.id,
+                'currency_name': pm.journal_id.currency_id.name,
+
+                'id': pm.id,
+                'type': pm.type,
+            } for pm in other_payment_method_ids],
         }
+
+    def get_closing_control_data(self):
+        closing_control_data = super(PosSession, self).get_closing_control_data()
+        orders = self._get_closed_orders()
+        payments = orders.payment_ids.filtered(lambda p: p.payment_method_id.type != "pay_later")
+        cash_payment_method_ids = self.payment_method_ids.filtered(lambda pm: pm.type == 'cash')
+        default_cash_payment_method_id = cash_payment_method_ids[0] if cash_payment_method_ids else None
+        total_default_cash_payment_amount = sum(payments.filtered(lambda p: p.payment_method_id == default_cash_payment_method_id).mapped('amount')) if default_cash_payment_method_id else 0
+        other_payment_method_ids = self.payment_method_ids - default_cash_payment_method_id if default_cash_payment_method_id else self.payment_method_ids
+
+        last_session = self.search([('config_id', '=', self.config_id.id), ('id', '!=', self.id)], limit=1)
+
+        closing_control_data['default_cash_details']['amount'] = last_session.cash_register_balance_end_real + \
+            total_default_cash_payment_amount + \
+                sum(self.sudo().statement_line_ids.filtered(lambda p: p.journal_id == default_cash_payment_method_id.journal_id).mapped('amount'))
+
+        for ii, pm in enumerate(other_payment_method_ids):
+            closing_control_data['other_payment_methods'][ii]['amount'] += sum(self.sudo().statement_line_ids.filtered(lambda p: p.journal_id == pm.journal_id).mapped('amount'))
+
+        return closing_control_data

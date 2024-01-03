@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="cash_exchange_menu_root" name="Exchange">
+        <menuitem id="action_cash_dasboard_menu" action="action_cash_dasboard"/>
+        <menuitem id="action_cash_exchange_tree_menu" action="action_account_journal_currency_exchange_tree"/>
+    </menuitem>
+</odoo>

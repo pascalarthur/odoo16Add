@@ -14,6 +14,7 @@ patch(ClosePosPopup.prototype, {
 
 		this.props.other_payment_methods.forEach((pm) => {
             if (pm.type === "cash") {
+				console.log(pm.id);
                 initialState.payments[pm.id] = {
                     counted: this.env.utils.formatCurrency(pm.amount, false),
                 };
@@ -25,31 +26,30 @@ patch(ClosePosPopup.prototype, {
 });
 
 patch(CashOpeningPopup.prototype, {
-	props: ['journal_ids', 'currency_ids'],
+	props: ['other_payment_methods'],
 
 	setup() {
 		super.setup();
 
+		console.log(this.props.other_payment_methods)
 		this.alternative_currency_states = useState(this.get_alternative_currency_states());
 	},
 
 	get_alternative_currency_states() {
 		let states = [];
 
-		for (const [ii, pm_id] of this.pos.pos_session.payment_method_ids.entries()) {
-			let journal_id = this.props.journal_ids[ii];
-			let currency_id = this.props.currency_ids[ii];
-
-			if (currency_id != this.pos.currency.id) {
+		this.props.other_payment_methods.forEach(pm => {
+			if (pm.currency_id != this.pos.currency.id) {
 				states.push({
-					id: pm_id,
-					pm_id: pm_id,
+					id: pm.id,
+					pm_id: pm.id,
 					openingCash: this.env.utils.formatCurrency(0, false),
-					currency_id: currency_id,
-					journal_id: journal_id,
+					currency_id: pm.currency_id,
+					currency_name: pm.currency_name,
+					journal_id: pm.journal_id,
 				});
 			}
-		}
+		})
 		return states;
 	},
 
@@ -61,7 +61,7 @@ patch(CashOpeningPopup.prototype, {
 			this.alternative_currency_states,
         ]);
         super.confirm();
-    }
+    },
 });
 
 patch(PosStore.prototype, {
@@ -76,8 +76,11 @@ patch(PosStore.prototype, {
 		if (this.shouldShowCashControl()) {
 			const info = await this.getOpeningPosInfo();
 			this.popup.add(CashOpeningPopup, {...info, keepBehind: true });
-			console.log(this.popup);
 		}
-	}
+	},
+
+	checkState() {
+		console.log(this.popup);
+	},
 });
 

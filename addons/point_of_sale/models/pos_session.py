@@ -127,6 +127,7 @@ class PosSession(models.Model):
                 session.cash_register_balance_end = 0.0
                 session.cash_register_difference = 0.0
 
+
     @api.depends('order_ids.payment_ids.amount')
     def _compute_total_payments_amount(self):
         result = self.env['pos.payment']._read_group([('session_id', 'in', self.ids)], ['session_id'], ['amount:sum'])
@@ -477,7 +478,6 @@ class PosSession(models.Model):
             raise UserError(_("There is no cash register in this session."))
 
         self.cash_register_balance_end_real = counted_cash
-
         return {'successful': True}
 
     def _create_diff_account_move_for_split_payment_method(self, payment_method, diff_amount):

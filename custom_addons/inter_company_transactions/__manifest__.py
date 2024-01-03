@@ -4,10 +4,8 @@
     'depends': ['base', 'purchase', 'sale'],
     'author': "Ludwig Gräf",
     'category': 'Category',
-    'description': """
-    Description text
-    """,
-    # data files always loaded at installation
+    'description': """Description text""",
+
     'data': [
         'security/ir.model.access.csv',
 

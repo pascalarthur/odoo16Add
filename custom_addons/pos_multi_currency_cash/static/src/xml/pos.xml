@@ -109,7 +109,7 @@
                 </thead>
                 <tbody>
                     <tr t-foreach="alternative_currency_states" t-as="alt_state" t-key="alt_state.id">
-                        <td t-esc="alt_state.currency_id"/>
+                        <td t-esc="alt_state.currency_name"/>
                         <td t-esc="alt_state.openingCash"/>
                         <td>
                             <Input tModel="[alt_state, 'openingCash']" isValid.bind="env.utils.isValidFloat"/>
