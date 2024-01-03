@@ -1,7 +1,16 @@
 /** @odoo-module */
 
 import { Product } from "@point_of_sale/app/store/models";
+import { PosStore } from "@point_of_sale/app/store/pos_store";
 import { patch } from "@web/core/utils/patch";
+
+
+patch(PosStore.prototype, {
+    async _processData(loadedData) {
+		await super._processData(loadedData);
+        this.currencies = loadedData['currencies'];
+	},
+});
 
 
 patch(Product.prototype, {
@@ -9,11 +18,10 @@ patch(Product.prototype, {
 		const pricelist = this.pos.getDefaultPricelist();
 
 		const basePrice = this.get_price(pricelist, 1.0, 0, true); // Assuming lst_price is the base price in the base currency
-		const currencies = this.pos.poscurrency;
 		const currencyId = this.pos.currency;
 		let pricesInOtherCurrencies = [];
 
-		currencies.forEach(currency => {
+		this.pos.currencies.forEach(currency => {
 			if (currency.id !== currencyId.id) { // Skip the base currency
 				const exchangeRate = currency.rate; // Assuming the currency object has a 'rate' field
 				const convertedPrice = basePrice * exchangeRate;
@@ -28,7 +36,6 @@ patch(Product.prototype, {
 		return pricesInOtherCurrencies;
     },
 
-    // Extend or override serialization methods if necessary
     init_from_JSON(json) {
         super.init_from_JSON(...arguments);
         this.pricesInOtherCurrencies = json.pricesInOtherCurrencies || this.getPricesInOtherCurrencies();

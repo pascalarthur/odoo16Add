@@ -70,12 +70,6 @@ patch(CashOpeningPopup.prototype, {
 });
 
 patch(PosStore.prototype, {
-
-    async _processData(loadedData) {
-		await super._processData(loadedData);
-		console.log(loadedData);
-	},
-
 	async getOpeningPosInfo() {
 		return await this.orm.call("pos.session", "get_opening_control_data", [
             [this.pos_session.id],
@@ -88,10 +82,6 @@ patch(PosStore.prototype, {
 			const info = await this.getOpeningPosInfo();
 			this.popup.add(CashOpeningPopup, {...info, keepBehind: true });
 		}
-	},
-
-	checkState() {
-		console.log(this.popup);
 	},
 });
 

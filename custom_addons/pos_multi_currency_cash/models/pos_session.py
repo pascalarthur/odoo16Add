@@ -2,27 +2,6 @@ from typing import List
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, UserError
 
-class PosOrder(models.Model):
-    _inherit = 'pos.order'
-
-    def compute_converted_prices(self):
-        for order in self:
-            for line in order.lines:
-                line.converted_prices.unlink()
-                for currency in order.config_id.selected_currencies:
-                    converted_price = line.original_price * currency.rate
-                    line.converted_prices.create({
-                        'line_id': line.id,
-                        'currency_id': currency.id,
-                        'price': converted_price,
-                    })
-
-    def action_pos_order_paid(self):
-        res = super().action_pos_order_paid()
-        self.compute_converted_prices()
-        print('action_pos_order_paid')
-        return res
-
 
 class PosConfig(models.Model):
     _inherit = 'pos.config'
@@ -161,4 +140,11 @@ class PosSession(models.Model):
             pm = loaded_data["pos.payment.method"][ii]
             pm_complete = self.env['pos.payment.method'].search([('id', '=', pm['id'])])
             loaded_data["pos.payment.method"][ii]['currency_id'] = pm_complete.journal_id.currency_id.id
+
+        currencies = self.env['res.currency'].search_read(
+			domain=[('active', '=', True)],
+			fields=['name','symbol','position','rounding','rate','rate'],
+		)
+        loaded_data['currencies'] = currencies
+
         return loaded_data

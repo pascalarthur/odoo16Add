@@ -33,7 +33,6 @@
                 </div>
                 <div class="portal search-database-button no-results-message" t-att-class="{ 'd-none':  !shouldShowButton }"></div>
             </div>
-            <div class="button icon btn btn-secondary" t-on-click="() =>this.pos.checkState()"/>
 		</xpath>
 	</t>
 </templates>
