@@ -127,7 +127,6 @@ class PosSession(models.Model):
                 session.cash_register_balance_end = 0.0
                 session.cash_register_difference = 0.0
 
-
     @api.depends('order_ids.payment_ids.amount')
     def _compute_total_payments_amount(self):
         result = self.env['pos.payment']._read_group([('session_id', 'in', self.ids)], ['session_id'], ['amount:sum'])
@@ -476,7 +475,6 @@ class PosSession(models.Model):
         if not self.cash_journal_id:
             # The user is blocked anyway, this user error is mostly for developers that try to call this function
             raise UserError(_("There is no cash register in this session."))
-
         self.cash_register_balance_end_real = counted_cash
         return {'successful': True}
 

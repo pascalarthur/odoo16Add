@@ -3,8 +3,13 @@
 import { ClosePosPopup } from "@point_of_sale/app/navbar/closing_popup/closing_popup";
 import { CashOpeningPopup } from "@point_of_sale/app/store/cash_opening_popup/cash_opening_popup";
 import { PosStore } from "@point_of_sale/app/store/pos_store";
+import { PaymentScreenPaymentLines } from "@point_of_sale/app/screens/payment_screen/payment_lines/payment_lines";
 import { patch } from "@web/core/utils/patch";
 import { useState } from "@odoo/owl";
+import { formatCurrency } from "@web/core/currency";
+import { NumberPopup } from "@point_of_sale/app/utils/input_popups/number_popup";
+import { _t } from "@web/core/l10n/translation";
+
 
 
 patch(ClosePosPopup.prototype, {
@@ -65,6 +70,12 @@ patch(CashOpeningPopup.prototype, {
 });
 
 patch(PosStore.prototype, {
+
+    async _processData(loadedData) {
+		await super._processData(loadedData);
+		console.log(loadedData);
+	},
+
 	async getOpeningPosInfo() {
 		return await this.orm.call("pos.session", "get_opening_control_data", [
             [this.pos_session.id],
@@ -84,3 +95,42 @@ patch(PosStore.prototype, {
 	},
 });
 
+
+patch(PaymentScreenPaymentLines.prototype, {
+	setup() {
+		super.setup();
+
+		this.payment_methods_from_config_cash = this.pos.payment_methods.filter((method) =>
+			this.pos.config.payment_method_ids.includes(method.id) && method.type === "cash"
+		);
+
+		this.payment_methods_from_config_cash.forEach((pm) => {
+			// this.pos.currency.id is the main currency of the pos -> Array [id, name]
+			if (this.pos.config.currency_id[0] === pm.currency_id) {
+				pm.change = formatCurrency(this.pos.get_order().get_change(), pm.currency_id);
+			}
+			else {
+				console.log('PaymentScreenPaymentLines', pm.currency_id);
+				pm.change = formatCurrency(0, pm.currency_id);
+			}
+		})
+	},
+
+	confirm_cash_amount(payload, pm) {
+		console.log(this.pos.get_order().get_change());
+		pm.change = formatCurrency(parseFloat(payload), pm.currency_id);
+		this.pos.get_order().change = pm.change; // Update the change value in this.pos
+		this.render();
+	},
+
+	editChangeAmount(pm) {
+		console.log(pm);
+		this.popup.add(NumberPopup, {
+			title: _t("New amount"),
+			startingValue: parseFloat(pm.change),
+			isInputSelected: true,
+			nbrDecimal: this.pos.currency.decimal_places,
+		}).then(({ confirmed, payload }) => {
+			if (confirmed) {this.confirm_cash_amount(payload, pm) }});
+	}
+});

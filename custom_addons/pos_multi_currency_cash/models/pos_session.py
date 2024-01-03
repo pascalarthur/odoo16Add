@@ -152,3 +152,13 @@ class PosSession(models.Model):
             closing_control_data['other_payment_methods'][ii]['amount'] += sum(self.sudo().statement_line_ids.filtered(lambda p: p.journal_id == pm.journal_id).mapped('amount'))
 
         return closing_control_data
+
+
+    def load_pos_data(self):
+        loaded_data = super(PosSession, self).load_pos_data()
+
+        for ii in range(len(loaded_data["pos.payment.method"])):
+            pm = loaded_data["pos.payment.method"][ii]
+            pm_complete = self.env['pos.payment.method'].search([('id', '=', pm['id'])])
+            loaded_data["pos.payment.method"][ii]['currency_id'] = pm_complete.journal_id.currency_id.id
+        return loaded_data

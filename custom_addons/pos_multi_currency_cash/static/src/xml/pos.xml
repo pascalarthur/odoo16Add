@@ -125,4 +125,23 @@
 		</xpath>
 	</t>
 
+        <t t-name="CustomPaymentScreenPaymentLines" t-inherit="point_of_sale.PaymentScreenPaymentLines" t-inherit-mode="extension">
+		<xpath expr="//div[contains(@class, 'paymentlines')]" position="after">
+            <div class="paymentmethods d-flex flex-column">
+
+            <h4 class="title-category pt-3 pb-2 px-3 m-0 bg-view border-bottom border-2">Change</h4>
+                <t t-foreach="payment_methods_from_config_cash" t-as="pm" t-key="pm.id">
+                    <div class="button pm btn btn-light rounded-0 border-bottom" t-on-click="() => this.editChangeAmount(pm)">
+                        <div class="payment-method-display d-flex align-items-center flex-grow-1">
+                            <span class="payment-name" t-esc="pm.name" />
+                            <div class="payment-amount px-3">
+                                <t t-esc="pm.change"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </div>
+		</xpath>
+	</t>
+
 </templates>
