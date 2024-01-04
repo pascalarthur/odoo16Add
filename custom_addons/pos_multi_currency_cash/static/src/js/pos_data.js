@@ -94,16 +94,27 @@ patch(PaymentScreenPaymentLines.prototype, {
 			this.pos.config.payment_method_ids.includes(method.id) && method.type === "cash"
 		);
 
-		this.payment_methods_from_config_cash.forEach((pm) => {
-			// this.pos.currency.id is the main currency of the pos -> Array [id, name]
-			if (this.pos.config.currency_id[0] === pm.currency_id) {
-				pm.change = formatCurrency(this.pos.get_order().get_change(), pm.currency_id);
-			}
-			else {
-				console.log('PaymentScreenPaymentLines', pm.currency_id);
-				pm.change = formatCurrency(0, pm.currency_id);
-			}
-		})
+        this.initChangeAmount(); // Initial update
+	},
+
+	// Method to update change amounts
+    initChangeAmount() {
+        this.payment_methods_from_config_cash.forEach((pm) => {
+            if (this.pos.config.currency_id[0] === pm.currency_id) {
+                pm.change = formatCurrency(this.pos.get_order().get_change(), pm.currency_id);
+            } else {
+                pm.change = formatCurrency(0, pm.currency_id);
+            }
+        });
+        this.render();
+    },
+
+	updateChangeAmount(pm) {
+		if (this.pos.config.currency_id[0] === pm.currency_id) {
+			return formatCurrency(this.pos.get_order().get_change(), pm.currency_id);
+		} else {
+			return formatCurrency(0, pm.currency_id);
+		}
 	},
 
 	confirm_cash_amount(payload, pm) {
