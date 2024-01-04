@@ -140,6 +140,7 @@ class PosSession(models.Model):
             pm = loaded_data["pos.payment.method"][ii]
             pm_complete = self.env['pos.payment.method'].search([('id', '=', pm['id'])])
             loaded_data["pos.payment.method"][ii]['currency_id'] = pm_complete.journal_id.currency_id.id
+            loaded_data["pos.payment.method"][ii]['currency_rate'] = pm_complete.journal_id.currency_id.rate
 
         currencies = self.env['res.currency'].search_read(
 			domain=[('active', '=', True)],
