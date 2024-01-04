@@ -19,7 +19,7 @@
                                 <div><strong><field name="currency_id"/></strong></div>
                                 <div><field name="current_statement_balance"/></div>
                             </div>
-                            <button type="object" name="action_open_payment_form" class="btn btn-primary">Exchange
+                            <button type="object" name="action_open_payment_form" class="oe_highlight">Exchange
                             </button>
                         </div>
                     </t>

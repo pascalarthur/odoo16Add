@@ -16,15 +16,8 @@
                         <tbody>
                             <tr>
                                 <td t-esc="props.default_cash_details.name"/>
-                                <td t-esc="env.utils.formatCurrency(props.default_cash_details.amount)"/>
-                                <td class="d-flex">
-                                    <Input tModel="[state.payments[props.default_cash_details.id], 'counted']"
-                                        callback.bind="(value) =>  this.setManualCashInput(value)"
-                                        isValid.bind="env.utils.isValidFloat"/>
-                                    <div class="button icon ClosePosPopup btn btn-secondary" t-on-click="openDetailsPopup">
-                                        <i class="fa fa-money fa-2x" role="img" title="Open the money details popup"/>
-                                    </div>
-                                </td>
+                                <td t-esc="formatCurrency(props.default_cash_details.amount, pos.currency.id)"/>
+                                <td t-esc="formatCurrency(state.payments[props.default_cash_details.id].counted, pos.currency.id)"/>
                                 <td t-esc="env.utils.formatCurrency(getDifference(props.default_cash_details.id))"
                                     t-att-class="{'warning text-danger fw-bolder': !env.utils.floatIsZero(getDifference(props.default_cash_details.id))}"/>
                             </tr>
@@ -53,24 +46,21 @@
                                 <td class="align-top" t-esc="env.utils.formatCurrency(Math.abs(props.default_cash_details.payment_amount))"/>
                             </tr>
                         </tbody>
-
-            			<t t-if="props.other_payment_methods.length > 0">
+            			<t t-if="this.pos.currencies.length > 0">
                             <tbody>
-                                <tr t-foreach="props.other_payment_methods" t-as="pm" t-key="pm.id">
-                                    <t t-if="pm.type === 'cash'">
-                                        <td t-esc="pm.name"/>
-                                        <td t-esc="env.utils.formatCurrency(pm.amount)"/>
-                                        <td class="d-flex">
-                                            <Input tModel="[state.payments[pm.id], 'counted']"
-                                                callback.bind="(value) =>  this.setManualCashInput(value)"
-                                                isValid.bind="env.utils.isValidFloat"/>
-                                            <div class="button icon ClosePosPopup btn btn-secondary" t-on-click="openDetailsPopup">
-                                                <i class="fa fa-money fa-2x" role="img" title="Open the money details popup"/>
-                                            </div>
-                                        </td>
-                                        <td t-esc="env.utils.formatCurrency(getDifference(pm.id))"
-                                            t-att-class="{'warning text-danger fw-bolder': !env.utils.floatIsZero(getDifference(pm.id))}"/>
-                                    </t>
+                                <tr t-foreach="this.pos.currencies" t-as="currency" t-key="currency.id">
+                                    <td t-esc="currency.name"/>
+                                    <td t-esc="formatCurrency(initialCashState.payments[currency.id].counted, currency.id)"/>
+                                    <td class="d-flex">
+                                        <Input tModel="[initialCashState.payments[currency.id], 'counted']"
+                                            callback.bind="(value) => this.setCashCurrencies(value)"
+                                            isValid.bind="env.utils.isValidFloat"/>
+                                        <div class="button icon ClosePosPopup btn btn-secondary" t-on-click="openDetailsPopup">
+                                            <i class="fa fa-money fa-2x" role="img" title="Open the money details popup"/>
+                                        </div>
+                                    </td>
+                                    <!-- <td t-esc="env.utils.formatCurrency(getDifference(currency.id))"
+                                        t-att-class="{'warning text-danger fw-bolder': !env.utils.floatIsZero(getDifference(currency.id))}"/> -->
                                 </tr>
                             </tbody>
                         </t>
@@ -93,33 +83,6 @@
                     </tbody>
                 </table>
             </div>
-		</xpath>
-	</t>
-
-    <t t-name="CustomCashOpeningPopup" t-inherit="point_of_sale.CashOpeningPopup" t-inherit-mode="extension">
-		<xpath expr="//div[contains(@class, 'cash-input-sub-section')]" position="after">
-            <table class="text-start">
-                <thead>
-                    <tr class="text-dark">
-                        <th>Currency</th>
-                        <th>Amount</th>
-                        <th>Manual</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr t-foreach="alternative_currency_states" t-as="alt_state" t-key="alt_state.id">
-                        <td t-esc="alt_state.currency_name"/>
-                        <td>
-                            <Input tModel="[alt_state, 'openingCash']" isValid.bind="env.utils.isValidFloat"/>
-                        </td>
-                        <td>
-                            <div class="button icon btn btn-secondary" t-on-click="openDetailsPopup">
-                                <i class="fa fa-money fa-2x" role="img" title="Open the money details popup"/>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
 		</xpath>
 	</t>
 </templates>

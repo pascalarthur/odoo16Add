@@ -31,48 +31,11 @@ class AccountJournalCurrencyExchange(models.Model):
 
     def action_done(self):
         self.state = 'done'
-        self.move_id = self.create_accounting_entry()
+        return self.create_accounting_entry()
 
     def create_accounting_entry(self):
         AccountMove = self.env['account.move']
-        AccountMoveLine = self.env['account.move.line']
-        move_id = AccountMove.create({
-            'journal_id': self.journal_id.id,
-            'date': self.date,
-            'ref': self.note,
-            'currency_id': self.currency_id.id,
-        })
-
-        account_move_line_vals = {
-            'move_id': move_id.id,
-            'journal_id': self.journal_id.id,
-            'account_id': self.journal_id.default_account_id.id,
-            'name': self.note,
-            'currency_id': self.currency_id.id,
-            'amount_currency': self.amount,
-            'date_maturity': self.date,
-            'debit': 0.0,
-            'credit': self.amount,
-        }
-
-        account_move_line_destination_vals = {
-            'move_id': move_id.id,
-            'journal_id': self.destination_journal_id.id,
-            'account_id': self.destination_journal_id.default_account_id.id,
-            'name': self.note,
-            'currency_id': self.destination_currency_id.id,
-            'amount_currency': self.amount * self.exchange_rate,
-            'date_maturity': self.date,
-            'debit': self.amount * self.exchange_rate,
-            'credit': 0.0,
-        }
-
-        move_line_ids = AccountMoveLine.create([account_move_line_vals, account_move_line_destination_vals])
-
-        print(move_line_ids)
-
-        move_id.post()
-        self.account_move_id = move_id
-        # self.account_move_line_id = account_move_line_id
-        # self.account_move_line_destination_id = account_move_line_destination_id
-        return move_id.id
+        move_id = AccountMove.create_currency_conversion_journal_entry(source_journal_id=self.journal_id.id, dest_journal_id=self.destination_journal_id.id, amount=self.amount, date=self.date, memo='')
+        if move_id.state != 'posted':
+            move_id.post()
+        # return move_id.action_register_payment()

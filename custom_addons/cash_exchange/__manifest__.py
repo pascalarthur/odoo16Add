@@ -9,6 +9,7 @@
     'data': [
         'security/ir.model.access.csv',
 
+        'views/invoice_view.xml',
         'views/account_journal_views.xml',
         'views/account_journal_currency_exchange.xml',
         'views/cash_dasboard.xml',

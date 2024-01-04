@@ -8,9 +8,9 @@
             <form>
                 <!-- Define the fields you want to display -->
                 <header>
-                    <button type="object" name="action_confirm" class="btn btn-primary">Confirm</button>
-                    <button type="object" name="action_done" class="btn btn-primary">Done</button>
-                    <button type="object" name="action_cancel" class="btn btn-primary">Cancel</button>
+                    <button type="object" name="action_confirm" class="oe_highlight">Confirm</button>
+                    <button type="object" name="action_done" class="oe_highlight">Done</button>
+                    <button type="object" name="action_cancel" class="oe_highlight">Cancel</button>
 
                     <field name="state" widget="statusbar"/>
                 </header>

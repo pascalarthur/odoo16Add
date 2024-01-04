@@ -222,6 +222,7 @@ export class ClosePosPopup extends AbstractAwaitablePopup {
                 window.location = "/web#action=point_of_sale.action_client_pos_menu";
             }
         }
+        this.correct_journals_for_currencies();
     }
     async handleClosingError(response) {
         await this.popup.add(ErrorPopup, {
