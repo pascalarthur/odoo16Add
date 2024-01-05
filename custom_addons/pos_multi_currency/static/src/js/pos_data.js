@@ -8,7 +8,7 @@ import { patch } from "@web/core/utils/patch";
 patch(PosStore.prototype, {
     async _processData(loadedData) {
 		await super._processData(loadedData);
-        this.currencies = loadedData['currencies'];
+        this.currency_rates = loadedData['currency_rates'];
 	},
 });
 
@@ -21,7 +21,9 @@ patch(Product.prototype, {
 		const currencyId = this.pos.currency;
 		let pricesInOtherCurrencies = [];
 
-		this.pos.currencies.forEach(currency => {
+		console.log(this.pos)
+
+		this.pos.currency_rates.forEach(currency => {
 			if (currency.id !== currencyId.id) { // Skip the base currency
 				const exchangeRate = currency.rate; // Assuming the currency object has a 'rate' field
 				const convertedPrice = basePrice * exchangeRate;

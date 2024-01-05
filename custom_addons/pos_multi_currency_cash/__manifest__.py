@@ -1,7 +1,7 @@
 {
     'name': "Point of Sale - Multiple Currencies - Cash",
     'version': '1.0',
-    'depends': ['base', 'point_of_sale'],
+    'depends': ['base', 'point_of_sale', 'pos_multi_currency'],
     'author': "Ludwig Gräf",
     'category': 'Category',
     'description': """
