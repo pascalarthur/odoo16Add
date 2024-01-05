@@ -17,3 +17,5 @@ class ResConfigSettings(models.TransientModel):
 
     currency_journal_ids = fields.Many2many(related='pos_config_id.currency_journal_ids', readonly=False)
     location_id = fields.Many2one(related='pos_config_id.location_id', readonly=False)
+
+

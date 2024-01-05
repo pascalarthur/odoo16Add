@@ -9,6 +9,7 @@
                 <block title="Inter-Company Transactions" id="custom_inter_company_block">
                     <setting id="custom_inter_company" string="Enable Inter-Company Transactions" company_dependent="1" help="Automatically generate counterpart documents for orders/invoices between companies">
                         <field name="enable_inter_company_transactions" />
+                        <field name="inter_company_partner_ids" widget="many2many_tags" options="{ 'no_create': True }"/>
                     </setting>
                 </block>
             </xpath>
