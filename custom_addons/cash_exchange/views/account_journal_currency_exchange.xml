@@ -21,12 +21,11 @@
                     <field name="destination_journal_id"/>
                     <field name="amount"/>
                     <field name="exchange_rate"/>
+                    <field name="amount_in_other_currency"/>
                     <field name="currency_id"/>
                     <field name="destination_currency_id"/>
                     <field name="date"/>
                     <field name="note"/>
-                    <field name="account_move_line_id"/>
-                    <field name="account_move_line_destination_id"/>
                     <field name="account_move_id"/>
                 </group>
             </form>

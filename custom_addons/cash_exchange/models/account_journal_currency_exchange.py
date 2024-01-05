@@ -1,4 +1,4 @@
-from odoo import _, fields, models
+from odoo import api, _, fields, models
 
 
 class AccountJournalCurrencyExchange(models.Model):
@@ -10,7 +10,7 @@ class AccountJournalCurrencyExchange(models.Model):
     journal_id = fields.Many2one('account.journal', string='Journal', required=True)
     destination_journal_id = fields.Many2one('account.journal', string='Destination Journal', required=True)
     amount = fields.Monetary(string='Amount', required=True)
-    exchange_rate = fields.Float(string='Exchange Rate', required=True)
+    exchange_rate = fields.Float(string='Exchange Rate', required=True, digits=(16, 5))
     currency_id = fields.Many2one('res.currency', related='journal_id.currency_id', string='Currency', readonly=True)
     destination_currency_id = fields.Many2one('res.currency', related='destination_journal_id.currency_id', string='Destination Currency', readonly=True)
 
@@ -19,9 +19,14 @@ class AccountJournalCurrencyExchange(models.Model):
 
     state = fields.Selection([('draft', 'Draft'), ('confirmed', 'Confirmed'), ('done', 'Done'), ('cancel', 'Cancel')], string='Status', default='draft')
 
-    account_move_line_id = fields.Many2one('account.move.line', string='Account Move', readonly=True)
-    account_move_line_destination_id = fields.Many2one('account.move.line', string='Account Move Destination', readonly=True)
+    amount_in_other_currency = fields.Monetary(string='Amount Converted', compute='_compute_amount_in_other_currency', store=True, currency_field='destination_currency_id')
+
     account_move_id = fields.Many2one('account.move', string='Account Move', readonly=True)
+
+    @api.depends('amount', 'exchange_rate')
+    def _compute_amount_in_other_currency(self):
+        for rec in self:
+            rec.amount_in_other_currency = rec.amount * rec.exchange_rate
 
     def action_confirm(self):
         self.state = 'confirmed'
@@ -35,7 +40,4 @@ class AccountJournalCurrencyExchange(models.Model):
 
     def create_accounting_entry(self):
         AccountMove = self.env['account.move']
-        move_id = AccountMove.create_currency_conversion_journal_entry(source_journal_id=self.journal_id.id, dest_journal_id=self.destination_journal_id.id, amount=self.amount, date=self.date, memo='')
-        if move_id.state != 'posted':
-            move_id.post()
-        # return move_id.action_register_payment()
+        AccountMove.create_currency_conversion_journal_entry(source_journal_id=self.journal_id.id, dest_journal_id=self.destination_journal_id.id, amount=self.amount, date=self.date, exchange_rate=self.exchange_rate, memo='')
