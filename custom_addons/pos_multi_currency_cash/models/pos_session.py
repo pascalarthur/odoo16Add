@@ -6,60 +6,48 @@ from odoo.exceptions import ValidationError, UserError
 class PosSession(models.Model):
     _inherit = 'pos.session'
 
-    def correct_cash_amounts(self, cash_amounts_in_currencies):
+    def correct_cash_amounts(self, cash_amounts_in_currencies: List[dict]):
+        # print('correct_cash_amounts', 'location_id', self.config_id.location_id.id)
 
-        print('correct_cash_amounts', cash_amounts_in_currencies)
-        print('correct_cash_amounts', self.env['account.move.line'].search([('move_id', '=', self.move_id.id)]))
+        # Obtain the POS configuration from self (assuming self is a POS order or related model)
+        pos_config = self.config_id
 
-        journal_ids = self.env['account.journal'].search_read(
-			domain=[('id', 'in', self.config_id.currency_journal_ids.ids)],
-			fields=['id', 'name', 'currency_id'],
-		)
-        print('correct_cash_amounts', journal_ids)
+        # Find the cash payment method in the POS configuration
+        cash_payment_method = pos_config.payment_method_ids.filtered(lambda pm: pm.is_cash_count and pm.journal_id)
 
-    def create_accounting_entry(self):
-        AccountMove = self.env['account.move']
-        AccountMoveLine = self.env['account.move.line']
-        move_id = AccountMove.create({
-            'journal_id': self.journal_id.id,
-            'date': self.date,
-            'ref': self.note,
-            'currency_id': self.currency_id.id,
-        })
+        if not cash_payment_method:
+            raise UserError("No cash payment method found in the POS configuration.")
 
-        account_move_line_vals = {
-            'move_id': move_id.id,
-            'journal_id': self.journal_id.id,
-            'account_id': self.journal_id.default_account_id.id,
-            'name': self.note,
-            'currency_id': self.currency_id.id,
-            'amount_currency': self.amount,
-            'date_maturity': self.date,
-            'debit': 0.0,
-            'credit': self.amount,
-        }
+        # Get the default journal and currency from the cash payment method
+        default_journal_id = cash_payment_method.journal_id.id
+        default_currency_id = cash_payment_method.journal_id.currency_id.id or cash_payment_method.journal_id.company_id.currency_id.id
 
-        account_move_line_destination_vals = {
-            'move_id': move_id.id,
-            'journal_id': self.destination_journal_id.id,
-            'account_id': self.destination_journal_id.default_account_id.id,
-            'name': self.note,
-            'currency_id': self.destination_currency_id.id,
-            'amount_currency': self.amount * self.exchange_rate,
-            'date_maturity': self.date,
-            'debit': self.amount * self.exchange_rate,
-            'credit': 0.0,
-        }
+        # Filter out the default currency from the list of cash amounts
+        default_cash = next(cash for cash in cash_amounts_in_currencies if cash['journal_id'] == default_journal_id)
 
-        move_line_ids = AccountMoveLine.create([account_move_line_vals, account_move_line_destination_vals])
+        for cash in cash_amounts_in_currencies:
+            # Skip if the currency is already the default POS currency
+            if cash['id'] == default_currency_id:
+                continue
 
-        print(move_line_ids)
+            exchange_rate = default_cash['rate'] / cash['rate']
 
-        move_id.post()
-        self.account_move_id = move_id
-        # self.account_move_line_id = account_move_line_id
-        # self.account_move_line_destination_id = account_move_line_destination_id
-        return move_id.id
+            converted_amount = cash['counted'] * exchange_rate
+
+            # Create an AccountJournalCurrencyExchange record
+            exchange_vals = {
+                'location_id': self.config_id.location_id.id,  # Assuming self has a location_id attribute
+                'journal_id': default_journal_id,
+                'destination_journal_id': cash['journal_id'],
+                'amount': converted_amount,
+                'exchange_rate': 1 / exchange_rate,
+                'date': fields.Date.today(),
+                'note': f"Exchange from {cash['name']} to default POS currency",
+            }
+
+            exchange_record = self.env['account.journal.currency.exchange'].create(exchange_vals)
+            exchange_record.action_confirm()
+            exchange_record.action_done()
 
 
     def load_pos_data(self):
@@ -71,10 +59,21 @@ class PosSession(models.Model):
             loaded_data["pos.payment.method"][ii]['currency_id'] = pm_complete.journal_id.currency_id.id
             loaded_data["pos.payment.method"][ii]['currency_rate'] = pm_complete.journal_id.currency_id.rate
 
-        currencies = self.env['res.currency'].search_read(
-			domain=[('active', '=', True)],
-			fields=['name','symbol','position','rounding','rate','rate'],
+        journal_ids = self.env['account.journal'].search(
+			domain=[('id', 'in', self.config_id.currency_journal_ids.ids)],
 		)
-        loaded_data['currencies'] = currencies
 
+        currencies = []
+        for journal_id in journal_ids:
+            currencies.append({
+                'id': journal_id.currency_id.id,
+                'name': journal_id.currency_id.name,
+                'symbol': journal_id.currency_id.symbol,
+                'position': journal_id.currency_id.position,
+                'rounding': journal_id.currency_id.rounding,
+                'rate': journal_id.currency_id.rate,
+                'journal_id': journal_id.id,
+            })
+
+        loaded_data['currencies'] = currencies
         return loaded_data

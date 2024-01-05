@@ -48,6 +48,8 @@ class AccountMove(models.Model):
         # Calculate converted amount based on exchange rates
         converted_amount = amount * exchange_rate
 
+        print('create_currency_conversion_journal_entry', amount, exchange_rate, converted_amount)
+
         # Create journal entry
         move_vals_outgoing = {
             'name': 'CEXCH/' + str(self.env['account.move'].search_count([('name', 'like', 'CEXCH/%')])),

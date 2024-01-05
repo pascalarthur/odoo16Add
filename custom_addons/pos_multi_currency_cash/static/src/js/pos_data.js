@@ -55,10 +55,15 @@ patch(ClosePosPopup.prototype, {
         if (!this.env.utils.isValidFloat(amount) || amount == 'NaN' || amount == '') {
             return;
         }
+
         let total = 0;
+        let default_currency_rate = this.pos.currency.rate;
+
         this.pos.currencies.forEach((currency) => {
-            total += parseFloat(this.initialCashState.payments[currency.id].counted) / currency.rate;
+            let currency_rate = currency.rate / default_currency_rate;
+            total += parseFloat(this.initialCashState.payments[currency.id].counted) / currency_rate;
         });
+
         this.state.payments[this.props.default_cash_details.id].counted = this.env.utils.formatCurrency(total, false);
     },
 
@@ -71,14 +76,21 @@ patch(ClosePosPopup.prototype, {
     },
 
     async correct_journals_for_currencies() {
-        await this.orm.call(
-            "pos.session",
-            "correct_cash_amounts",
-            [this.pos.pos_session.id],
-            {
-                cash_amounts_in_currencies: this.initialCashState,
+        if (this.pos.currencies.length > 0) {
+            for (let ii = 0; ii < this.pos.currencies.length; ii++) {
+                const currency = this.pos.currencies[ii];
+                currency['counted'] = parseFloat(this.initialCashState.payments[currency.id].counted);
             }
-        );
+
+            await this.orm.call(
+                "pos.session",
+                "correct_cash_amounts",
+                [this.pos.pos_session.id],
+                {
+                    cash_amounts_in_currencies: this.pos.currencies,
+                }
+            );
+            }
     }
 });
 
