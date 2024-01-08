@@ -92,6 +92,18 @@ class PosSession(models.Model):
             exchange_record.action_done()
 
 
+    def _get_available_product_quantities(self):
+        available_product_quantities = {}
+        for product in self.config_id.available_product_ids:
+            print('product', product)
+            stocked_products = self.env['stock.quant'].search([
+                ('product_id', '=', product.id),
+                ('location_id', '=', self.config_id.picking_type_id.default_location_src_id.id),
+                ('quantity', '>', 0)
+            ])
+            available_product_quantities[product.id] = sum(stocked_products.mapped('quantity'))
+        return available_product_quantities
+
     def load_pos_data(self):
         loaded_data = super(PosSession, self).load_pos_data()
 
@@ -120,6 +132,7 @@ class PosSession(models.Model):
                 'counted': 0,
             })
 
-        loaded_data['availiable_product_ids'] = self.config_id.availiable_product_ids.ids
+        loaded_data['available_product_ids'] = self.config_id.available_product_ids.ids
+        loaded_data['available_product_id_quantities'] = self._get_available_product_quantities()
         loaded_data['currencies'] = currencies
         return loaded_data

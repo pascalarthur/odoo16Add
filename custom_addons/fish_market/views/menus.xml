@@ -11,9 +11,7 @@
         <menuitem id="purchase_report_main" name="Reporting" sequence="99" groups="base.group_user">
             <menuitem id="purchase_report" name="Fish Prices" sequence="99" groups="base.group_user" action="action_purchase_order_report_all"/>
         </menuitem>
-        <menuitem id="inventory_report_main" name="Inventory" sequence="99" groups="base.group_user">
-            <menuitem id="menu_inventory_kanban" name="Inventory Kanban" action="action_inventory_kanban"/>
-        </menuitem>
+        <menuitem id="menu_inventory_kanban" name="Inventory" action="action_inventory_kanban" groups="base.group_user"/>
         <menuitem id="menu_sales_meta" name="Meta Sales" action="action_sales_meta"/>
         <menuitem id="transport_first_level_menu" name="Transport">
             <menuitem id="transport_order_menu" action="action_transport_order_form"/>

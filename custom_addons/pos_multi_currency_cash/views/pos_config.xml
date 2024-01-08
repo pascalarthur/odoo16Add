@@ -9,17 +9,20 @@
 				<xpath expr="//block[@id='pos_interface_section']" position="after">
 					<block title="POS Location" id="pos_location_section">
 						<setting groups="account.group_account_readonly">
-							<label string="Location POS" for="location_id"/>
+							<group>
+								<label string="Location POS" for="location_id"/>
+								<field name="location_id" colspan="4" nolabel="1" readonly="1"/>
+							</group>
 							<div class="text-muted">
-								Location of the POS place. Used for Currency Rates.
+								Location of the POS place. Go to "Inventory &#62; Operation Type &#62; Default Source Location" to change.
 							</div>
-							<field name="location_id" colspan="4" nolabel="1"/>
 						</setting>
 					</block>
 					<h2 name="order">Multi Currency Journals</h2>
 					<field name="currency_journal_ids"/>
 					<h2 name="order">Filter Available Products</h2>
-					<field name="availiable_product_ids"/>
+					<field name="available_product_ids"/>
+					<h2 name="order">Location</h2>
 				</xpath>
 			</field>
 		</record>

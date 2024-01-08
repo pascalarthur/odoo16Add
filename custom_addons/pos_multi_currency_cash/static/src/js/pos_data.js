@@ -4,6 +4,7 @@ import { ClosePosPopup } from "@point_of_sale/app/navbar/closing_popup/closing_p
 import { CashOpeningPopup } from "@point_of_sale/app/store/cash_opening_popup/cash_opening_popup";
 import { PosStore } from "@point_of_sale/app/store/pos_store";
 import { ProductsWidget } from "@point_of_sale/app/screens/product_screen/product_list/product_list";
+import { Product } from "@point_of_sale/app/store/models";
 import { Order, Payment } from "@point_of_sale/app/store/models";
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
 import { PaymentScreenPaymentLines } from "@point_of_sale/app/screens/payment_screen/payment_lines/payment_lines";
@@ -103,11 +104,31 @@ patch(ClosePosPopup.prototype, {
 });
 
 
+patch(Product.prototype, {
+	getAvailableStock() {
+        console.log('getAvailableStock', this.pos.available_product_id_quantities);
+		let availableStock = this.pos.available_product_id_quantities[this.id] || 0;
+		return availableStock;
+	},
+
+    init_from_JSON(json) {
+        super.init_from_JSON(...arguments);
+        this.availableStock = json.availableStock || this.getAvailableStock();
+    },
+
+    export_as_JSON() {
+        const json = super.export_as_JSON(...arguments);
+        json.availableStock = this.getAvailableStock();
+        return json;
+    },
+});
+
+
 patch(ProductsWidget.prototype, {
     // @override
 	get productsToDisplay() {
         let productsToDisplay = super.productsToDisplay.filter((product) => {
-            if (this.pos.availiable_product_ids.includes(product.id)) {
+            if (this.pos.available_product_ids.includes(product.id)) {
                 return true;
             }
         })
@@ -120,7 +141,8 @@ patch(PosStore.prototype, {
     async _processData(loadedData) {
 		await super._processData(loadedData);
         this.currencies = loadedData['currencies'];
-        this.availiable_product_ids = loadedData['availiable_product_ids'];
+        this.available_product_ids = loadedData['available_product_ids'];
+        this.available_product_id_quantities = loadedData['available_product_id_quantities'];
 	},
 
     formatCurrency(amount, currency_id) {

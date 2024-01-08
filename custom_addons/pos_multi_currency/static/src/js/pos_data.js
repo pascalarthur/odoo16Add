@@ -5,14 +5,6 @@ import { PosStore } from "@point_of_sale/app/store/pos_store";
 import { patch } from "@web/core/utils/patch";
 
 
-patch(PosStore.prototype, {
-    async _processData(loadedData) {
-		await super._processData(loadedData);
-        this.currency_rates = loadedData['currency_rates'];
-	},
-});
-
-
 patch(Product.prototype, {
 	getPricesInOtherCurrencies() {
 		const pricelist = this.pos.getDefaultPricelist();
@@ -46,4 +38,11 @@ patch(Product.prototype, {
         json.pricesInOtherCurrencies = this.getPricesInOtherCurrencies();
         return json;
     },
+});
+
+patch(PosStore.prototype, {
+    async _processData(loadedData) {
+		await super._processData(loadedData);
+        this.currency_rates = loadedData['currency_rates'];
+	},
 });
