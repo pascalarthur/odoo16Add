@@ -19,10 +19,8 @@ import { _t } from "@web/core/l10n/translation";
 
 patch(ClosePosPopup.prototype, {
     setup() {
-        this.cash_pm_id = null
      	super.setup();
 
-        console.log(this.cash_pm_id)
         const initialCashState = { notes: "", payments: {} };
         this.pos.currencies.forEach((currency) => {
             initialCashState.payments[currency.id] = {
@@ -38,14 +36,11 @@ patch(ClosePosPopup.prototype, {
 		const initialState = super.getInitialState();
 
 		this.props.other_payment_methods.forEach((pm) => {
+            console.log(pm)
             if (pm.type === "cash") {
                 initialState.payments[pm.id] = {
                     counted: this.env.utils.formatCurrency(pm.amount, false),
                 };
-
-                this.cash_pm_id = pm.id;
-                console.log(this.cash_pm_id)
-
             }
         });
         return initialState;
@@ -99,5 +94,6 @@ patch(PosStore.prototype, {
     async _processData(loadedData) {
 		await super._processData(loadedData);
         this.currencies = loadedData['currencies'];
+        console.log(this.currencies);
 	},
 });

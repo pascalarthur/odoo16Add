@@ -21,8 +21,6 @@ patch(Product.prototype, {
 		const currencyId = this.pos.currency;
 		let pricesInOtherCurrencies = [];
 
-		console.log(this.pos)
-
 		this.pos.currency_rates.forEach(currency => {
 			if (currency.id !== currencyId.id) { // Skip the base currency
 				const exchangeRate = currency.rate; // Assuming the currency object has a 'rate' field

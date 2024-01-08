@@ -59,9 +59,11 @@ class PosSession(models.Model):
             loaded_data["pos.payment.method"][ii]['currency_id'] = pm_complete.journal_id.currency_id.id
             loaded_data["pos.payment.method"][ii]['currency_rate'] = pm_complete.journal_id.currency_id.rate
 
-        journal_ids = self.env['account.journal'].search(
+        journal_ids = self.env['account.journal'].sudo().search(
 			domain=[('id', 'in', self.config_id.currency_journal_ids.ids)],
 		)
+        print('Gotcha...')
+
 
         currencies = []
         for journal_id in journal_ids:
