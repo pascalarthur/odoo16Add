@@ -3,6 +3,7 @@
 import { ClosePosPopup } from "@point_of_sale/app/navbar/closing_popup/closing_popup";
 import { CashOpeningPopup } from "@point_of_sale/app/store/cash_opening_popup/cash_opening_popup";
 import { PosStore } from "@point_of_sale/app/store/pos_store";
+import { ProductsWidget } from "@point_of_sale/app/screens/product_screen/product_list/product_list";
 import { Order, Payment } from "@point_of_sale/app/store/models";
 import { PaymentScreen } from "@point_of_sale/app/screens/payment_screen/payment_screen";
 import { PaymentScreenPaymentLines } from "@point_of_sale/app/screens/payment_screen/payment_lines/payment_lines";
@@ -56,7 +57,6 @@ patch(CashOpeningPopup.prototype, {
             );
         }
     }
-
 });
 
 
@@ -64,6 +64,7 @@ patch(ClosePosPopup.prototype, {
     // @override
     setup() {
         super.setup();
+        // Used for updating the view
         this.setCashCurrencies('0');
     },
 
@@ -102,11 +103,24 @@ patch(ClosePosPopup.prototype, {
 });
 
 
+patch(ProductsWidget.prototype, {
+    // @override
+	get productsToDisplay() {
+        let productsToDisplay = super.productsToDisplay.filter((product) => {
+            if (this.pos.availiable_product_ids.includes(product.id)) {
+                return true;
+            }
+        })
+		return productsToDisplay;
+    },
+});
+
+
 patch(PosStore.prototype, {
     async _processData(loadedData) {
 		await super._processData(loadedData);
         this.currencies = loadedData['currencies'];
-        console.log(this.currencies);
+        this.availiable_product_ids = loadedData['availiable_product_ids'];
 	},
 
     formatCurrency(amount, currency_id) {

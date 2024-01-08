@@ -120,5 +120,6 @@ class PosSession(models.Model):
                 'counted': 0,
             })
 
+        loaded_data['availiable_product_ids'] = self.config_id.availiable_product_ids.ids
         loaded_data['currencies'] = currencies
         return loaded_data

@@ -12,10 +12,18 @@ class PosConfigInherit(models.Model):
     )
     location_id = fields.Many2one('stock.location', 'Location')
 
+    availiable_product_ids = fields.Many2many(
+        'product.product',
+        string='Availiable Products',
+        help="Map each currency to a specific journal."
+    )
+
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     currency_journal_ids = fields.Many2many(related='pos_config_id.currency_journal_ids', readonly=False)
     location_id = fields.Many2one(related='pos_config_id.location_id', readonly=False)
+
+    availiable_product_ids = fields.Many2many(related='pos_config_id.availiable_product_ids', readonly=False)
 
 
