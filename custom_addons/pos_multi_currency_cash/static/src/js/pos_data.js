@@ -36,7 +36,6 @@ patch(CashOpeningPopup.prototype, {
 
     //@override
 	async confirm() {
-        console.log(this.pos.currencies);
         this.correct_journals_for_currencies();
         super.confirm();
     },
@@ -47,9 +46,6 @@ patch(CashOpeningPopup.prototype, {
         });
 
         if (this.pos.currencies.length > 0) {
-            for (let ii = 0; ii < this.pos.currencies.length; ii++) {
-            }
-
             await this.orm.call(
                 "pos.session",
                 "correct_cash_amounts_opening",
@@ -65,17 +61,10 @@ patch(CashOpeningPopup.prototype, {
 
 
 patch(ClosePosPopup.prototype, {
+    // @override
     setup() {
-     	super.setup();
-
-        const initialCashState = { notes: "", payments: {} };
-        this.pos.currencies.forEach((currency) => {
-            initialCashState.payments[currency.id] = {
-                counted: 0,
-            };
-        });
-        this.initialCashState = useState(initialCashState);
-
+        super.setup();
+        this.setCashCurrencies('0');
     },
 
     setCashCurrencies(amount) {
@@ -88,19 +77,17 @@ patch(ClosePosPopup.prototype, {
 
         this.pos.currencies.forEach((currency) => {
             let currency_rate = currency.rate / default_currency_rate;
-            total += parseFloat(this.initialCashState.payments[currency.id].counted) / currency_rate;
+            total += parseFloat(currency.counted) / currency_rate;
         });
 
         this.state.payments[this.props.default_cash_details.id].counted = this.env.utils.formatCurrency(total, false);
     },
 
-
     async correct_journals_for_currencies() {
         if (this.pos.currencies.length > 0) {
-            for (let ii = 0; ii < this.pos.currencies.length; ii++) {
-                const currency = this.pos.currencies[ii];
-                currency['counted'] = parseFloat(this.initialCashState.payments[currency.id].counted);
-            }
+            this.pos.currencies.forEach((currency) => {
+                currency['counted'] = parseFloat(currency['counted']);
+            });
 
             await this.orm.call(
                 "pos.session",
@@ -118,8 +105,8 @@ patch(ClosePosPopup.prototype, {
 patch(PosStore.prototype, {
     async _processData(loadedData) {
 		await super._processData(loadedData);
-        console.log(this);
         this.currencies = loadedData['currencies'];
+        console.log(this.currencies);
 	},
 
     formatCurrency(amount, currency_id) {

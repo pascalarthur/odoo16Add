@@ -117,6 +117,7 @@ class PosSession(models.Model):
                 'rounding': journal_id.currency_id.rounding,
                 'rate': journal_id.currency_id.rate,
                 'journal_id': journal_id.id,
+                'counted': 0,
             })
 
         loaded_data['currencies'] = currencies

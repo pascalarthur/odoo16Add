@@ -50,9 +50,9 @@
                             <tbody>
                                 <tr t-foreach="this.pos.currencies" t-as="currency" t-key="currency.id">
                                     <td t-esc="currency.name"/>
-                                    <td t-esc="this.pos.formatCurrency(initialCashState.payments[currency.id].counted, currency.id)"/>
+                                    <td t-esc="this.pos.formatCurrency(currency.counted, currency.id)"/>
                                     <td class="d-flex">
-                                        <Input tModel="[initialCashState.payments[currency.id], 'counted']"
+                                        <Input tModel="[currency, 'counted']"
                                             callback.bind="(value) => this.setCashCurrencies(value)"
                                             isValid.bind="env.utils.isValidFloat"/>
                                         <div class="button icon ClosePosPopup btn btn-secondary" t-on-click="openDetailsPopup">
