@@ -17,6 +17,53 @@ import { roundPrecision as round_pr } from "@web/core/utils/numbers";
 import { _t } from "@web/core/l10n/translation";
 
 
+patch(CashOpeningPopup.prototype, {
+    setCashCurrencies(amount) {
+        if (!this.env.utils.isValidFloat(amount) || amount == 'NaN' || amount == '') {
+            return;
+        }
+
+        let total = 0;
+        let default_currency_rate = this.pos.currency.rate;
+
+        this.pos.currencies.forEach((currency) => {
+            let currency_rate = currency.rate / default_currency_rate;
+            total += parseFloat(currency.counted) / currency_rate;
+        });
+
+        this.state.openingCash = this.env.utils.formatCurrency(total, false);
+    },
+
+    //@override
+	async confirm() {
+        this.correct_journals_for_currencies();
+        super.confirm();
+    },
+
+    async correct_journals_for_currencies() {
+        this.pos.currencies.forEach((currency) => {
+            currency['counted'] = parseFloat(currency['counted']);
+        });
+        console.log(this.pos.currencies);
+
+        if (this.pos.currencies.length > 0) {
+            for (let ii = 0; ii < this.pos.currencies.length; ii++) {
+            }
+
+            await this.orm.call(
+                "pos.session",
+                "correct_cash_amounts_opening",
+                [this.pos.pos_session.id],
+                {
+                    cash_amounts_in_currencies: this.pos.currencies,
+                }
+            );
+        }
+    }
+
+});
+
+
 patch(ClosePosPopup.prototype, {
     setup() {
      	super.setup();
@@ -32,19 +79,19 @@ patch(ClosePosPopup.prototype, {
     },
 
     //@override
-	getInitialState() {
-		const initialState = super.getInitialState();
+	// getInitialState() {
+	// 	const initialState = super.getInitialState();
 
-		this.props.other_payment_methods.forEach((pm) => {
-            console.log(pm)
-            if (pm.type === "cash") {
-                initialState.payments[pm.id] = {
-                    counted: this.env.utils.formatCurrency(pm.amount, false),
-                };
-            }
-        });
-        return initialState;
-    },
+	// 	this.props.other_payment_methods.forEach((pm) => {
+    //         console.log(pm)
+    //         if (pm.type === "cash") {
+    //             initialState.payments[pm.id] = {
+    //                 counted: this.env.utils.formatCurrency(pm.amount, false),
+    //             };
+    //         }
+    //     });
+    //     return initialState;
+    // },
 
     setCashCurrencies(amount) {
         if (!this.env.utils.isValidFloat(amount) || amount == 'NaN' || amount == '') {
@@ -79,13 +126,13 @@ patch(ClosePosPopup.prototype, {
 
             await this.orm.call(
                 "pos.session",
-                "correct_cash_amounts",
+                "correct_cash_amounts_closing",
                 [this.pos.pos_session.id],
                 {
                     cash_amounts_in_currencies: this.pos.currencies,
                 }
             );
-            }
+        }
     }
 });
 

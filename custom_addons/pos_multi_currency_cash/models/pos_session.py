@@ -6,8 +6,9 @@ from odoo.exceptions import ValidationError, UserError
 class PosSession(models.Model):
     _inherit = 'pos.session'
 
-    def correct_cash_amounts(self, cash_amounts_in_currencies: List[dict]):
-        # print('correct_cash_amounts', 'location_id', self.config_id.location_id.id)
+
+    def correct_cash_amounts_opening(self, cash_amounts_in_currencies: List[dict]):
+        # print('correct_cash_amounts_opening', 'location_id', self.config_id.location_id.id)
 
         # Obtain the POS configuration from self (assuming self is a POS order or related model)
         pos_config = self.config_id
@@ -30,9 +31,51 @@ class PosSession(models.Model):
             if cash['id'] == default_currency_id:
                 continue
 
-            exchange_rate = default_cash['rate'] / cash['rate']
+            exchange_rate = cash['rate'] / default_cash['rate']
 
-            converted_amount = cash['counted'] * exchange_rate
+            # Create an AccountJournalCurrencyExchange record
+            exchange_vals = {
+                'location_id': self.config_id.location_id.id,  # Assuming self has a location_id attribute
+                'journal_id': default_journal_id,
+                'destination_journal_id': cash['journal_id'],
+                'amount': cash['counted'],
+                'exchange_rate': exchange_rate,
+                'date': fields.Date.today(),
+                'note': f"Exchange from default POS currency to {cash['name']}",
+            }
+
+            exchange_record = self.env['account.journal.currency.exchange'].create(exchange_vals)
+            exchange_record.action_confirm()
+            exchange_record.action_done()
+
+
+    def correct_cash_amounts_closing(self, cash_amounts_in_currencies: List[dict]):
+        # print('correct_cash_amounts_closing', 'location_id', self.config_id.location_id.id)
+
+        # Obtain the POS configuration from self (assuming self is a POS order or related model)
+        pos_config = self.config_id
+
+        # Find the cash payment method in the POS configuration
+        cash_payment_method = pos_config.payment_method_ids.filtered(lambda pm: pm.is_cash_count and pm.journal_id)
+
+        if not cash_payment_method:
+            raise UserError("No cash payment method found in the POS configuration.")
+
+        # Get the default journal and currency from the cash payment method
+        default_journal_id = cash_payment_method.journal_id.id
+        default_currency_id = cash_payment_method.journal_id.currency_id.id or cash_payment_method.journal_id.company_id.currency_id.id
+
+        # Filter out the default currency from the list of cash amounts
+        default_cash = next(cash for cash in cash_amounts_in_currencies if cash['journal_id'] == default_journal_id)
+
+        for cash in cash_amounts_in_currencies:
+            # Skip if the currency is already the default POS currency
+            if cash['id'] == default_currency_id:
+                continue
+
+            exchange_rate = cash['rate'] / default_cash['rate']
+
+            converted_amount = cash['counted'] / exchange_rate
 
             # Create an AccountJournalCurrencyExchange record
             exchange_vals = {
@@ -40,7 +83,7 @@ class PosSession(models.Model):
                 'journal_id': default_journal_id,
                 'destination_journal_id': cash['journal_id'],
                 'amount': converted_amount,
-                'exchange_rate': 1 / exchange_rate,
+                'exchange_rate': exchange_rate,
                 'date': fields.Date.today(),
                 'note': f"Exchange from {cash['name']} to default POS currency",
             }
