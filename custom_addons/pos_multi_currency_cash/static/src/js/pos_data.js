@@ -36,6 +36,7 @@ patch(CashOpeningPopup.prototype, {
 
     //@override
 	async confirm() {
+        console.log(this.pos.currencies);
         this.correct_journals_for_currencies();
         super.confirm();
     },
@@ -44,7 +45,6 @@ patch(CashOpeningPopup.prototype, {
         this.pos.currencies.forEach((currency) => {
             currency['counted'] = parseFloat(currency['counted']);
         });
-        console.log(this.pos.currencies);
 
         if (this.pos.currencies.length > 0) {
             for (let ii = 0; ii < this.pos.currencies.length; ii++) {
@@ -78,21 +78,6 @@ patch(ClosePosPopup.prototype, {
 
     },
 
-    //@override
-	// getInitialState() {
-	// 	const initialState = super.getInitialState();
-
-	// 	this.props.other_payment_methods.forEach((pm) => {
-    //         console.log(pm)
-    //         if (pm.type === "cash") {
-    //             initialState.payments[pm.id] = {
-    //                 counted: this.env.utils.formatCurrency(pm.amount, false),
-    //             };
-    //         }
-    //     });
-    //     return initialState;
-    // },
-
     setCashCurrencies(amount) {
         if (!this.env.utils.isValidFloat(amount) || amount == 'NaN' || amount == '') {
             return;
@@ -109,13 +94,6 @@ patch(ClosePosPopup.prototype, {
         this.state.payments[this.props.default_cash_details.id].counted = this.env.utils.formatCurrency(total, false);
     },
 
-    formatCurrency(amount, currency_id) {
-        return formatCurrency(parseFloat(amount), currency_id);
-    },
-
-    getPosCurrencies() {
-        return this.pos.currencies;
-    },
 
     async correct_journals_for_currencies() {
         if (this.pos.currencies.length > 0) {
@@ -140,7 +118,11 @@ patch(ClosePosPopup.prototype, {
 patch(PosStore.prototype, {
     async _processData(loadedData) {
 		await super._processData(loadedData);
+        console.log(this);
         this.currencies = loadedData['currencies'];
-        console.log(this.currencies);
 	},
+
+    formatCurrency(amount, currency_id) {
+        return formatCurrency(parseFloat(amount), currency_id);
+    },
 });

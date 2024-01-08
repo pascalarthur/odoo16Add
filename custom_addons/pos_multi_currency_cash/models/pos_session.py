@@ -31,13 +31,12 @@ class PosSession(models.Model):
             if cash['id'] == default_currency_id:
                 continue
 
-            exchange_rate = cash['rate'] / default_cash['rate']
-
+            exchange_rate = default_cash['rate'] / cash['rate']
             # Create an AccountJournalCurrencyExchange record
             exchange_vals = {
                 'location_id': self.config_id.location_id.id,  # Assuming self has a location_id attribute
-                'journal_id': default_journal_id,
-                'destination_journal_id': cash['journal_id'],
+                'journal_id': cash['journal_id'],
+                'destination_journal_id': default_journal_id,
                 'amount': cash['counted'],
                 'exchange_rate': exchange_rate,
                 'date': fields.Date.today(),

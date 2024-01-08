@@ -16,8 +16,8 @@
                         <tbody>
                             <tr>
                                 <td t-esc="props.default_cash_details.name"/>
-                                <td t-esc="formatCurrency(props.default_cash_details.amount, pos.currency.id)"/>
-                                <td t-esc="formatCurrency(state.payments[props.default_cash_details.id].counted, pos.currency.id)"/>
+                                <td t-esc="this.pos.formatCurrency(props.default_cash_details.amount, pos.currency.id)"/>
+                                <td t-esc="this.pos.formatCurrency(state.payments[props.default_cash_details.id].counted, pos.currency.id)"/>
                                 <td t-esc="env.utils.formatCurrency(getDifference(props.default_cash_details.id))"
                                     t-att-class="{'warning text-danger fw-bolder': !env.utils.floatIsZero(getDifference(props.default_cash_details.id))}"/>
                             </tr>
@@ -50,7 +50,7 @@
                             <tbody>
                                 <tr t-foreach="this.pos.currencies" t-as="currency" t-key="currency.id">
                                     <td t-esc="currency.name"/>
-                                    <td t-esc="formatCurrency(initialCashState.payments[currency.id].counted, currency.id)"/>
+                                    <td t-esc="this.pos.formatCurrency(initialCashState.payments[currency.id].counted, currency.id)"/>
                                     <td class="d-flex">
                                         <Input tModel="[initialCashState.payments[currency.id], 'counted']"
                                             callback.bind="(value) => this.setCashCurrencies(value)"
@@ -86,7 +86,10 @@
 		</xpath>
 	</t>
     <t t-name="CustomCashOpeningPopup" t-inherit="point_of_sale.CashOpeningPopup" t-inherit-mode="extension">
-		<xpath expr="//div[contains(@class, 'cash-input-sub-section')]" position="after">
+		<xpath expr="//div[contains(@class, 'cash-input-sub-section')]" position="replace">
+            <div><strong>Opening Cash</strong></div>
+            <div t-esc="this.pos.formatCurrency(state.openingCash, this.pos.currency.id)"/>
+
             <table class="text-start">
                 <thead>
                     <tr class="text-dark">
