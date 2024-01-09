@@ -32,6 +32,8 @@ class TransportOrderController(http.Controller):
     def submit_form(self, **post):
         token = post.get('token')
 
+        exchange_rate = post.get('nad_to_usd_exchange_rate')
+
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
             transport_order = token_record.transport_order_id
@@ -42,8 +44,10 @@ class TransportOrderController(http.Controller):
             container_numbers = request.httprequest.form.getlist('container_number[]')
             driver_names = request.httprequest.form.getlist('driver_name[]')
             telephone_numbers = request.httprequest.form.getlist('telephone_number[]')
-            prices_per_truck = request.httprequest.form.getlist('price_per_truck[]')
+            price_per_truck = request.httprequest.form.getlist('price_per_truck[]')
             max_loads = request.httprequest.form.getlist('max_load_per_truck[]')
+
+            print('submit_form', exchange_rate, price_per_truck)
 
             for ii in range(len(truck_numbers)):
                 truck_detail = {
@@ -52,7 +56,7 @@ class TransportOrderController(http.Controller):
                     'container_number': container_numbers[ii],
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
-                    'price': float(prices_per_truck[ii]) if prices_per_truck[ii] else 0.0,
+                    'price': float(price_per_truck[ii]) * exchange_rate if price_per_truck[ii] else 0.0,
                     'max_load': float(max_loads[ii]),
                     'transport_order_id': transport_order.id,
                     'partner_id': transport_order.partner_id.id,

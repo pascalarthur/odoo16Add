@@ -3,6 +3,7 @@
     <template id="logistic_form_template" name="Public Form">
         <form action="/submit_form" method="post" id="transport_order_form" class="logistic-form">
             <input type="hidden" name="token" t-att-value="token"/>
+            <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
             <table>
                 <tr>
                     <td><label>Start Address:</label></td>
@@ -94,6 +95,7 @@
         function addTruckDetail() {
             var container = document.getElementById('truck_details_container');
             var truckDetail = document.createElement('div');
+
             truckDetail.class = 'truck-detail';
             truckDetail.classList.add('truck-detail');
             truckDetail.innerHTML = `
@@ -103,22 +105,30 @@
                 <input type="text" name="driver_name[]" placeholder="Driver Name"/>
                 <input type="text" name="telephone_number[]" placeholder="Telephone Number"/>
                 <input type="number" name="max_load_per_truck[]" placeholder="Max. Load [kg]"/>
-                <input type="number" id="priceNad" placeholder="Price in NAD"/>
-                <span id="priceUsd" name="product_price[]" style="margin-left: 10px;">0</span><span style="display: inline-block; width: 5px;"/>USD
+                <input type="number" name="price_per_truck[]" placeholder="Price in NAD" onchange="updateUsdPrice(this)"/>
+                <span class="priceUsd" style="margin-left: 10px;">0 USD</span>
                 <button type="button" onclick="removeTruckDetail(this)">Remove</button>
             `;
             container.appendChild(truckDetail);
+        }
 
-            function updateUsdPrice() {
-                var nadToUsdRate = <t t-raw="nad_to_usd_exchange_rate"/>; // Fetch the exchange rate
-                var nadPrice = document.getElementById('priceNad').value;
-                var usdPrice = nadPrice * nadToUsdRate; // Perform the conversion
-                <!-- document.getElementById('priceUsd').innerText = `${usdPrice.toFixed(2)} USD`; // Update the display -->
-                document.getElementById('priceUsd').innerText = usdPrice.toFixed(2); // Update the display
+        function updateUsdPrice(element) {
+            var nadToUsdRate = <t t-raw="nad_to_usd_exchange_rate"/>; // Fetch the exchange rate
+            var nadPrice = element.value; // Get the value from the passed element
+            var usdPrice = nadPrice * nadToUsdRate; // Perform the conversion
+
+            // Find the corresponding 'priceUsd' element
+            var priceUsdElement = element.nextElementSibling;
+            while (!priceUsdElement.classList.contains('priceUsd')) {
+                priceUsdElement = priceUsdElement.nextElementSibling;
+                if (priceUsdElement == null) {
+                    break;
+                }
             }
 
-            // Event listener for the NAD price input
-            document.getElementById('priceNad').addEventListener('input', updateUsdPrice);
+            if (priceUsdElement) {
+                priceUsdElement.innerText = usdPrice.toFixed(2) + ' USD'; // Update the display
+            }
         }
 
         function removeTruckDetail(element) {
