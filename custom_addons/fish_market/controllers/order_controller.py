@@ -32,7 +32,7 @@ class TransportOrderController(http.Controller):
     def submit_form(self, **post):
         token = post.get('token')
 
-        exchange_rate = post.get('nad_to_usd_exchange_rate')
+        exchange_rate = float(post.get('nad_to_usd_exchange_rate'))
 
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
