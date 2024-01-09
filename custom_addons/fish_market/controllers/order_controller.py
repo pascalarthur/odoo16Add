@@ -16,11 +16,13 @@ class TransportOrderController(http.Controller):
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
             transport_order = token_record.transport_order_id
+            nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
 
             # Pass transport order data to the template
             return http.request.render('fish_market.logistic_form_template', {
                 'supplier': token_record.partner_id,
                 'transport_order': transport_order,
+                'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'token': token,
             })
         else:

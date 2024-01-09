@@ -43,11 +43,14 @@ class SupplierBidOrderController(http.Controller):
 
             addresses = [f'{token_record.partner_id.street}, {token_record.partner_id.city}, {token_record.partner_id.country_id.name}']
 
+            nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
+
             return http.request.render('fish_market.supplier_form_template', {
                 'supplier': token_record.partner_id,
                 'pricelist_id': token_record.pricelist_id,
                 'token': token,
                 'product_temp_vars_dict': product_temp_vars_dict,
+                'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'addresses': addresses,
             })
         else:
