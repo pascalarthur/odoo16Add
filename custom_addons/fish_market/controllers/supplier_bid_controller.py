@@ -26,14 +26,20 @@ class SupplierBidOrderController(http.Controller):
             unique_variants_ids = set(product_variants_map.values())
             # Assign variants to product templates -> Create str for variants
 
-            product_template_variants = defaultdict(list)
-            product_template_variants['categories'] = defaultdict(list)
-            for variant_id in product_variants:
-                product_template_variants['product_template_id'].append(variant_id.product_tmpl_id.id)
-                product_template_variants['product_product_id'].append(variant_id.id)
-                for key in map(int, variant_id.combination_indices.split(',')):
-                    product_template_variants['categories'][product_variants_map[key]].append(attribute_values_map[key])
-                product_template_variants['product_product_str'].append("; ".join([f'{cat}: {lst[-1]}' for cat, lst in product_template_variants['categories'].items()]))
+            product_temp_vars_dict = defaultdict(dict)
+
+            for product_template_id in product_templates:
+                if product_template_id.detailed_type == 'product':
+                    product_temp_vars_dict[product_template_id.id]['name'] = product_template_id.name
+
+                    product_temp_vars_dict[product_template_id.id]['product_variants'] = defaultdict(list)
+                    product_temp_vars_dict[product_template_id.id]['product_variants_str'] = []
+                    product_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', product_template_id.id)])
+                    for product_variant_id in product_variants:
+                        for key in map(int, product_variant_id.combination_indices.split(',')):
+                            product_temp_vars_dict[product_template_id.id]['product_variants'][product_variants_map[key]].append(attribute_values_map[key])
+                        product_temp_vars_dict[product_template_id.id]['product_variants_str'].append("; ".join([f'{cat}: {lst[-1]}' for cat, lst in product_temp_vars_dict[product_template_id.id]['product_variants'].items()]))
+                    product_temp_vars_dict[product_template_id.id]['product_variants_ids'] = product_variants.ids
 
             addresses = [f'{token_record.partner_id.street}, {token_record.partner_id.city}, {token_record.partner_id.country_id.name}']
 
@@ -41,8 +47,7 @@ class SupplierBidOrderController(http.Controller):
                 'supplier': token_record.partner_id,
                 'pricelist_id': token_record.pricelist_id,
                 'token': token,
-                'product_templates': list(zip(product_templates.ids, product_templates.mapped('name'))),
-                'product_template_variants': product_template_variants,
+                'product_temp_vars_dict': product_temp_vars_dict,
                 'addresses': addresses,
             })
         else:

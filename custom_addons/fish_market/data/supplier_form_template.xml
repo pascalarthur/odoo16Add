@@ -23,8 +23,7 @@
 
         </form>
     <script type="text/javascript">
-        var productList = <t t-raw="json.dumps(product_templates)"/>;
-        var product_template_variants = <t t-raw="json.dumps(product_template_variants)"/>;
+        var product_temp_vars_dict = <t t-raw="json.dumps(product_temp_vars_dict)"/>;
         var addressList = <t t-raw="json.dumps(addresses)"/>;
 
         function populateAddressDropdown() {
@@ -45,8 +44,8 @@
 
             var selectHTML = `<select class="product-select" name="product_id[]">
                                 <option value="">Select a product...</option>`;
-            productList.forEach(function(product) {
-                selectHTML += `<option value="${product[0]}">${product[1]}</option>`;
+            Object.entries(product_temp_vars_dict).forEach(function([product_id, product]) {
+                selectHTML += `<option value="${product_id}">${product['name']}</option>`;
             });
             selectHTML += `</select>`;
 
@@ -74,18 +73,19 @@
 
             var productTemplateDetail = productSelect.closest('.product-template-detail');
             var variantsContainer = productTemplateDetail.querySelector('.variants-container');
+            var template_id = productSelect.value
 
             var variantCombination = document.createElement('div');
             variantCombination.classList.add('variant-combination');
 
             var attributeSelectHTML = `<select class="product-select" name="variant_id[]">
-                                        <option value="">Select a product...</option>`;
+                                        <option value="">Select a variant...</option>`;
 
-            for (const [ii, element] of product_template_variants['product_template_id'].entries()) {
-                if (element == templateId) {
-                    var value = product_template_variants['product_product_id'][ii];
-                    attributeSelectHTML += `<option value="${value}">${product_template_variants['product_product_str'][ii]}</option>`;
-                }
+            var product_template_dict = product_temp_vars_dict[template_id]
+
+            for (const [ii, element] of product_template_dict['product_variants_ids'].entries()) {
+                var value = product_template_dict['product_variants_ids'][ii];
+                attributeSelectHTML += `<option value="${value}">${product_template_dict['product_variants_str'][ii]}</option>`;
             }
             attributeSelectHTML += `</select>`;
 

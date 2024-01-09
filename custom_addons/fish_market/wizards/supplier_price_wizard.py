@@ -1,6 +1,6 @@
 from odoo import models, fields, exceptions
 from datetime import datetime
-
+from urllib.parse import urlparse
 
 class PricelistWizard(models.TransientModel):
     _name = 'supplier.price.wizard'
@@ -27,15 +27,17 @@ class PricelistWizard(models.TransientModel):
                 'expiry_date': fields.Datetime.add(datetime.now(), days=1),  # example for 1 day validity
             }])
 
+            base_url = urlparse(self.env['ir.config_parameter'].sudo().get_param('web.base.url')).hostname
+
             email_body = """
                 <p>Hello {partner_name},</p>
                 <p>Do you have new prices or products. Please fill in your price details by following the link below:</p>
                 <a href="{token_url}">Submit Price</a>
-            """.format(partner_name=partner_id.name, token_url=f'https://afromergeodoo.site/supplier_bid/{token_record.token}')
+            """.format(partner_name=partner_id.name, token_url=f"https://{base_url}/supplier_bid/{token_record.token}")
 
             # Send email with token link
             template = self.env.ref('fish_market.email_template')
-            template.with_context(token_url=f'https://afromergeodoo.site/supplier_bid/{token_record.token}').send_mail(
+            template.with_context(token_url=f"https://{base_url}/supplier_bid/{token_record.token}").send_mail(
                 self.id,
                 email_values={'email_to': partner_id.email, 'email_from': my_company_email, 'subject': 'Afromerge Supplier Info', 'body_html': email_body},
                 force_send=True

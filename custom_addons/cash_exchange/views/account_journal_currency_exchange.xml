@@ -43,6 +43,7 @@
                 <field name="destination_journal_id"/>
                 <field name="amount"/>
                 <field name="exchange_rate"/>
+                <field name="amount_in_other_currency"/>
                 <field name="currency_id"/>
                 <field name="destination_currency_id"/>
                 <field name="date"/>
