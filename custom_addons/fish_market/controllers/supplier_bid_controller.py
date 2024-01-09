@@ -63,6 +63,8 @@ class SupplierBidOrderController(http.Controller):
 
         currency_usd_id = request.env['res.currency'].sudo().search([('name', '=', 'USD')], limit=1).id
 
+        exchange_rate = float(post.get('nad_to_usd_exchange_rate'))
+
         if self.check_token(token_record) is True:
             # Process product details
             product_template_ids = request.httprequest.form.getlist('product_id[]')
@@ -81,7 +83,7 @@ class SupplierBidOrderController(http.Controller):
                     'product_id': int(product_ids[i]),
                     'compute_price': 'fixed',
                     'applied_on': '0_product_variant',
-                    'fixed_price': float(product_prices[i]),
+                    'fixed_price': float(product_prices[i]) * exchange_rate,
                     'min_quantity': float(product_quantities[i]),
                     'date_start': fields.Datetime.now(),
                 }

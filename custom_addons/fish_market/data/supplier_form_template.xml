@@ -3,6 +3,7 @@
     <template id="supplier_form_template" name="Public Form">
         <form action="/supplier_bid" method="post" id="supplier_order_form">
             <input type="hidden" name="token" t-att-value="token"/>
+            <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
             <div id="product_details_section">
                 <label>Product Details:</label>
                 <div id="product_templates_container"></div>
@@ -99,28 +100,35 @@
             attributeSelectHTML += `</select>`;
 
             var quantityInputHTML = `<input type="number" name="product_quantity[]" placeholder="Quantity [kg]" style="margin-left: 10px;"/>`;
-            var priceInputNadHTML = `<input type="number" id="priceNad" placeholder="Unit Price [NAD]" style="margin-left: 10px;"/>`;
+            var priceInputNadHTML = `<input type="number" name="product_price[]" placeholder="Price in NAD" onchange="updateUsdPrice(this)"/>`;
+
 
             // Display element for USD price
-            var priceDisplayHTML = `<span id="priceUsd" name="product_price[]" style="margin-left: 10px;">0</span><span style="display: inline-block; width: 5px;"/>USD/Box`;
+            var priceDisplayHTML = `<span class="priceUsd" style="margin-left: 10px;">0 USD/Box</span>`;
 
             variantCombination.innerHTML += attributeSelectHTML + quantityInputHTML + priceInputNadHTML + priceDisplayHTML +
                 `<button type="button" onclick="removeVariantCombination(this)" style="margin-left: 10px;">Remove Variant</button>`;
 
             variantsContainer.appendChild(variantCombination);
+        }
 
-            // Function to convert NAD to USD and display it
-            function updateUsdPrice() {
-                var nadToUsdRate = <t t-raw="nad_to_usd_exchange_rate"/>; // Fetch the exchange rate
-                var nadPrice = document.getElementById('priceNad').value;
-                var usdPrice = nadPrice * nadToUsdRate; // Perform the conversion
-                <!-- document.getElementById('priceUsd').innerText = `${usdPrice.toFixed(2)} USD`; // Update the display -->
-                document.getElementById('priceUsd').innerText = usdPrice.toFixed(2); // Update the display
+        function updateUsdPrice(element) {
+            var nadToUsdRate = <t t-raw="nad_to_usd_exchange_rate"/>; // Fetch the exchange rate
+            var nadPrice = element.value; // Get the value from the passed element
+            var usdPrice = nadPrice * nadToUsdRate; // Perform the conversion
+
+            // Find the corresponding 'priceUsd' element
+            var priceUsdElement = element.nextElementSibling;
+            while (!priceUsdElement.classList.contains('priceUsd')) {
+                priceUsdElement = priceUsdElement.nextElementSibling;
+                if (priceUsdElement == null) {
+                    break;
+                }
             }
 
-            // Event listener for the NAD price input
-            document.getElementById('priceNad').addEventListener('input', updateUsdPrice);
-
+            if (priceUsdElement) {
+                priceUsdElement.innerText = usdPrice.toFixed(2) + ' USD/Box'; // Update the display
+            }
         }
 
         function removeVariantCombination(button) {
