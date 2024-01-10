@@ -106,11 +106,6 @@ patch(ClosePosPopup.prototype, {
 
 patch(Product.prototype, {
     getAvailableStock() {
-        console.log('getAvailableStock TICKET_SCREEN_STATE', this.pos.TICKET_SCREEN_STATE);
-        this.pos.get_order_list().forEach((order) => {
-            console.log('getAvailableStock', order.get_total_with_tax());
-            console.log('getAvailableStock', order.locked);
-        });
         // console.log('getAvailableStock', this.pos.get_order_list());
 		let availableStock = this.pos.available_product_id_quantities[this.id] || 0;
 		return availableStock;
@@ -155,7 +150,10 @@ patch(PosStore.prototype, {
             "get_available_product_quantities",
             [this.pos_session.id],
         );
-        this.available_product_ids = Object.keys(result).map(parseInt);
+        var available_product_ids = []
+        for(var key in result) available_product_ids.push( parseInt(key) );
+
+        this.available_product_ids = available_product_ids;
         this.available_product_id_quantities = result;
     },
 
