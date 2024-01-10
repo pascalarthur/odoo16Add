@@ -105,8 +105,13 @@ patch(ClosePosPopup.prototype, {
 
 
 patch(Product.prototype, {
-	getAvailableStock() {
-        console.log('getAvailableStock', this.pos.available_product_id_quantities);
+    getAvailableStock() {
+        console.log('getAvailableStock TICKET_SCREEN_STATE', this.pos.TICKET_SCREEN_STATE);
+        this.pos.get_order_list().forEach((order) => {
+            console.log('getAvailableStock', order.get_total_with_tax());
+            console.log('getAvailableStock', order.locked);
+        });
+        // console.log('getAvailableStock', this.pos.get_order_list());
 		let availableStock = this.pos.available_product_id_quantities[this.id] || 0;
 		return availableStock;
 	},
@@ -144,6 +149,24 @@ patch(PosStore.prototype, {
         this.available_product_ids = loadedData['available_product_ids'];
         this.available_product_id_quantities = loadedData['available_product_id_quantities'];
 	},
+
+    async _reloadAvailableStock() {
+        const result = await this.orm.call(
+            "pos.session",
+            "get_available_product_quantities",
+            [this.pos_session.id],
+        );
+        this.available_product_ids = Object.keys(result).map(parseInt);
+        this.available_product_id_quantities = result;
+    },
+
+
+    async _save_to_server(orders, options) {
+        const result = await super._save_to_server(orders, options);
+        await this._reloadAvailableStock();
+        return result;
+    },
+
 
     formatCurrency(amount, currency_id) {
         return formatCurrency(parseFloat(amount), currency_id);

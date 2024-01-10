@@ -92,7 +92,7 @@ class PosSession(models.Model):
             exchange_record.action_done()
 
 
-    def _get_available_product_quantities(self):
+    def get_available_product_quantities(self):
         available_product_quantities = {}
         for product in self.config_id.available_product_ids:
             print('product', product)
@@ -102,6 +102,15 @@ class PosSession(models.Model):
                 ('quantity', '>', 0)
             ])
             available_product_quantities[product.id] = sum(stocked_products.mapped('quantity'))
+
+        orders_session = self.env['pos.order'].search_paid_order_ids(self.config_id.id, [], 80, 0)
+        order_ids = [info[0] for info in orders_session['ordersInfo']]
+        order_ids = self.env['pos.order'].search([('id', 'in', order_ids), ('state', 'in', ['paid', 'done'])])
+        for order_id in order_ids:
+            for line in order_id.lines:
+                if line.product_id.id in available_product_quantities:
+                    available_product_quantities[line.product_id.id] -= line.qty
+
         return available_product_quantities
 
     def load_pos_data(self):
@@ -116,8 +125,6 @@ class PosSession(models.Model):
         journal_ids = self.env['account.journal'].sudo().search(
 			domain=[('id', 'in', self.config_id.currency_journal_ids.ids)],
 		)
-        print('Gotcha...')
-
 
         currencies = []
         for journal_id in journal_ids:
@@ -132,7 +139,9 @@ class PosSession(models.Model):
                 'counted': 0,
             })
 
-        loaded_data['available_product_ids'] = self.config_id.available_product_ids.ids
-        loaded_data['available_product_id_quantities'] = self._get_available_product_quantities()
+        available_products = self.get_available_product_quantities()
+
+        loaded_data['available_product_ids'] = available_products.keys()
+        loaded_data['available_product_id_quantities'] = available_products
         loaded_data['currencies'] = currencies
         return loaded_data
