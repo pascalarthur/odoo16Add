@@ -95,7 +95,6 @@ class PosSession(models.Model):
     def get_available_product_quantities(self):
         available_product_quantities = {}
         for product in self.config_id.available_product_ids:
-            print('product', product)
             stocked_products = self.env['stock.quant'].search([
                 ('product_id', '=', product.id),
                 ('location_id', '=', self.config_id.picking_type_id.default_location_src_id.id),
@@ -105,7 +104,8 @@ class PosSession(models.Model):
 
         orders_session = self.env['pos.order'].search_paid_order_ids(self.config_id.id, [], 80, 0)
         order_ids = [info[0] for info in orders_session['ordersInfo']]
-        order_ids = self.env['pos.order'].search([('id', 'in', order_ids), ('state', 'in', ['paid', 'done'])])
+        order_ids = self.env['pos.order'].search([('id', 'in', order_ids), ('session_id', '=', self.id),
+                                                  ('state', 'in', ['paid', 'done'])])
         for order_id in order_ids:
             for line in order_id.lines:
                 if line.product_id.id in available_product_quantities:
@@ -139,9 +139,5 @@ class PosSession(models.Model):
                 'counted': 0,
             })
 
-        available_products = self.get_available_product_quantities()
-
-        loaded_data['available_product_ids'] = available_products.keys()
-        loaded_data['available_product_id_quantities'] = available_products
         loaded_data['currencies'] = currencies
         return loaded_data

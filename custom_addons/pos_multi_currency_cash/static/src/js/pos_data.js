@@ -146,8 +146,7 @@ patch(PosStore.prototype, {
     async _processData(loadedData) {
 		await super._processData(loadedData);
         this.currencies = loadedData['currencies'];
-        this.available_product_ids = loadedData['available_product_ids'];
-        this.available_product_id_quantities = loadedData['available_product_id_quantities'];
+        await this._reloadAvailableStock();
 	},
 
     async _reloadAvailableStock() {
