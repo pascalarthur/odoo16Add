@@ -1,5 +1,6 @@
 /** @odoo-module */
 
+import { Orderline } from "@point_of_sale/app/store/models";
 import { PosStore } from "@point_of_sale/app/store/pos_store";
 import { ProductScreen } from "@point_of_sale/app/screens/product_screen/product_screen";
 import { patch } from "@web/core/utils/patch";
@@ -39,13 +40,37 @@ patch(ProductScreen.prototype, {
                 }
             } else if (numpadMode === "discount") {
                 if (this.pos.use_absolute_discount) {
-                    val = ((val / selectedLine.get_display_price()) * 100).toFixed(3);
+                    let discount_val = ((val / selectedLine.get_display_price_one()) * 100);
+                    selectedLine.set_discount(discount_val);
                 }
-                selectedLine.set_discount(val);
+                else {
+                    selectedLine.set_discount(val);
+                }
+
+
             } else if (numpadMode === "price") {
                 selectedLine.price_type = "manual";
                 selectedLine.set_unit_price(val);
             }
         }
-    }
+    },
+});
+
+
+patch(Orderline.prototype, {
+    get_discount_str() {
+        let total_price = 0.0
+        let discount_val = 0.0
+        if (this.get_discount() >= 100) {
+            discount_val = this.get_unit_price();
+        }
+        else {
+            total_price = this.get_display_price_one() / (1.0 - this.get_discount() / 100.0);
+            discount_val = ((this.discount * total_price) / 100);
+        }
+
+        console.log("get_discount_str 2", discount_val)
+
+        return this.env.utils.formatCurrency(discount_val) + " / " + this.discount.toFixed(4) + " ";
+    },
 });
