@@ -1,7 +1,9 @@
 {
     'name': "Fish_Market",
     'version': '1.0',
-    'depends': ['base', 'purchase', 'web', 'fleet', 'stock', 'sale_management'],
+    'depends': ['base', 'purchase', 'web', 'fleet', 'stock', 'sale_management',
+                'base_accounting_kit', 'hy_currency_rate', 
+                'cash_exchange', 'pos_absolute_discount', 'pos_multi_currency_cash'],
     'author': "Ludwig Gräf",
     'category': 'Category',
     'description': """

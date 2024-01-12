@@ -1,0 +1,545 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* bi_inter_company_transfer
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 13.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-08-25 04:57+0000\n"
+"PO-Revision-Date: 2022-08-25 04:57+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.res_config_settings_view_form
+msgid "<span class=\"o_form_label\">Allow Auto Intercompany Transaction</span>"
+msgstr "<span class=\"o_form_label\">Permitir transacciones automáticas entre empresas</span>"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.res_config_settings_view_form
+msgid "<span class=\"o_form_label\">Auto Create Invoice/Vendor Bills</span>"
+msgstr "<span class=\"o_form_label\">Creación automática de facturas/facturas de proveedores</span>"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.res_config_settings_view_form
+msgid "<span class=\"o_form_label\">Auto Validate Delivery/Receipt</span>"
+msgstr "<span class=\"o_form_label\">Validación automática de entrega/recibo</span>"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.res_config_settings_view_form
+msgid "<span class=\"o_form_label\">Auto Validate Invoice / Vendor Bill</span>"
+msgstr "<span class=\"o_form_label\">Factura de validación automática / factura de proveedor</span>"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_company__allow_auto_intercompany
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_config_settings__allow_auto_intercompany
+msgid "Allow Auto Intercompany Transaction"
+msgstr "Permitir transacciones automáticas entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model:res.groups,name:bi_inter_company_transfer.group_ict_manager_access
+msgid "Allow Intercompany Transfer"
+msgstr "Permitir transferencia entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__apply_type
+msgid "Apply Type"
+msgstr "Tipo de aplicación"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
+msgid "Bill"
+msgstr "Factura"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__bill_count
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__bill_count
+msgid "Bill Count"
+msgstr "Recuento de facturas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_company__create_invoice
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_config_settings__create_invoice
+msgid "Create Invoice/Bill in so/po "
+msgstr "Crear factura/factura en so/po"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.actions.act_window,help:bi_inter_company_transfer.stock_inter_company_transfer_action
+msgid "Create a new Inter Company Transaction"
+msgstr "Crear una nueva transacción entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.actions.act_window,help:bi_inter_company_transfer.return_inter_company_transfer_action
+msgid "Create a new Reverse Inter Company Transfer"
+msgstr "Crear una nueva transferencia inversa entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__create_uid
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__create_uid
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__create_uid
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__create_uid
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__create_date
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__create_date
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__create_date
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__create_date
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__create_date
+msgid "Created on"
+msgstr "Creado en"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__currency_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__currency_id
+msgid "Currency"
+msgstr "Divisa"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__display_name
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__display_name
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__display_name
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__display_name
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__inter_transfer_company__state__draft
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__return_inter_transfer_company__state__draft
+msgid "Draft"
+msgstr "Reclutar"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__from_warehouse
+msgid "From Warehouse"
+msgstr "Desde Almacén"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__from_warehouse
+msgid "From warehouse"
+msgstr "Desde almacén"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__id
+msgid "ID"
+msgstr "IDENTIFICACIÓN"
+
+#. module: bi_inter_company_transfer
+#: model:ir.actions.act_window,name:bi_inter_company_transfer.stock_inter_company_transfer_action
+msgid "Inter Company Transfer"
+msgstr "Transferencia entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.purchase_order_inherit_inter_company_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.sale_order_inherit_inter_company_form
+msgid "Inter Transfer Company"
+msgstr "Inter Transfer Company"
+
+#. module: bi_inter_company_transfer
+#: model:ir.ui.menu,name:bi_inter_company_transfer.inter_company_transfer
+#: model:ir.ui.menu,name:bi_inter_company_transfer.stock_inter_company_transfer_menu1
+msgid "InterCompany Transaction"
+msgstr "Transacción entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_company__intercompany_warehouse_id
+msgid "Intercompany Warehouse"
+msgstr "Almacén intercompañía"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__internal_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_purchase_order__internal_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__internal_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_sale_order__internal_id
+msgid "Internal"
+msgstr "Interna"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__internal_count
+msgid "Internal Count"
+msgstr "Recuento interno"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_purchase_order__inter_transfer_count
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_sale_order__inter_transfer_count
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
+msgid "Internal Transfer"
+msgstr "Transferencia interna"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
+msgid "Invoice"
+msgstr "Factura"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__invoice_count
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__invoice_count
+msgid "Invoice Count"
+msgstr "Recuento de facturas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__invoice_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__invoice_id
+msgid "Invoices"
+msgstr "Facturas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company____last_update
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line____last_update
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company____last_update
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line____last_update
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company____last_update
+msgid "Last Modified on"
+msgstr "Última modificación el"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__write_uid
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__write_uid
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__write_uid
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__write_uid
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__write_date
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__write_date
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__write_date
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__write_date
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__write_date
+msgid "Last Updated on"
+msgstr "Ultima actualización en"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__move_id
+msgid "Move"
+msgstr "Muevete"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__name
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: bi_inter_company_transfer
+#: code:addons/bi_inter_company_transfer/models/purchase_order_inherit.py:0
+#, python-format
+msgid "Please First give access to Create Bill."
+msgstr "Primero dé acceso a Crear factura."
+
+#. module: bi_inter_company_transfer
+#: code:addons/bi_inter_company_transfer/models/purchase_order_inherit.py:0
+#: code:addons/bi_inter_company_transfer/models/sale_order_inherit.py:0
+#: code:addons/bi_inter_company_transfer/models/sale_order_inherit.py:0
+#, python-format
+msgid "Please First give access to Create invoice."
+msgstr "Primero dé acceso a Crear factura."
+
+#. module: bi_inter_company_transfer
+#: code:addons/bi_inter_company_transfer/models/purchase_order_inherit.py:0
+#: code:addons/bi_inter_company_transfer/models/sale_order_inherit.py:0
+#, python-format
+msgid "Please Select Intercompany Warehouse On  %s."
+msgstr "Seleccione Almacén de empresas vinculadas en %s."
+
+#. module: bi_inter_company_transfer
+#: code:addons/bi_inter_company_transfer/models/int_company_transfer.py:0
+#, python-format
+msgid "Please Select any one line for Inter Company Transfer."
+msgstr "Seleccione cualquier línea para la transferencia entre empresas."
+
+#. module: bi_inter_company_transfer
+#: code:addons/bi_inter_company_transfer/models/return_inter_company_transfer.py:0
+#: code:addons/bi_inter_company_transfer/models/return_inter_company_transfer.py:0
+#, python-format
+msgid "Please specify at least one non-zero quantity."
+msgstr "Especifique al menos una cantidad distinta de cero."
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__price_unit
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__price_unit
+msgid "Price"
+msgstr "Precio"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__pricelist_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__pricelist_id
+msgid "Pricelist"
+msgstr "Lista de precios"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__inter_transfer_company__state__process
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__return_inter_transfer_company__state__process
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+msgid "Process"
+msgstr "Proceso"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__product_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__product_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__product_id
+msgid "Product"
+msgstr "Producto"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__product_return_moves
+msgid "Product Return Moves"
+msgstr "Movimientos de devolución de productos"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
+msgid "Product details"
+msgstr "Detalles de producto"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__purchase_count
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__purchase_count
+msgid "Purchase Count"
+msgstr "Recuento de compras"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_purchase_order
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__purchase_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__purchase_id
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__inter_transfer_company__apply_type__purchase
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
+msgid "Purchase Order"
+msgstr "Orden de compra"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company_line__quantity
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__quantity
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__quantity
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.actions.act_window,help:bi_inter_company_transfer.action_return_form_template
+msgid "Record a Reverse Inter Company Transfer"
+msgstr "Registrar una transferencia inversa entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company_line__return_id
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__inter_transfer_company__state__return
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__return_inter_transfer_company__state__return
+msgid "Return"
+msgstr "Devolver"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__return_count
+msgid "Return Count"
+msgstr "Recuento de devoluciones"
+
+#. module: bi_inter_company_transfer
+#: model:ir.actions.act_window,name:bi_inter_company_transfer.return_inter_company_transfer_action
+msgid "Return Inter Company Transfer"
+msgstr "Traslado de ida y vuelta entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.actions.act_window,name:bi_inter_company_transfer.action_return_form_template
+msgid "Return Inter Company stock"
+msgstr "Devolver acciones de Inter Company"
+
+#. module: bi_inter_company_transfer
+#: model:ir.ui.menu,name:bi_inter_company_transfer.return_inter_company_transfer_menu2
+msgid "Return InterCompany Transaction"
+msgstr "Devolución de transacciones entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+msgid "Return Internal Transfer"
+msgstr "Retorno Transferencia Interna"
+
+#. module: bi_inter_company_transfer
+#: code:addons/bi_inter_company_transfer/models/return_inter_company_transfer.py:0
+#: code:addons/bi_inter_company_transfer/models/return_inter_company_transfer.py:0
+#, python-format
+msgid "Return of %s"
+msgstr "Devolución de %s"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+msgid "Reverse"
+msgstr "Inversa"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__sale_count
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__sale_count
+msgid "Sale Count"
+msgstr "Recuento de ventas"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__sale_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__sale_id
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__inter_transfer_company__apply_type__sale
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
+msgid "Sale Order"
+msgstr "Orden de venta"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields.selection,name:bi_inter_company_transfer.selection__inter_transfer_company__apply_type__sale_purchase
+msgid "Sale and Purchase Order"
+msgstr "Orden de compra y venta"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_sale_order
+msgid "Sales Order"
+msgstr "Órdenes de venta"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_sale_order_line
+msgid "Sales Order Line"
+msgstr "Línea de orden de venta"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.res_config_settings_view_form
+msgid "Setup Intercompany Transaction Details"
+msgstr "Configurar detalles de transacción entre empresas"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.actions.act_window,help:bi_inter_company_transfer.return_inter_company_transfer_action
+#: model_terms:ir.actions.act_window,help:bi_inter_company_transfer.stock_inter_company_transfer_action
+msgid ""
+"The operation type system allows you to assign each stock\n"
+"\t\t\toperation a specific type which will alter its views accordingly.\n"
+"\t\t\tOn the operation type you could e.g. specify if packing is needed by default,\n"
+"\t\t\tif it should show the customer."
+msgstr ""
+"El sistema de tipo de operación permite asignar cada stock\n"
+"\t\t\toperación de un tipo específico que modificará sus puntos de vista en consecuencia.\n"
+"\t\t\tEn el tipo de operación, podría, p. especificar si se necesita embalaje por defecto,\n"
+"\t\t\tSi debe mostrar a la cliente."
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,help:bi_inter_company_transfer.field_inter_transfer_company_line__price_unit
+#: model:ir.model.fields,help:bi_inter_company_transfer.field_return_inter_transfer_company_line__price_unit
+msgid ""
+"The sale price is managed from the product template. Click on the 'Configure"
+" Variants' button to set the extra attribute prices."
+msgstr ""
+"El precio de venta se gestiona desde la plantilla de producto. Haga clic en 'Configurar"
+" Botón de variantes para establecer los precios de los atributos extra."
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__to_warehouse
+msgid "To Warehouse"
+msgstr "Al Almacén"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__to_warehouse
+msgid "To warehouse"
+msgstr "Al almacén"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__uom_id
+msgid "Unit of Measure"
+msgstr "Unidad de medida"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_company__validate_invoice
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_config_settings__validate_invoice
+msgid "Validate Invoice/Bill in so/po "
+msgstr "Validar factura/factura en so/po"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_company__validate_picking
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_res_config_settings__validate_picking
+msgid "Validate Receipt/picking in so/po "
+msgstr "Validar Recepción/picking en so/po"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_stock_return_picking_inter_company__wizard_id
+msgid "Wizard"
+msgstr "Mago"
+
+#. module: bi_inter_company_transfer
+#: code:addons/bi_inter_company_transfer/models/return_inter_company_transfer.py:0
+#: code:addons/bi_inter_company_transfer/models/return_inter_company_transfer.py:0
+#, python-format
+msgid "You have manually created product lines, please delete them to proceed"
+msgstr "Ha creado líneas de productos manualmente, elimínelas para continuar"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_inter_transfer_company
+msgid "inter.transfer.company"
+msgstr ""
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_inter_transfer_company_line
+msgid "inter.transfer.company.line"
+msgstr ""
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__product_lines
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__product_lines
+msgid "lines"
+msgstr "líneas"
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
+msgid "process"
+msgstr "proceso"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__return_id
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__internal_id
+msgid "return"
+msgstr "devolver"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_return_inter_transfer_company
+msgid "return.inter.transfer.company"
+msgstr ""
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_return_inter_transfer_company_line
+msgid "return.inter.transfer.company.line"
+msgstr ""
+
+#. module: bi_inter_company_transfer
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_inter_transfer_company__state
+#: model:ir.model.fields,field_description:bi_inter_company_transfer.field_return_inter_transfer_company__state
+msgid "state"
+msgstr "estado"
+
+#. module: bi_inter_company_transfer
+#: model:ir.model,name:bi_inter_company_transfer.model_stock_return_picking_inter_company
+msgid "stock.return.picking.inter.company"
+msgstr ""
+
+#. module: bi_inter_company_transfer
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_lines_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_tree
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_lines_form
+#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_tree
+msgid "tranfer details"
+msgstr "detalles de la transferencia"
