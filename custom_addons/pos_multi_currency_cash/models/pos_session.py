@@ -102,15 +102,6 @@ class PosSession(models.Model):
             ])
             available_product_quantities[product.id] = sum(stocked_products.mapped('quantity'))
 
-        orders_session = self.env['pos.order'].search_paid_order_ids(self.config_id.id, [], 80, 0)
-        order_ids = [info[0] for info in orders_session['ordersInfo']]
-        order_ids = self.env['pos.order'].search([('id', 'in', order_ids), ('session_id', '=', self.id),
-                                                  ('state', 'in', ['paid', 'done'])])
-        for order_id in order_ids:
-            for line in order_id.lines:
-                if line.product_id.id in available_product_quantities:
-                    available_product_quantities[line.product_id.id] -= line.qty
-
         return available_product_quantities
 
     def load_pos_data(self):

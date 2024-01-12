@@ -24,6 +24,9 @@ patch(CashOpeningPopup.prototype, {
         if (!this.env.utils.isValidFloat(amount) || amount == 'NaN' || amount == '') {
             return;
         }
+        if (!this.pos.config.cash_control) {
+            return;
+        }
 
         let total = 0;
         let default_currency_rate = this.pos.currency.rate;
@@ -32,7 +35,6 @@ patch(CashOpeningPopup.prototype, {
             let currency_rate = currency.rate / default_currency_rate;
             total += parseFloat(currency.counted) / currency_rate;
         });
-
         this.state.openingCash = this.env.utils.formatCurrency(total, false);
     },
 
@@ -47,7 +49,7 @@ patch(CashOpeningPopup.prototype, {
             currency['counted'] = parseFloat(currency['counted']);
         });
 
-        if (this.pos.currencies.length > 0) {
+        if (this.pos.config.cash_control && this.pos.currencies.length > 0) {
             await this.orm.call(
                 "pos.session",
                 "correct_cash_amounts_opening",
@@ -73,6 +75,9 @@ patch(ClosePosPopup.prototype, {
         if (!this.env.utils.isValidFloat(amount) || amount == 'NaN' || amount == '') {
             return;
         }
+        if (!this.pos.config.cash_control) {
+            return;
+        }
 
         let total = 0;
         let default_currency_rate = this.pos.currency.rate;
@@ -86,7 +91,7 @@ patch(ClosePosPopup.prototype, {
     },
 
     async correct_journals_for_currencies() {
-        if (this.pos.currencies.length > 0) {
+        if (this.pos.config.cash_control && this.pos.currencies.length > 0) {
             this.pos.currencies.forEach((currency) => {
                 currency['counted'] = parseFloat(currency['counted']);
             });

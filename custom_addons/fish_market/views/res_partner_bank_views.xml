@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Inherit the existing view -->
+        <record id="view_res_partner_bank_form_inherit" model="ir.ui.view">
+            <field name="name">res.partner.bank.form.inherit</field>
+            <field name="model">res.partner.bank</field>
+            <field name="inherit_id" ref="base.view_partner_bank_form"/>
+            <field name="arch" type="xml">
+                <!-- Add your field where you need it in the view -->
+                <xpath expr="//field[@name='allow_out_payment']" position="after">
+                    <field name="branch_code"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

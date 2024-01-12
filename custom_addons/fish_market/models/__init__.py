@@ -11,3 +11,4 @@ from . import account_move
 from . import sale_meta
 from . import access_token
 from . import transport_order
+from . import res_partner_bank

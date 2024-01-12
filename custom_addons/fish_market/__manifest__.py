@@ -2,7 +2,7 @@
     'name': "Fish_Market",
     'version': '1.0',
     'depends': ['base', 'purchase', 'web', 'fleet', 'stock', 'sale_management',
-                'base_accounting_kit', 'hy_currency_rate', 
+                'base_accounting_kit', 'hy_currency_rate',
                 'cash_exchange', 'pos_absolute_discount', 'pos_multi_currency_cash'],
     'author': "Ludwig Gräf",
     'category': 'Category',
@@ -28,6 +28,7 @@
 
         'views/report_invoice.xml',
 
+        'views/res_partner_bank_views.xml',
         'views/inventory.xml',
         'views/route_wizard.xml',
         'views/pricelist.xml',
