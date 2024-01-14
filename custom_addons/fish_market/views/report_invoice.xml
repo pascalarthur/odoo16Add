@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <template id="document_tax_totals_template_inherit" inherit_id="account.document_tax_totals_template">
+
+            <xpath expr="//tr[hasclass('o_total')]" position="after">
+                <t t-if="o.currency_id.id != o.company_id.currency_id.id">
+                    <div>
+                        <strong>Alternative Total Price:</strong>
+                        <span t-field="o.alternative_currency_amount_total"/>
+                    </div>
+                </t>
+            </xpath>
+        </template>
         <template id="invoice_cop" inherit_id="account.report_invoice_document">
             <xpath expr="//div[hasclass('page')]" position="after">
                 <table>
@@ -22,27 +33,25 @@
                     </tr>
                 </table>
                 <br/>
-                <table>
-                    <t t-if="o.partner_bank_id">
-                        <tr>
-                            <td style="padding-right: 10px;"><strong>Banking Details:</strong></td>
-                        </tr>
-                        <tr>
-                            <td><span t-field="o.partner_bank_id.acc_holder_name"/></td>
-                        </tr>
-                        <tr>
-                            <td><span t-field="o.partner_bank_id.bank_name"/></td>
-                        </tr>
-                        <tr t-if="o.partner_bank_id.branch_code">
-                            <td>Branch Code: <span t-field="o.partner_bank_id.branch_code"/></td>
-                        </tr>
-                        <tr>
-                            <td>Acc No: <span t-field="o.partner_bank_id.acc_number"/></td>
-                        </tr>
-                        <tr>
-                            <td>Swift Code: <span t-field="o.partner_bank_id.bank_bic"/></td>
-                        </tr>
-                    </t>
+                <table class="no-border-table">
+                    <tr t-if="o.partner_bank_id" class="no-border-table">
+                        <td style="padding-right: 10px;"><strong>Banking Details:</strong></td>
+                    </tr>
+                    <tr t-if="o.partner_bank_id.acc_holder_name">
+                        <td><span t-field="o.partner_bank_id.acc_holder_name"/></td>
+                    </tr>
+                    <tr t-if="o.partner_bank_id.bank_name">
+                        <td><span t-field="o.partner_bank_id.bank_name"/></td>
+                    </tr>
+                    <tr t-if="o.partner_bank_id.branch_code">
+                        <td>Branch Code: <span t-field="o.partner_bank_id.branch_code"/></td>
+                    </tr>
+                    <tr t-if="o.partner_bank_id.acc_number">
+                        <td>Acc No: <span t-field="o.partner_bank_id.acc_number"/></td>
+                    </tr>
+                    <tr t-if="o.partner_bank_id.bank_bic">
+                        <td>Swift Code: <span t-field="o.partner_bank_id.bank_bic"/></td>
+                    </tr>
                 </table>
             </xpath>
         </template>

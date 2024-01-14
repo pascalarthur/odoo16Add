@@ -2,3 +2,8 @@
     width: 50%;
     height: auto;
 }
+
+.no-border-table, .no-border-table td, .no-border-table tr {
+    border: none;
+    border-collapse: collapse;
+}
