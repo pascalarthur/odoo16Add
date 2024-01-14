@@ -40,6 +40,8 @@ class MetaSaleOrder(models.Model):
     state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft')
     partner_id = fields.Many2one('res.partner', string='Customer')
 
+    transport_product_id = fields.Many2one('product.template', string='Transport Service', required=True)
+
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
     truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
