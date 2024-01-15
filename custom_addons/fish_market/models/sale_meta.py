@@ -40,7 +40,7 @@ class MetaSaleOrder(models.Model):
     state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft')
     partner_id = fields.Many2one('res.partner', string='Customer')
 
-    transport_product_id = fields.Many2one('product.template', string='Transport Service', required=True)
+    transport_product_id = fields.Many2one('product.template', string='Transport Service', domain=[('type', '=', 'transport')])
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
@@ -75,8 +75,9 @@ class MetaSaleOrder(models.Model):
         # Logic to find transporters
         logistic_partner_ids = self.env['res.partner'].search([('category_id.name', '=', 'Logistic')]).ids
 
-        location_id = self.order_line_ids[0].location_id
-        warehouse = self.get_warehouse(location_id.warehouse_id)
+        start_warehouse_id = self.transport_product_id.start_warehouse_id
+        destination_warehouse_id = self.transport_product_id.destination_warehouse_id
+
 
         return {
             'type': 'ir.actions.act_window',
@@ -90,19 +91,19 @@ class MetaSaleOrder(models.Model):
                 'default_partner_ids': logistic_partner_ids,
                 'default_container_demand': self.container_demand,
 
-                'default_route_start_street': warehouse.partner_id.street,
-                'default_route_start_street2': warehouse.partner_id.street2,
-                'default_route_start_zip': warehouse.partner_id.zip,
-                'default_route_start_city': warehouse.partner_id.city,
-                'default_route_start_state_id': warehouse.partner_id.state_id.id,
-                'default_route_start_country_id': warehouse.partner_id.country_id.id,
+                'default_route_start_street': start_warehouse_id.partner_id.street,
+                'default_route_start_street2': start_warehouse_id.partner_id.street2,
+                'default_route_start_zip': start_warehouse_id.partner_id.zip,
+                'default_route_start_city': start_warehouse_id.partner_id.city,
+                'default_route_start_state_id': start_warehouse_id.partner_id.state_id.id,
+                'default_route_start_country_id': start_warehouse_id.partner_id.country_id.id,
 
-                'default_route_end_street': self.partner_id.street,
-                'default_route_end_street2': self.partner_id.street2,
-                'default_route_end_zip': self.partner_id.zip,
-                'default_route_end_city': self.partner_id.city,
-                'default_route_end_state_id': self.partner_id.state_id.id,
-                'default_route_end_country_id': self.partner_id.country_id.id,
+                'default_route_end_street': destination_warehouse_id.street,
+                'default_route_end_street2': destination_warehouse_id.street2,
+                'default_route_end_zip': destination_warehouse_id.zip,
+                'default_route_end_city': destination_warehouse_id.city,
+                'default_route_end_state_id': destination_warehouse_id.state_id.id,
+                'default_route_end_country_id': destination_warehouse_id.country_id.id,
             },
         }
 

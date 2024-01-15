@@ -19,6 +19,7 @@
                     <group>
                         <field name="name"/>
                         <field name="partner_id"/>
+                        <field name="transport_product_id"/>
 
                         <field name="order_line_ids">
                             <tree editable="bottom">

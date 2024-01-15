@@ -8,7 +8,11 @@
             <field name="inherit_id" ref="product.product_template_only_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='categ_id']" position="after">
-                    <field name="box_weight"/>
+                    <field name="box_weight" invisible="detailed_type != 'product'"/>
+                </xpath>
+                <xpath expr="//field[@name='invoice_policy']" position="after">
+                    <field name="start_warehouse_id" invisible="detailed_type != 'transport'"/>
+                    <field name="destination_warehouse_id" invisible="detailed_type != 'transport'"/>
                 </xpath>
             </field>
         </record>
