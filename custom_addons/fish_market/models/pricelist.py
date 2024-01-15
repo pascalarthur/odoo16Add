@@ -6,6 +6,7 @@ class PriceCollectionItem(models.Model):
     _description = 'Collect fish prices here to make better purchase decisions.'
 
     partner_id = fields.Many2one('res.partner', string='Supplier')
+    truck_id = fields.Many2one('truck.detail', string='Truck')
 
     def action_buy(self):
         if not self:

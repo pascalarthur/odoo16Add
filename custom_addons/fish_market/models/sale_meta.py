@@ -40,7 +40,8 @@ class MetaSaleOrder(models.Model):
     state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft')
     partner_id = fields.Many2one('res.partner', string='Customer')
 
-    transport_product_id = fields.Many2one('product.template', string='Transport Service', domain=[('type', '=', 'transport')])
+    transport_product_id = fields.Many2one('product.template', string='Transport Route', domain=[('type', '=', 'transport')])
+    transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist')
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
@@ -98,12 +99,12 @@ class MetaSaleOrder(models.Model):
                 'default_route_start_state_id': start_warehouse_id.partner_id.state_id.id,
                 'default_route_start_country_id': start_warehouse_id.partner_id.country_id.id,
 
-                'default_route_end_street': destination_warehouse_id.street,
-                'default_route_end_street2': destination_warehouse_id.street2,
-                'default_route_end_zip': destination_warehouse_id.zip,
-                'default_route_end_city': destination_warehouse_id.city,
-                'default_route_end_state_id': destination_warehouse_id.state_id.id,
-                'default_route_end_country_id': destination_warehouse_id.country_id.id,
+                'default_route_end_street': destination_warehouse_id.partner_id.street,
+                'default_route_end_street2': destination_warehouse_id.partner_id.street2,
+                'default_route_end_zip': destination_warehouse_id.partner_id.zip,
+                'default_route_end_city': destination_warehouse_id.partner_id.city,
+                'default_route_end_state_id': destination_warehouse_id.partner_id.state_id.id,
+                'default_route_end_country_id': destination_warehouse_id.partner_id.country_id.id,
             },
         }
 

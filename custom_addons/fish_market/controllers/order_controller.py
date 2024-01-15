@@ -1,3 +1,4 @@
+from collections import defaultdict
 from odoo import http, fields
 from odoo.http import request
 
@@ -17,12 +18,23 @@ class TransportOrderController(http.Controller):
         if self.check_token(token_record) is True:
             transport_order = token_record.transport_order_id
             nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
+            transport_product_id = transport_order.meta_sale_order_id.transport_product_id
+            transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', transport_product_id.id)])
+
+            attribute_values = http.request.env['product.template.attribute.value'].sudo().search([])
+            product_variants_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
+
+            transport_product_product_ids = {}
+            for product_variant_id in transport_variants:
+                for key in map(int, product_variant_id.combination_indices.split(',')):
+                    transport_product_product_ids[product_variants_map[key]] = product_variant_id.id
 
             # Pass transport order data to the template
             return http.request.render('fish_market.logistic_form_template', {
                 'supplier': token_record.partner_id,
                 'transport_order': transport_order,
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
+                'transport_product_product_ids': transport_product_product_ids,
                 'token': token,
             })
         else:
@@ -46,31 +58,46 @@ class TransportOrderController(http.Controller):
             telephone_numbers = request.httprequest.form.getlist('telephone_number[]')
             price_per_truck = request.httprequest.form.getlist('price_per_truck[]')
             max_loads = request.httprequest.form.getlist('max_load_per_truck[]')
+            product_prodcut_ids = request.httprequest.form.getlist('product_prodcut_ids[]')
 
-            print('submit_form', exchange_rate, price_per_truck)
+            print(product_prodcut_ids)
 
             for ii in range(len(truck_numbers)):
+                price = float(price_per_truck[ii]) * exchange_rate if price_per_truck[ii] else 0.0
+
                 truck_detail = {
+                    'transport_order_id': transport_order.id,
+                    'meta_sale_order_id': transport_order.meta_sale_order_id.id,
                     'truck_number': truck_numbers[ii],
                     'horse_number': horse_numbers[ii],
                     'container_number': container_numbers[ii],
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
-                    'price': float(price_per_truck[ii]) * exchange_rate if price_per_truck[ii] else 0.0,
+
+                    'price': price,
                     'max_load': float(max_loads[ii]),
-                    'transport_order_id': transport_order.id,
-                    'partner_id': transport_order.partner_id.id,
-                    'meta_sale_order_id': transport_order.meta_sale_order_id.id,
                 }
-                request.env['truck.detail'].create(truck_detail)
+
+                truck_id = request.env['truck.detail'].create(truck_detail)
+
+                product_detail = {
+                    'truck_id': truck_id.id,
+                    'pricelist_id': int(transport_order.meta_sale_order_id.transport_pricelist_id.id),
+                    'partner_id': token_record.partner_id.id,
+                    'product_tmpl_id': int(transport_order.meta_sale_order_id.transport_product_id.id),
+                    'product_id': int(product_prodcut_ids[ii]),
+                    'compute_price': 'fixed',
+                    'applied_on': '0_product_variant',
+                    'fixed_price': price,
+                }
+                pricelist_id = request.env['product.pricelist.item'].create(product_detail)
 
             transport_order.write({
                 'state': 'received',
-                # Handle the overall price if needed
             })
 
             # Optionally, mark the token as used
-            token_record.is_used = True
+            # token_record.is_used = True
 
             return "Form submitted successfully!"
         else:

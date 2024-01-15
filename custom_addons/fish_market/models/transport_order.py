@@ -156,6 +156,8 @@ class TransportOrder(models.Model):
     container_offer = fields.Integer(string='Container Offer', compute='_compute_container_offer')
     additional_details = fields.Text(string='Additional Details')
 
+    product_template_id = fields.Many2one('product.template', string='Product Template')
+
     partner_id = fields.Many2one('res.partner')
 
     state = fields.Selection(

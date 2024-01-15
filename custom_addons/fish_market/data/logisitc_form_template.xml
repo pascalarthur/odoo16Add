@@ -76,7 +76,7 @@
             </div>
 
             <!-- Submit Button -->
-            <input type="submit" value="Confirm Price"/>
+            <button type="button" value="Confirm Price" onclick="handleSubmit()">Submit</button>
 
             <footer>
                 <div>
@@ -87,6 +87,9 @@
         </form>
     <script type="text/javascript">
         var nad_to_usd_exchange_rate = <t t-raw="nad_to_usd_exchange_rate"/>;
+        var transport_product_product_ids = <t t-raw="transport_product_product_ids"/>;
+        const product_prodcut_ids = {};
+        var truck_counter = 0;
 
         function populateExchangeRate() {
             document.getElementById('exchange_rate_display').innerText = `${parseFloat(nad_to_usd_exchange_rate).toFixed(5)} [NAD/USD]`;
@@ -94,7 +97,21 @@
 
         function addTruckDetail() {
             var container = document.getElementById('truck_details_container');
+            var truckDetail = getTruckDiv('One-Way')
+            container.appendChild(truckDetail);
+        }
+
+        function add_backload(one_way_element) {
+            var truckDetail = getTruckDiv('Backload')
+            one_way_element.parentNode.appendChild(truckDetail);
+        };
+
+        function getTruckDiv(product_product_type) {
             var truckDetail = document.createElement('div');
+
+            truckDetail.setAttribute('data-index', truck_counter);
+            product_prodcut_ids[truck_counter] = transport_product_product_ids[product_product_type];
+            truck_counter += 1;
 
             truckDetail.class = 'truck-detail';
             truckDetail.classList.add('truck-detail');
@@ -109,7 +126,15 @@
                 <span class="priceUsd" style="margin-left: 10px;">0 USD</span>
                 <button type="button" onclick="removeTruckDetail(this)">Remove</button>
             `;
-            container.appendChild(truckDetail);
+            if (product_product_type == 'One-Way') {
+                truckDetail.innerHTML += `
+                    <button type="button" onclick="add_backload(this)">Add Backload</button>
+                `;
+            }
+
+
+
+            return truckDetail;
         }
 
         function updateUsdPrice(element) {
@@ -132,13 +157,31 @@
         }
 
         function removeTruckDetail(element) {
+            var index = parseInt(element.parentNode.dataset.index);
+            product_prodcut_ids[index] = null;
+
             element.parentNode.remove();
-        }
+        };
 
         // Call these functions to initialize the form
         window.onload = function() {
             populateExchangeRate(); // Populate the exchange rate on load
         };
+
+        function handleSubmit() {
+            console.log('Submitting form...');
+            const form = document.getElementById('transport_order_form');
+            Object.entries(product_prodcut_ids).forEach(([key, value]) => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'product_prodcut_ids[]';
+                hiddenInput.value = value;
+                form.appendChild(hiddenInput);
+            });
+
+            form.submit(); // Submit the form
+        };
+
     </script>
     <style>
         .logistic-form {
