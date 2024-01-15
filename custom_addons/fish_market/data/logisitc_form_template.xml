@@ -98,11 +98,17 @@
         function addTruckDetail() {
             var container = document.getElementById('truck_details_container');
             var truckDetail = getTruckDiv('One-Way')
+            var heading = document.createElement('h3');
+            heading.innerText = 'One-Way';
+            container.appendChild(heading);
             container.appendChild(truckDetail);
         }
 
         function add_backload(one_way_element) {
             var truckDetail = getTruckDiv('Backload')
+            var backload_heading = document.createElement('h3');
+            backload_heading.innerText = 'Backload';
+            one_way_element.parentNode.appendChild(backload_heading);
             one_way_element.parentNode.appendChild(truckDetail);
         };
 
@@ -131,8 +137,6 @@
                     <button type="button" onclick="add_backload(this)">Add Backload</button>
                 `;
             }
-
-
 
             return truckDetail;
         }
@@ -172,11 +176,13 @@
             console.log('Submitting form...');
             const form = document.getElementById('transport_order_form');
             Object.entries(product_prodcut_ids).forEach(([key, value]) => {
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'product_prodcut_ids[]';
-                hiddenInput.value = value;
-                form.appendChild(hiddenInput);
+                if (value) {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'product_prodcut_ids[]';
+                    hiddenInput.value = value;
+                    form.appendChild(hiddenInput);
+                }
             });
 
             form.submit(); // Submit the form
