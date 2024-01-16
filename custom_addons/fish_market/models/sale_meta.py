@@ -42,9 +42,17 @@ class MetaSaleOrder(models.Model):
 
     transport_product_id = fields.Many2one('product.template', string='Transport Route', domain=[('type', '=', 'transport')])
     transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist')
+    transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id', string='Transport Pricelist Items')
+
+    transport_pricelist_backloads_count = fields.Integer(compute='_compute_transport_pricelist_backloads_count')
+
+    def _compute_transport_pricelist_backloads_count(self):
+        for record in self:
+            record.transport_pricelist_backloads_count = len(record.transport_pricelist_item_ids.mapped('backload_id'))
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
+
     truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
     truck_ids_with_load = fields.One2many('truck.detail', compute='_compute_truck_ids_with_load')
 
@@ -79,7 +87,6 @@ class MetaSaleOrder(models.Model):
         start_warehouse_id = self.transport_product_id.start_warehouse_id
         destination_warehouse_id = self.transport_product_id.destination_warehouse_id
 
-
         return {
             'type': 'ir.actions.act_window',
             'name': 'Route Supplier Communication',
@@ -109,16 +116,13 @@ class MetaSaleOrder(models.Model):
         }
 
     def action_allocate_transporters(self):
-
         # Step 1: Raise a warning if no transporter replied yet
-        if not self.transport_order_ids or not any(self.transport_order_ids.mapped('truck_ids')):
+        if not self.transport_pricelist_item_ids or not any(self.transport_pricelist_item_ids.mapped('truck_id')):
             raise exceptions.UserError("No transport offers have been received yet.")
 
         # Step 2: Clear existing allocations
-        for transport_order in self.transport_order_ids:
-            for truck in transport_order.truck_ids:
-                # Assuming truck.load_line_ids is the One2many field linking to TruckLoadLine
-                truck.load_line_ids.unlink()  # This will delete the TruckLoadLine records
+        for pricelist_item_id in self.transport_pricelist_item_ids:
+            pricelist_item_id.truck_id.load_line_ids.unlink()  # This will delete the TruckLoadLine records
 
         # Step 3: Proceed with new allocations
         for order_line in self.order_line_ids:
@@ -130,22 +134,20 @@ class MetaSaleOrder(models.Model):
 
             required_quantity = order_line.quantity # Assuming 'quantity' is the correct field
             allocated_quantity = 0.0
+            truck_ids = self.transport_pricelist_item_ids.mapped('truck_id').sorted(key=lambda t: t.price_per_kg)
+            for truck in truck_ids:
+                if allocated_quantity >= required_quantity:
+                    break
 
-            for transport_order in self.transport_order_ids:
-                trucks = transport_order.truck_ids.sorted(key=lambda t: t.price_per_kg)
-                for truck in trucks:
-                    if allocated_quantity >= required_quantity:
-                        break
+                # Assuming 'max_load' represents the capacity and there's a field to track allocated capacity
+                available_capacity = truck.max_load - sum(line.quantity * line.product_id.weight for line in truck.load_line_ids)
+                available_capacity = available_capacity // product.weight  # Convert to product quantity
 
-                    # Assuming 'max_load' represents the capacity and there's a field to track allocated capacity
-                    available_capacity = truck.max_load - sum(line.quantity * line.product_id.weight for line in truck.load_line_ids)
-                    available_capacity = available_capacity // product.weight  # Convert to product quantity
-
-                    # It is only worthwile to pick up 10 boxes or more
-                    if available_capacity > 10:
-                        quantity_to_allocate = min(required_quantity - allocated_quantity, available_capacity)
-                        truck.allocate_product(product, order_line.unit_price, location_id, quantity_to_allocate)
-                        allocated_quantity += quantity_to_allocate
+                # It is only worthwile to pick up 10 boxes or more
+                if available_capacity > 10:
+                    quantity_to_allocate = min(required_quantity - allocated_quantity, available_capacity)
+                    truck.allocate_product(product, order_line.unit_price, location_id, quantity_to_allocate)
+                    allocated_quantity += quantity_to_allocate
 
         self.ensure_one()
         self.state = 'allocated'
@@ -271,4 +273,17 @@ class MetaSaleOrder(models.Model):
             'views': [(False, 'form')],
             'target': 'new',
             'context': {'form_view_initial_mode': 'edit'},
+        }
+
+    def action_view_optional_backloads(self):
+        self.ensure_one()
+        active_transport_ids = self.transport_pricelist_item_ids
+        backload_filtered_ids = active_transport_ids.mapped('backload_id').ids
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Optional Backloads',
+            'view_mode': 'tree,form',
+            'res_model': 'product.pricelist.item',
+            'domain': [('id', 'in', backload_filtered_ids), ('meta_sale_order_id', '=', self.id)],
+            'target': 'current',
         }

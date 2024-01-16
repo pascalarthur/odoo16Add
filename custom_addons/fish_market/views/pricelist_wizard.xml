@@ -7,6 +7,8 @@
             <form>
                 <group>
                     <field name="pricelist_id"/>
+                    <field name="email_body"/>
+                    <field name="detailed_type"/>
                 </group>
                 <footer>
                     <button string="Confirm" type="object" name="confirm_selection" class="btn-primary"/>

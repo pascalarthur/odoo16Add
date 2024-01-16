@@ -35,7 +35,9 @@ class SaleOrder(models.Model):
             'email_layout_xmlid': 'mail.mail_notification_layout_with_responsible_signature',
         }
         msg = self.env['mail.compose.message'].create(ctx)
+        print('action_quotation_send_programmatically 2', mail_template)
         msg.action_send_mail()
+        print('action_quotation_send_programmatically 4')
 
     @api.model
     def _create_invoices(self, grouped=False, final=False):

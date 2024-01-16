@@ -8,6 +8,10 @@ class PriceCollectionItem(models.Model):
     partner_id = fields.Many2one('res.partner', string='Supplier')
     truck_id = fields.Many2one('truck.detail', string='Truck')
 
+    meta_sale_order_id = fields.Many2one('sale.order', string='meta.sale.order')
+    backload_id = fields.Many2one('product.pricelist.item', string='Backload')
+    is_backload = fields.Boolean(string='Is Backload', compute='_is_backload')
+
     def action_buy(self):
         if not self:
             return
@@ -46,7 +50,6 @@ class PriceCollectionItem(models.Model):
                     'currency_id': record.currency_id.id,
                     # Other necessary fields
                 }
-                print(line_vals)
                 Purchase_order_line_obj.create(line_vals)
 
         return {
@@ -56,3 +59,24 @@ class PriceCollectionItem(models.Model):
             'view_mode': 'tree,form',
             'target': 'current',
         }
+
+    def action_ask_exporters(self):
+        for record in self:
+            return {
+                'name': 'Select Pricelist',
+                'type': 'ir.actions.act_window',
+                'view_mode': 'form',
+                'res_model': 'supplier.price.wizard',
+                'target': 'new',
+                'context': {
+                    'default_pricelist_id': record.pricelist_id.id,
+                    'default_email_body': f'Please fill in your price details by following the link below:',
+                },
+            }
+
+    def _is_backload(self):
+        attribute_values = self.env['product.template.attribute.value'].search([])
+        for record in self:
+            product_variants_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
+            for comb in record.product_id.mapped('combination_indices'):
+                record.is_backload = any([product_variants_map[key] == 'Backload' for key in map(int, comb.split(','))])

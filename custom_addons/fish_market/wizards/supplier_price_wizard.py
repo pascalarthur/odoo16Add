@@ -8,6 +8,14 @@ class PricelistWizard(models.TransientModel):
 
     pricelist_id = fields.Many2one('product.pricelist', string='Pricelist', required=True)
 
+    email_body = fields.Char(string='Email Body', required=True, default='Do you have new prices or products. Please fill in your price details by following the link below:')
+
+    detailed_type = fields.Selection([
+        ('consu', 'Consumable'),
+        ('service', 'Service'),
+        ('product', 'Storable Product'),
+        ('transport', 'Transport')], string='Product Type', default='product', required=True)
+
     def confirm_selection(self):
         self.ensure_one()
 
@@ -25,15 +33,17 @@ class PricelistWizard(models.TransientModel):
                 'partner_id': partner_id.id,
                 'pricelist_id': self.pricelist_id.id,
                 'expiry_date': fields.Datetime.add(datetime.now(), days=1),  # example for 1 day validity
+                'detailed_type': self.detailed_type,
             }])
 
             base_url = urlparse(self.env['ir.config_parameter'].sudo().get_param('web.base.url')).hostname
+            token_url=f"https://{base_url}/supplier_bid/{token_record.token}"
 
-            email_body = """
-                <p>Hello {partner_name},</p>
-                <p>Do you have new prices or products. Please fill in your price details by following the link below:</p>
+            email_body = f"""
+                <p>Hello {partner_id.name},</p>
+                <p>{self.email_body}</p>
                 <a href="{token_url}">Submit Price</a>
-            """.format(partner_name=partner_id.name, token_url=f"https://{base_url}/supplier_bid/{token_record.token}")
+            """
 
             # Send email with token link
             template = self.env.ref('fish_market.email_template')

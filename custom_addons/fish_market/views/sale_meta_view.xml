@@ -5,6 +5,11 @@
         <field name="model">meta.sale.order</field>
         <field name="arch" type="xml">
             <form>
+                <div class="oe_button_box" name="button_box">
+                    <button type="object" name="action_view_optional_backloads" class="oe_stat_button" icon="fa-exchange">
+                        <field name="transport_pricelist_backloads_count" widget="statinfo" string="Optional Backloads"/>
+                    </button>
+                </div>
                 <header>
                     <button name="set_transport_state" string="Transport" type="object" class="oe_highlight" invisible="state not in ['draft']"/>
                     <button name="action_find_transporters" string="Find Transport" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
@@ -33,19 +38,17 @@
                         </field>
 
                         <field name="container_demand" readonly="1"/>
-                        <field name="transport_order_ids">
+                        <field name="transport_pricelist_item_ids">
                             <tree>
                                 <field name="partner_id"/>
-                                <field name="container_demand"/>
-                                <field name="container_offer"/>
-                                <field name="price"/>
-                                <field name="state" widget="statusbar"/>
+                                <field name="fixed_price"/>
                             </tree>
                         </field>
 
                         <field name="truck_ids_with_load" string="Allocated Trucks" invisible="state in ['draft','transport']">
                             <tree>
                                 <field name="partner_id"/>
+                                <field name="truck_number"/>
                                 <field name="name"/>
                                 <field name="max_load"/>
                                 <field name="price"/>
