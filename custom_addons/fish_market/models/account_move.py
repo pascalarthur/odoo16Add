@@ -1,4 +1,5 @@
 from odoo import api, models, fields
+from odoo.tools.misc import formatLang
 
 
 class SaleOrder(models.Model):
@@ -11,11 +12,20 @@ class SaleOrder(models.Model):
     driver_name = fields.Char('Driver Name')
     telephone_number = fields.Char('Telephone Number')
 
-    alternative_currency_amount_total = fields.Monetary('Alternative Total Price', currency_field='currency_id', compute='_compute_alternative_currency_amount_total')
-
-    @api.depends('amount_total', 'currency_id')
-    def _compute_alternative_currency_amount_total(self):
+    @api.depends(
+        'invoice_line_ids.currency_rate',
+        'invoice_line_ids.tax_base_amount',
+        'invoice_line_ids.tax_line_id',
+        'invoice_line_ids.price_total',
+        'invoice_line_ids.price_subtotal',
+        'invoice_payment_term_id',
+        'partner_id',
+        'currency_id',
+    )
+    def _compute_tax_totals(self):
+        super(SaleOrder, self)._compute_tax_totals()
         for record in self:
             print('_compute_alternative_currency_amount_total', record.currency_id, record.company_id.currency_id)
             if record.currency_id.id != record.company_id.currency_id.id:
-                record.alternative_currency_amount_total = record.amount_total * record.currency_id.rate
+                self.tax_totals['alternative_currency_amount_total'] = record.amount_total * record.currency_id.rate
+                self.tax_totals['alternative_currency_amount_total_formatted'] = formatLang(self.env, self.tax_totals['alternative_currency_amount_total'], currency_obj=record.company_id.currency_id)

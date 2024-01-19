@@ -4,11 +4,13 @@
         <template id="document_tax_totals_template_inherit" inherit_id="account.document_tax_totals_template">
 
             <xpath expr="//tr[hasclass('o_total')]" position="after">
-                <t t-if="o.alternative_currency_amount_total and o.currency_id.id != o.company_id.currency_id.id">
-                    <div>
-                        <strong>Alternative Total Price:</strong>
-                        <span t-field="o.alternative_currency_amount_total"/>
-                    </div>
+                <t t-if="'alternative_currency_amount_total_formatted' in tax_totals">
+                    <tr class="border-black o_total">
+                        <td><strong>Alt. Currency Total Price</strong></td>
+                        <td  class="text-end">
+                            <span t-out="tax_totals['alternative_currency_amount_total_formatted']">31.05</span>
+                        </td>
+                    </tr>
                 </t>
             </xpath>
         </template>
