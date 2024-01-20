@@ -43,3 +43,10 @@ class StockQuantController(http.Controller):
         stock_quant = http.request.env['stock.quant']
 
         return stock_quant.sell_selected_products()
+
+    @http.route('/fish_market/process_damaged_products', type="json", auth="user")
+    def process_damaged_products(self):
+        inventory_damage_operation = http.request.env['inventory.damage.operation']
+
+        return inventory_damage_operation.process_damaged_products()
+

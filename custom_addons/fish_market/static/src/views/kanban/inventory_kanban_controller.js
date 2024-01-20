@@ -36,4 +36,20 @@ export class InventoryKanbanController extends KanbanController {
             console.error('Error:', error);
         }
     }
+
+    async ConvertDamagedProducts() {
+        try {
+            const action = await this.rpc("/fish_market/process_damaged_products");
+            if (action) {
+                this.actionService.doAction(action, {
+                    additional_context: {
+                        'form_view_initial_mode': 'edit',
+                    },
+                });
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
 }

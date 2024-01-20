@@ -5,6 +5,9 @@
             <button type="button" class="btn btn-primary" style="margin-left: 10px;"  t-on-click="OnTestClick">
                 Sell
             </button>
+            <button type="button" class="btn btn-primary" style="margin-left: 10px;"  t-on-click="ConvertDamagedProducts">
+                Damaged
+            </button>
         </xpath>
     </t>
 </templates>

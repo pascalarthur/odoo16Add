@@ -93,3 +93,33 @@ class DamageOperation(models.Model):
             else:
                 existing_quant_id.write({'quantity': existing_quant_id.quantity + line.quantity})
 
+    def process_damaged_products(self):
+        print('process_damaged_products')
+        selected_quants = self.env['stock.quant'].search([('selected_for_action', '=', True)])
+        if not selected_quants:
+            return False  # No selected products
+
+        # Create a new meta sale order
+        inventory_damage_operation_id = self.create({})
+
+        # Add selected products as order lines
+        for quant in selected_quants:
+            inventory_damage_operation_id.damage_line_ids.create({
+                'damage_id': inventory_damage_operation_id.id,
+                'location_id': quant.location_id.id,
+                'source_product_id': quant.product_id.id,
+                'quantity': quant.quantity,
+            })
+
+        selected_quants.write({'selected_for_action': False})
+
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'inventory.damage.operation',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'res_id': inventory_damage_operation_id.id,
+            'target': 'current',
+            'context': {},
+        }
+
