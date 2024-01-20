@@ -1,0 +1,4 @@
+.large-text {
+    font-size: 25px; /* or any other size */
+    display: inline-block; /* or 'inline' depending on your exact needs */
+}

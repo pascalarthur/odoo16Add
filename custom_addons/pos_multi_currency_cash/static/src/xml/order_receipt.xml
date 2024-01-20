@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="order_receipt_cosmetics">
+	<t t-name="CustomOrderLine" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//li[hasclass('price-per-unit')]" position="replace">
+            <li class="price-per-unit">
+                <div class="large-text">
+                    <em t-esc="line.qty" class="qty fst-normal fw-bolder me-1" /> <t t-if="line.unit" t-esc="line.unit" />
+                </div>
+                x <s t-esc="line.oldUnitPrice" t-if="line.oldUnitPrice" />
+                <t t-esc="line.unitPrice" /> <span t-if="line.unit"> / <t t-esc="line.unit" /></span>
+            </li>
+        </xpath>
+    </t>
+    <t t-name="CustomOrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('pos-receipt-amount')]" position="before">
+            <br/>
+        </xpath>
+    </t>
+</templates>
