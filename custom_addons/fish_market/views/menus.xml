@@ -19,5 +19,7 @@
                 <menuitem id="Logisticians" action="action_custom_partner_logistic_form"/>
             </menuitem>
         </menuitem>
+        <menuitem id="Logisticians" action="action_damage_form"/>
+        <!-- <menuitem id="damages_menu" name="Damages" action="action_damage_form"/> -->
     </menuitem>
 </odoo>

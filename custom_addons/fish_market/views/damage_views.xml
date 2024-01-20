@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_damage_form" model="ir.ui.view">
+        <field name="name">inventory.damage.operation.form</field>
+        <field name="model">inventory.damage.operation</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button string="Confirm" class="oe_highlight" type="object" name="action_confirm" invisible="state in ['confirmed']" />
+                </header>
+                <group>
+                    <field name="name"/>
+                    <field name="damage_line_ids">
+                        <tree>
+                            <field name="source_product_id"/>
+                            <field name="location_id"/>
+                            <field name="quantity" colspan="4"/>
+                        </tree>
+                    </field>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_damage_tree" model="ir.ui.view">
+        <field name="name">inventory.damage.operation.tree</field>
+        <field name="model">inventory.damage.operation</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name"/>
+                <field name="damage_line_ids"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="action_damage_form" model="ir.actions.act_window">
+        <field name="name">Damages</field>
+        <field name="res_model">inventory.damage.operation</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+</odoo>

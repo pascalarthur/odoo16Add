@@ -29,7 +29,6 @@ class SupplierBidOrderController(http.Controller):
             product_temp_vars_dict = defaultdict(dict)
 
             for product_template_id in product_templates:
-                print('product_template_id.detailed_type', token_record.detailed_type)
                 if product_template_id.detailed_type == token_record.detailed_type:
                     product_temp_vars_dict[product_template_id.id]['name'] = product_template_id.name
 
