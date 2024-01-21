@@ -43,6 +43,7 @@ class MetaSaleOrder(models.Model):
     transport_product_id = fields.Many2one('product.template', string='Transport Route', domain=[('type', '=', 'transport')])
     transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist')
     transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id', string='Transport Pricelist Items')
+    transport_pricelist_item_ids_no_backload = fields.One2many('product.pricelist.item', compute='_compute_transport_pricelist_item_ids_no_backload', string='Transport Pricelist Items')
 
     transport_pricelist_backloads_count = fields.Integer(compute='_compute_transport_pricelist_backloads_count')
 
@@ -69,6 +70,12 @@ class MetaSaleOrder(models.Model):
     def _compute_truck_ids_with_load(self):
         for record in self:
             record.truck_ids_with_load = record.truck_ids.filtered(lambda t: t.load_line_ids)
+
+    @api.depends('transport_pricelist_item_ids')
+    def _compute_transport_pricelist_item_ids_no_backload(self):
+        for record in self:
+            record.transport_pricelist_item_ids_no_backload = record.transport_pricelist_item_ids.filtered(lambda t: not t.is_backload)
+
 
     @api.model
     def get_warehouse(self, warehouse_id):

@@ -12,6 +12,8 @@ class PriceCollectionItem(models.Model):
     backload_id = fields.Many2one('product.pricelist.item', string='Backload')
     is_backload = fields.Boolean(string='Is Backload', compute='_is_backload')
 
+    backload_fixed_price = fields.Monetary(string='Backload Fixed Price', compute='_get_backload_fixed_price')
+
     def action_buy(self):
         if not self:
             return
@@ -80,3 +82,10 @@ class PriceCollectionItem(models.Model):
             product_variants_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
             for comb in record.product_id.mapped('combination_indices'):
                 record.is_backload = any([product_variants_map[key] == 'Backload' for key in map(int, comb.split(','))])
+
+    def _get_backload_fixed_price(self):
+        for record in self:
+            if not record.is_backload and record.backload_id:
+                record.backload_fixed_price = record.backload_id.fixed_price
+            else:
+                record.backload_fixed_price = False

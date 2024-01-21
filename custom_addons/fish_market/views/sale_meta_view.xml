@@ -38,10 +38,12 @@
                         </field>
 
                         <field name="container_demand" readonly="1"/>
-                        <field name="transport_pricelist_item_ids">
+                        <field name="transport_pricelist_item_ids_no_backload">
                             <tree>
                                 <field name="partner_id"/>
                                 <field name="fixed_price"/>
+                                <field name="backload_id"/>
+                                <field name="backload_fixed_price"/>
                             </tree>
                         </field>
 

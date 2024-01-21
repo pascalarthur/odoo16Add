@@ -45,6 +45,16 @@
         </field>
     </record>
 
+    <record id="view_pricelist_filter_transport" model="ir.ui.view">
+        <field name="name">product.pricelist.item.transport.filter</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter string="Transport" name="filter_transport" domain="[('pricelist_id.name', '=', 'Transport')]"/>
+            </search>
+        </field>
+    </record>
+
     <record id="fish_prices_walvis_bay_action" model="ir.actions.act_window">
         <field name="name">Pricelist - Walvis Bay</field>
         <field name="res_model">product.pricelist.item</field>
@@ -59,5 +69,13 @@
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_pricelist_filter_zambia"/>
         <field name="context">{'search_default_filter_zambia': 1}</field>
+    </record>
+
+    <record id="transport_pricelist_action" model="ir.actions.act_window">
+        <field name="name">Pricelist - Transport</field>
+        <field name="res_model">product.pricelist.item</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_pricelist_filter_transport"/>
+        <field name="context">{'search_default_filter_transport': 1}</field>
     </record>
 </odoo>

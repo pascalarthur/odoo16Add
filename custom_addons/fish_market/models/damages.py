@@ -1,8 +1,6 @@
 from odoo import models, fields, api, _
 from odoo import exceptions
 
-from collections import defaultdict
-
 from ..utils.model_utils import default_name
 
 
