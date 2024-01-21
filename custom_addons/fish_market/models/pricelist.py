@@ -88,4 +88,4 @@ class PriceCollectionItem(models.Model):
             if not record.is_backload and record.backload_id:
                 record.backload_fixed_price = record.backload_id.fixed_price
             else:
-                record.backload_fixed_price = False
+                record.backload_fixed_price = False 

@@ -21,16 +21,11 @@ class PosConfigInherit(models.Model):
 
     def _compute_available_product_ids(self):
         for res_config in self:
-            available_products = self.env['product.product']
-            for product in self.env['product.product'].search([]):
-                stocked_products = self.env['stock.quant'].search([
-                    ('product_id', '=', product.id),
-                    ('location_id', '=', res_config.picking_type_id.default_location_src_id.id),
-                    ('quantity', '>', 0)
-                ])
-                if stocked_products:
-                    available_products |= product  # Using bitwise OR operator to add products to the record set
-            res_config.available_product_ids = [(6, 0, available_products.ids)]
+            stocked_products = self.env['stock.quant'].search([
+                ('location_id', '=', res_config.picking_type_id.default_location_src_id.id),
+                ('quantity', '>', 0)
+            ])
+            res_config.available_product_ids = [(6, 0, stocked_products.mapped('product_id').ids)]
 
 
 class ResConfigSettings(models.TransientModel):
