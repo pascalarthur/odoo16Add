@@ -61,7 +61,7 @@ class DamageOperation(models.Model):
 
     name = fields.Char(
         string="Reference",
-        required=True, copy=False, readonly=False,
+        required=True, copy=False, readonly=True,
         index='trigram',
         default=lambda self: default_name(self, prefix='DAM/'))
 
@@ -71,6 +71,8 @@ class DamageOperation(models.Model):
         string="Status",
         readonly=True, copy=False, index=True,
         default='draft')
+
+    origin = fields.Char('Source Document', index='trigram', help="Reference of the document", readonly=True)
 
     damage_line_ids = fields.One2many('inventory.damage', 'damage_id', string='Damage Lines')
 
@@ -121,3 +123,26 @@ class DamageOperation(models.Model):
             'context': {},
         }
 
+
+class StockPickingDamageLine(models.Model):
+    _inherit = 'stock.move'
+
+    quantity_damaged = fields.Float('Damaged Quantity')
+
+
+class StockPicking(models.Model):
+    _inherit = 'stock.picking'
+
+    def button_validate(self):
+        res = super(StockPicking, self).button_validate()
+        if sum(self.move_ids_without_package.mapped('quantity_damaged')) > 0:
+            damage_operation = self.env['inventory.damage.operation'].create({"origin": self.name})
+            for line in self.move_ids_without_package:
+                self.env['inventory.damage'].create({
+                    'damage_id': damage_operation.id,
+                    'location_id': self.location_dest_id.id,
+                    'source_product_id': line.product_id.id,
+                    'quantity': line.quantity_damaged,
+                })
+            damage_operation.action_confirm()
+        return res

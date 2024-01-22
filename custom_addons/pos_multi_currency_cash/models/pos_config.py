@@ -25,7 +25,6 @@ class PosConfigInherit(models.Model):
                 ('location_id', '=', res_config.picking_type_id.default_location_src_id.id),
                 ('quantity', '>', 0)
             ])
-            print('_compute_available_product_ids', stocked_products.mapped('product_id').ids)
             res_config.available_product_ids = [(6, 0, stocked_products.mapped('product_id').ids)]
 
 
