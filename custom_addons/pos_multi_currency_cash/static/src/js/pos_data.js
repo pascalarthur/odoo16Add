@@ -132,8 +132,6 @@ patch(Product.prototype, {
 patch(ProductsWidget.prototype, {
     // @override
 	get productsToDisplay() {
-        console.log('productsToDisplay', 'super.productsToDisplay', super.productsToDisplay)
-        console.log('productsToDisplay', 'this.pos.available_product_ids', this.pos.available_product_ids)
         let productsToDisplay = super.productsToDisplay.filter((product) => {
             if (this.pos.available_product_ids.includes(product.id)) {
                 return true;

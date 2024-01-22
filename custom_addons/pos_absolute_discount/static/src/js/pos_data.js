@@ -69,8 +69,6 @@ patch(Orderline.prototype, {
             discount_val = ((this.discount * total_price) / 100);
         }
 
-        console.log("get_discount_str 2", discount_val)
-
         return this.env.utils.formatCurrency(discount_val) + " / " + this.discount.toFixed(4) + " ";
     },
 });

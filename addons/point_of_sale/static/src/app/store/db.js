@@ -546,7 +546,6 @@ export class PosDB {
 
     get_product_by_category(category_id) {
         var product_ids = this.product_by_category_id[category_id];
-        console.log('get_product_by_category', Math.min(product_ids.length, this.limit));
         var list = [];
         if (product_ids) {
             for (var i = 0, len = Math.min(product_ids.length, this.limit); i < len; i++) {
