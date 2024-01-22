@@ -20,7 +20,7 @@ const CACHE = {};
 
 export class PosDB {
     name = "openerp_pos_db"; //the prefix of the localstorage data
-    limit = 100; // the maximum number of results returned by a search
+    limit = 1000; // the maximum number of results returned by a search
     constructor(options) {
         options = options || {};
         this.name = options.name || this.name;
@@ -546,6 +546,7 @@ export class PosDB {
 
     get_product_by_category(category_id) {
         var product_ids = this.product_by_category_id[category_id];
+        console.log('get_product_by_category', Math.min(product_ids.length, this.limit));
         var list = [];
         if (product_ids) {
             for (var i = 0, len = Math.min(product_ids.length, this.limit); i < len; i++) {
