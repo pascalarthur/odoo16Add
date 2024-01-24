@@ -20,6 +20,7 @@
                     <field name="date_end" optional="hide"/>
                     <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                     <field name="backload_id" groups="base.group_multi_company" optional="hide"/>
+                    <field name="notes" optional="show"/>
                 </tree>
             </xpath>
         </field>

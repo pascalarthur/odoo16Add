@@ -12,6 +12,8 @@ class PriceCollectionItem(models.Model):
     backload_id = fields.Many2one('product.pricelist.item', string='Backload')
     is_backload = fields.Boolean(string='Is Backload', compute='_is_backload')
 
+    notes = fields.Text(string='Notes')
+
     backload_fixed_price = fields.Monetary(string='Backload Fixed Price', compute='_get_backload_fixed_price')
 
     def action_buy(self):
@@ -88,4 +90,4 @@ class PriceCollectionItem(models.Model):
             if not record.is_backload and record.backload_id:
                 record.backload_fixed_price = record.backload_id.fixed_price
             else:
-                record.backload_fixed_price = False 
+                record.backload_fixed_price = False

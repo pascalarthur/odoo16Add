@@ -6,25 +6,26 @@
             t-att-data-product-temp-vars-dict="json.dumps(product_temp_vars_dict)"
             t-att-data-nad-to-usd-exchange-rate="nad_to_usd_exchange_rate">
 
-
             <input type="hidden" name="token" t-att-value="token"/>
             <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
+
+            <h2>Product Details</h2>
             <div id="product_details_section">
-                <label>Product Details:</label>
                 <div id="product_templates_container"></div>
                 <button type="button" onclick="addProductTemplate()">Add Product</button>
             </div>
 
-            <div>
-                <label>Pick-Up Address:</label>
-                <select name="delivery_address" id="delivery_address_dropdown"/>
-            </div>
-            <div>
-                <label for="pickup_address">Optional Pick-Up Address:</label>
-                <input type="text" id="pickup_address" name="pickup_address" placeholder="Enter pick-up address"/>
+            <h2>Delivery Details</h2>
+            <div class="pickup-address-section">
+                <label for="delivery_address">Pick-Up Address:</label><br/>
+                <select name="delivery_address" id="delivery_address_dropdown"/><br/>
+                <div id="other_address_section" style="display:none;">
+                    <input type="text" id="pickup_address" name="pickup_address" placeholder="Enter pick-up address" class="input-pickup-address"/>
+                </div>
             </div>
 
-            <input type="submit" value="Confirm"/>
+
+            <input type="submit" value="Confirm" class="submit-button"/>
         </form>
         <footer>
             <div>

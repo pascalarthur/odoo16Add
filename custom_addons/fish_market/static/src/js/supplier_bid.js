@@ -15,6 +15,16 @@ function populateAddressDropdown() {
     addresses.forEach(function(address) {
         dropdown.innerHTML += `<option value="${address}">${address}</option>`;
     });
+    dropdown.innerHTML += `<option value="other">Type in address...</option>`;
+
+    dropdown.addEventListener('change', function() {
+        var otherAddressSection = document.getElementById('other_address_section');
+        if (dropdown.value === 'other') {
+            otherAddressSection.style.display = 'block'; // Show the Other Address input
+        } else {
+            otherAddressSection.style.display = 'none'; // Hide the Other Address input
+        }
+    });
 }
 
 function addProductTemplate() {
@@ -72,8 +82,8 @@ function addVariantCombination(productSelect) {
     }
     attributeSelectHTML += `</select>`;
 
-    var quantityInputHTML = `<input type="number" name="product_quantity[]" placeholder="Quantity [kg]" style="margin-left: 10px;"/>`;
-    var priceInputNadHTML = `<input type="number" name="product_price[]" placeholder="Price in NAD" onchange="updateUsdPrice(this)"/>`;
+    var quantityInputHTML = `<input type="number" name="product_quantity[]" required placeholder="Quantity [kg]" style="margin-left: 10px;"/>`;
+    var priceInputNadHTML = `<input type="number" name="product_price[]" required placeholder="Price in NAD" onchange="updateUsdPrice(this)"/>`;
 
 
     // Display element for USD price

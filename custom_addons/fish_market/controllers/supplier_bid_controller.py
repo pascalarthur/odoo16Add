@@ -76,6 +76,8 @@ class SupplierBidOrderController(http.Controller):
             delivery_address = post.get('delivery_address')
             pickup_address = post.get('pickup_address')
 
+            notes = f"Delivery Address: {pickup_address if delivery_address == 'other' else delivery_address}"
+
             for i in range(len(product_template_ids)):
                 product_detail = {
                     'pricelist_id': token_record.pricelist_id.id,
@@ -87,8 +89,10 @@ class SupplierBidOrderController(http.Controller):
                     'fixed_price': float(product_prices[i]) * exchange_rate,
                     'min_quantity': float(product_quantities[i]),
                     'date_start': fields.Datetime.now(),
+
+                    'notes': notes,
                 }
-                request.env['product.pricelist.item'].create(product_detail)
+                request.env['product.pricelist.item'].sudo().create(product_detail)
 
             # token_record.is_used = True
 

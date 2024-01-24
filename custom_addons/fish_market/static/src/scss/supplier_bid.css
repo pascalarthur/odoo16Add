@@ -1,16 +1,18 @@
 /* Existing styles */
-.product-detail {
+.product-template-detail {
     margin-bottom: 15px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
 }
-.product-detail input, .product-detail select {
+.product-template-detail input, .product-template-detail select {
     margin-right: 10px;
 }
+
 #product_details_section {
-    margin-top: 20px;
+    margin-top: 5px;
 }
+
 .variant-combination {
     display: flex; /* Use flexbox to layout children inline */
     align-items: center; /* Align children vertically */
@@ -39,6 +41,33 @@
 
 .controls-container button {
     white-space: nowrap;
+}
+
+.pickup-address-section {
+    margin-bottom: 10px;
+}
+
+.input-pickup-address {
+    display: block;
+    margin-bottom: 20px; /* Adjust this value to increase space below the input field */
+}
+
+#pickup_address {
+    margin-top: 10px;
+    width: 100%;
+}
+
+.submit-button {
+    display: block; /* Makes the button a block element, which allows for width and margin auto */
+    width: 50%; /* Adjust as needed */
+    padding: 10px 20px; /* Adjust as needed, vertical padding and horizontal padding */
+    font-size: 18px; /* Adjust as needed */
+    margin: 20px auto; /* Adds space above the button and centers it horizontally */
+    cursor: pointer; /* Changes the cursor to a pointer when hovering over the button */
+}
+
+h2 {
+    margin-bottom: 5px;
 }
 
 footer {
