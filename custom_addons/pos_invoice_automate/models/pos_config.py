@@ -3,13 +3,11 @@ from odoo import api, fields, models, _
 
 class PosConfig(models.Model):
     _inherit = 'pos.config'
-
     invoice_auto_check = fields.Boolean()
 
 
-class PosConfig(models.TransientModel):
+class ResConfig(models.TransientModel):
     _inherit = 'res.config.settings'
-
     invoice_auto_check = fields.Boolean(related="pos_config_id.invoice_auto_check", readonly=False)
 
 

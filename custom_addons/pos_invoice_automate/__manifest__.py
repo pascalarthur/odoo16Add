@@ -34,6 +34,7 @@
     'depends': ['account', 'point_of_sale'],
     'website': 'https://www.cybrosys.com',
     'data': [
+        'security/ir.model.access.csv',
         'views/res_config_settings.xml',
     ],
     'assets': {

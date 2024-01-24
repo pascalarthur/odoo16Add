@@ -8,13 +8,8 @@ class PosSession(models.Model):
 
 
     def correct_cash_amounts_opening(self, cash_amounts_in_currencies: List[dict]):
-        # print('correct_cash_amounts_opening', 'location_id', self.config_id.location_id.id)
-
-        # Obtain the POS configuration from self (assuming self is a POS order or related model)
-        pos_config = self.config_id
-
         # Find the cash payment method in the POS configuration
-        cash_payment_method = pos_config.payment_method_ids.filtered(lambda pm: pm.is_cash_count and pm.journal_id)
+        cash_payment_method = self.config_id.payment_method_ids.filtered(lambda pm: pm.is_cash_count and pm.journal_id)
 
         if not cash_payment_method:
             raise UserError("No cash payment method found in the POS configuration.")
@@ -51,11 +46,8 @@ class PosSession(models.Model):
     def correct_cash_amounts_closing(self, cash_amounts_in_currencies: List[dict]):
         # print('correct_cash_amounts_closing', 'location_id', self.config_id.location_id.id)
 
-        # Obtain the POS configuration from self (assuming self is a POS order or related model)
-        pos_config = self.config_id
-
         # Find the cash payment method in the POS configuration
-        cash_payment_method = pos_config.payment_method_ids.filtered(lambda pm: pm.is_cash_count and pm.journal_id)
+        cash_payment_method = self.config_id.payment_method_ids.filtered(lambda pm: pm.is_cash_count and pm.journal_id)
 
         if not cash_payment_method:
             raise UserError("No cash payment method found in the POS configuration.")

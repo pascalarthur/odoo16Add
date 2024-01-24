@@ -23,29 +23,15 @@ from odoo import models
 
 
 class PosSession(models.Model):
-    """Model inherited to add additional functionality"""
     _inherit = 'pos.session'
 
-    def _pos_ui_models_to_load(self):
-        """Used to super the _pos_ui_models_to_load"""
-        result = super()._pos_ui_models_to_load()
-        result += [
-            'res.config.settings',
-        ]
-        return result
-
-    def _loader_params_res_config_settings(self):
-        """Used to override the default settings for loading fields"""
-        return {
-            'search_params': {
-                'fields': ['customer_name',
-                           'customer_address', 'customer_mobile',
-                           'customer_phone', 'customer_email', 'customer_vat',
-                           'customer_details'],
-            },
-        }
-
-    def _get_pos_ui_res_config_settings(self, params):
-        """Used to get the parameters"""
-        return self.env['res.config.settings'].search_read(
-            **params['search_params'])
+    def load_pos_data(self):
+        loaded_data = super(PosSession, self).load_pos_data()
+        loaded_data['customer_details'] = self.config_id.customer_details
+        loaded_data['customer_name'] = self.config_id.customer_name
+        loaded_data['customer_address'] = self.config_id.customer_address
+        loaded_data['customer_mobile'] = self.config_id.customer_mobile
+        loaded_data['customer_phone'] = self.config_id.customer_phone
+        loaded_data['customer_email'] = self.config_id.customer_email
+        loaded_data['customer_vat'] = self.config_id.customer_vat
+        return loaded_data
