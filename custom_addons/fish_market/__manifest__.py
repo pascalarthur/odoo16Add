@@ -27,6 +27,7 @@
         'views/res_partner_logisitic_views.xml',
         'views/product.xml',
         'views/stock_picking.xml',
+        'views/purchase_views.xml',
 
         'views/report_invoice.xml',
 

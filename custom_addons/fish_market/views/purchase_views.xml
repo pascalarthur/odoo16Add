@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <!-- Inherit the Purchase Order Line view -->
+        <record id="purchase_order_form_inherit" model="ir.ui.view">
+            <field name="name">purchase.order.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//tree/field[@name='product_qty']" position="after">
+                    <!-- Add your field after the product_qty field -->
+                    <field name="qty_to_invoice" string="To Invoice" column_invisible="parent.state not in ('purchase', 'done')" readonly="state in ('done', 'cancel')"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
