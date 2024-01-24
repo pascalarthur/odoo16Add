@@ -53,6 +53,10 @@
             'fish_market/static/src/views/**/*',
             'fish_market/static/src/scss/*.scss',
         ],
+        'web.assets_frontend': [
+            'fish_market/static/src/js/*',
+            'fish_market/static/src/scss/*',
+        ],
     },
     'license': 'LGPL-3',
 }
