@@ -36,9 +36,10 @@ class SupplierBidOrderController(http.Controller):
                     product_temp_vars_dict[product_template_id.id]['product_variants_str'] = []
                     product_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', product_template_id.id)])
                     for product_variant_id in product_variants:
-                        for key in map(int, product_variant_id.combination_indices.split(',')):
-                            product_temp_vars_dict[product_template_id.id]['product_variants'][product_variants_map[key]].append(attribute_values_map[key])
-                        product_temp_vars_dict[product_template_id.id]['product_variants_str'].append("; ".join([f'{cat}: {lst[-1]}' for cat, lst in product_temp_vars_dict[product_template_id.id]['product_variants'].items()]))
+                        if product_variant_id.combination_indices:
+                            for key in map(int, product_variant_id.combination_indices.split(',')):
+                                product_temp_vars_dict[product_template_id.id]['product_variants'][product_variants_map[key]].append(attribute_values_map[key])
+                            product_temp_vars_dict[product_template_id.id]['product_variants_str'].append("; ".join([f'{cat}: {lst[-1]}' for cat, lst in product_temp_vars_dict[product_template_id.id]['product_variants'].items()]))
                     product_temp_vars_dict[product_template_id.id]['product_variants_ids'] = product_variants.ids
 
             addresses = [f'{token_record.partner_id.street}, {token_record.partner_id.city}, {token_record.partner_id.country_id.name}']
