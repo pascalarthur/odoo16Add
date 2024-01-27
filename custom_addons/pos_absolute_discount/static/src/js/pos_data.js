@@ -40,15 +40,16 @@ patch(ProductScreen.prototype, {
                 }
             } else if (numpadMode === "discount") {
                 if (this.pos.use_absolute_discount) {
-                    let discount_val = ((val / selectedLine.get_display_price_one()) * 100);
-                    selectedLine.set_discount(discount_val);
+                    selectedLine.set_discount(((val / selectedLine.get_unit_price()) * 100));
+                    selectedLine.absolute_discount = val;
                 }
                 else {
                     selectedLine.set_discount(val);
                 }
-
-
             } else if (numpadMode === "price") {
+                if (this.pos.use_absolute_discount) {
+                    selectedLine.set_discount(((selectedLine.absolute_discount / val) * 100));
+                }
                 selectedLine.price_type = "manual";
                 selectedLine.set_unit_price(val);
             }
@@ -58,15 +59,18 @@ patch(ProductScreen.prototype, {
 
 
 patch(Orderline.prototype, {
+    setup() {
+        super.setup(...arguments);
+        this.absolute_discount = 0.0;
+    },
+
     get_discount_str() {
-        let total_price = 0.0
         let discount_val = 0.0
         if (this.get_discount() >= 100) {
             discount_val = this.get_unit_price();
         }
         else {
-            total_price = this.get_display_price_one() / (1.0 - this.get_discount() / 100.0);
-            discount_val = ((this.discount * total_price) / 100);
+            discount_val = ((this.get_unit_price() * this.get_discount()) / 100);
         }
 
         return this.env.utils.formatCurrency(discount_val) + " / " + this.discount.toFixed(4) + " ";
