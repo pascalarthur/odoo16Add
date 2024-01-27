@@ -4,9 +4,9 @@ After=network.target
 
 [Service]
 Type=simple
-User=odoo
-Group=odoo
-ExecStart=/usr/bin/odoo --config /etc/odoo/odoo.conf --logfile /var/log/odoo/odoo-server.log
+User=admin
+Group=ubuntu
+ExecStart=/home/ubuntu/miniconda3/bin/python3 /home/ubuntu/Workplace/odoo/odoo-bin --config /home/ubuntu/Workplace/odoo/debian/odoo.conf --logfile /var/log/odoo/odoo-server.log
 KillMode=mixed
 
 [Install]
