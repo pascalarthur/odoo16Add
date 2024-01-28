@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<odoo>
+    <record id="deposit_wizard_form" model="ir.ui.view">
+        <field name="name">deposit.wizard.form</field>
+        <field name="model">deposit.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <!-- Wizard fields -->
+                <group>
+                    <field name="amount" widget="monetary"/>
+                    <field name="amount_left" widget="monetary"/>
+                </group>
+                <footer>
+                    <button string="Record Transaction" type="object" name="record_transaction"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
