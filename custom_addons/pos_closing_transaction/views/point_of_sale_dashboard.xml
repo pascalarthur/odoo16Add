@@ -6,8 +6,8 @@
             <field name="model">pos.config</field>
             <field name="inherit_id" ref="point_of_sale.view_pos_config_kanban"/>
             <field name="arch" type="xml">
-                <xpath expr="//button[@name='open_existing_session_cb']" position="after">
-                    <t t-if="!record.current_session_id.raw_value &amp;&amp; !record.pos_session_username.value &amp;&amp; record.last_session_closing_cash.value > 0.0">
+                <xpath expr="//button[@name='open_ui']" position="after">
+                    <t t-if="record.current_session_state.raw_value === 'closed' and record.last_session_closing_cash.value > 0.0">
                         <button class="btn btn-secondary" name="deposit_money_in_safe" type="object">Deposit</button>
                     </t>
                 </xpath>
