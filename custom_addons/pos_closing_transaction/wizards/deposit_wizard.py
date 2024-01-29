@@ -1,4 +1,5 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 class YourWizard(models.TransientModel):
     _name = 'deposit.wizard'
@@ -10,8 +11,11 @@ class YourWizard(models.TransientModel):
     pos_session = fields.Many2one('pos.session', string='POS Session')
 
     def record_transaction(self):
-        self.pos_config.last_session_closing_cash -= self.amount
-        self.pos_session.cash_register_balance_end_real -= self.amount
+        if self.pos_config.last_session_closing_cash < self.amount:
+            raise UserError(_('You cannot deposit more than the amount left in the cash register'))
+        else:
+            self.pos_config.last_session_closing_cash -= self.amount
+            self.pos_session.cash_register_balance_end_real -= self.amount
 
     @api.onchange('amount')
     def _compute_amount_left(self):
