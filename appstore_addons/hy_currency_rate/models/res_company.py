@@ -57,7 +57,6 @@ class ResCompany(models.Model):
                 if rate == "Not found":
                     continue
                 rate = rate * curr1.rate
-                rate = 1 / rate
                 already_exists = currency_rate.search(
                     [
                         ("name", "=", today),

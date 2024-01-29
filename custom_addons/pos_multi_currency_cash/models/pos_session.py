@@ -23,10 +23,10 @@ class PosSession(models.Model):
 
         for cash in cash_amounts_in_currencies:
             # Skip if the currency is already the default POS currency
-            if cash['id'] == default_currency_id:
+            if cash['id'] == default_currency_id or cash['counted'] == 0:
                 continue
 
-            exchange_rate = default_cash['rate'] / cash['rate']
+            exchange_rate = cash['rate'] / default_cash['rate']
             # Create an AccountJournalCurrencyExchange record
             exchange_vals = {
                 'location_id': self.config_id.location_id.id,  # Assuming self has a location_id attribute
@@ -41,7 +41,6 @@ class PosSession(models.Model):
             exchange_record = self.env['account.journal.currency.exchange'].create(exchange_vals)
             exchange_record.action_confirm()
             exchange_record.action_done()
-
 
     def correct_cash_amounts_closing(self, cash_amounts_in_currencies: List[dict]):
         # print('correct_cash_amounts_closing', 'location_id', self.config_id.location_id.id)
@@ -61,19 +60,17 @@ class PosSession(models.Model):
 
         for cash in cash_amounts_in_currencies:
             # Skip if the currency is already the default POS currency
-            if cash['id'] == default_currency_id:
+            if cash['id'] == default_currency_id or cash['counted'] == 0:
                 continue
 
-            exchange_rate = cash['rate'] / default_cash['rate']
-
-            converted_amount = cash['counted'] / exchange_rate
+            exchange_rate = default_cash['rate'] / cash['rate']
 
             # Create an AccountJournalCurrencyExchange record
             exchange_vals = {
                 'location_id': self.config_id.location_id.id,  # Assuming self has a location_id attribute
                 'journal_id': default_journal_id,
                 'destination_journal_id': cash['journal_id'],
-                'amount': converted_amount,
+                'amount': cash['counted'] / exchange_rate,
                 'exchange_rate': exchange_rate,
                 'date': fields.Date.today(),
                 'note': f"Exchange from {cash['name']} to default POS currency",
@@ -82,7 +79,6 @@ class PosSession(models.Model):
             exchange_record = self.env['account.journal.currency.exchange'].create(exchange_vals)
             exchange_record.action_confirm()
             exchange_record.action_done()
-
 
     def get_available_product_quantities(self):
         available_product_quantities = {}

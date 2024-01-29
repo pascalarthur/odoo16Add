@@ -8,7 +8,7 @@ class AccountJournalCurrencyExchange(models.Model):
 
     journal_id = fields.Many2one('account.journal', string='Journal', required=True)
     destination_journal_id = fields.Many2one('account.journal', string='Destination Journal', required=True)
-    amount = fields.Monetary(string='Amount', required=True)
+    amount = fields.Float(string='Amount', required=True, digits=(16, 7))
     exchange_rate = fields.Float(string='Exchange Rate', required=True, digits=(16, 7))
     currency_id = fields.Many2one('res.currency', related='journal_id.currency_id', string='Currency', readonly=True)
     destination_currency_id = fields.Many2one('res.currency', related='destination_journal_id.currency_id', string='Destination Currency', readonly=True)

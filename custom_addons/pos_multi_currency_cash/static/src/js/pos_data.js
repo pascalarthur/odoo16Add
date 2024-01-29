@@ -32,7 +32,7 @@ patch(CashOpeningPopup.prototype, {
         let default_currency_rate = this.pos.currency.rate;
 
         this.pos.currencies.forEach((currency) => {
-            let currency_rate = currency.rate / default_currency_rate;
+            let currency_rate = default_currency_rate / currency.rate;
             total += parseFloat(currency.counted) / currency_rate;
         });
         this.state.openingCash = this.env.utils.formatCurrency(total, false);
@@ -83,7 +83,7 @@ patch(ClosePosPopup.prototype, {
         let default_currency_rate = this.pos.currency.rate;
 
         this.pos.currencies.forEach((currency) => {
-            let currency_rate = currency.rate / default_currency_rate;
+            let currency_rate = default_currency_rate / currency.rate;
             total += parseFloat(currency.counted) / currency_rate;
         });
 
