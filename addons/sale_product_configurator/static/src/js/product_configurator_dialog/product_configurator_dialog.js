@@ -380,6 +380,7 @@ export class ProductConfiguratorDialog extends Component {
      * @return {Boolean} - Whether the combination is valid or not.
      */
     _isPossibleCombination(product) {
+        return true;
         return product.attribute_lines.every(ptal => !ptal.attribute_values.find(
             ptav => ptal.selected_attribute_value_ids.includes(ptav.id)
         )?.excluded);
