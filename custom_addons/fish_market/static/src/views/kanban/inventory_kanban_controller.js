@@ -5,7 +5,6 @@ import { useBus, useService } from "@web/core/utils/hooks";
 import { useRef } from "@odoo/owl";
 
 
-
 export class InventoryKanbanController extends KanbanController {
     setup() {
         super.setup();
