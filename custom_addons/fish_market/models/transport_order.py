@@ -47,7 +47,7 @@ class TruckDetail(models.Model):
     partner_id = fields.Many2one('res.partner')
     transport_order_id  = fields.Many2one('transport.order', string='Transport Order', ondelete='cascade')
 
-    truck_number = fields.Char(string='Truck Number')
+    truck_number = fields.Char(string='Trailer Number')
     horse_number = fields.Char(string='Horse Number')
     container_number = fields.Char(string='Container Number')
     driver_name = fields.Char(string='Driver Name')

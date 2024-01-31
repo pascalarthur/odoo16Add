@@ -5,7 +5,7 @@
             <xpath expr="//div[hasclass('page')]" position="after">
                 <table>
                     <tr t-if="o.truck_number">
-                        <td style="padding-right: 10px;"><strong>Truck Number:</strong></td>
+                        <td style="padding-right: 10px;"><strong>Trailer Number:</strong></td>
                         <td><span t-field="o.truck_number"/></td>
                     </tr>
                     <tr t-if="o.horse_number">

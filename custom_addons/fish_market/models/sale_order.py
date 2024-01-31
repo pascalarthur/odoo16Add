@@ -8,7 +8,7 @@ class SaleOrder(models.Model):
 
     location_id = fields.Many2one('stock.location', string='Origin Location')
     truck_detail_id = fields.Many2one('truck.detail', string='Truck Detail')
-    truck_number = fields.Char('Truck Number')
+    truck_number = fields.Char('Trailer Number')
     horse_number = fields.Char('Horse Number')
     container_number = fields.Char('Container Number')
     seal_number = fields.Char('Seal Number')

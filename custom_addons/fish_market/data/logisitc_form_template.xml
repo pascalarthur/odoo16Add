@@ -126,8 +126,8 @@
             truckDetail.class = 'truck-detail';
             truckDetail.classList.add('truck-detail');
             truckDetail.innerHTML = `
-                <input type="text" name="truck_number[]" placeholder="Truck Number"/>
                 <input type="text" name="horse_number[]" placeholder="Horse Number"/>
+                <input type="text" name="truck_number[]" placeholder="Trailer Number"/>
                 <input type="text" name="container_number[]" placeholder="Container Number"/>
                 <input type="text" name="driver_name[]" placeholder="Driver Name"/>
                 <input type="text" name="telephone_number[]" placeholder="Telephone Number"/>
