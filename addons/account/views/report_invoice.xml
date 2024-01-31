@@ -6,7 +6,7 @@
                 <t t-set="o" t-value="o.with_context(lang=lang)" />
                 <t t-set="forced_vat" t-value="o.fiscal_position_id.foreign_vat"/> <!-- So that it appears in the footer of the report instead of the company VAT if it's set -->
                 <div class="row">
-                    <t t-if="o.partner_shipping_id and (o.partner_shipping_id != o.partner_id)">
+                    <t t-if="o.partner_shipping_id">
                         <div class="col-6">
                             <t t-set="information_block">
                                 <div groups="account.group_delivery_invoice_address" name="shipping_address_block">
