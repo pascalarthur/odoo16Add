@@ -78,6 +78,7 @@ class TransportOrderController(http.Controller):
 
                     'price': float(prices_in_usd[ii]),
                     'max_load': float(max_loads[ii]),
+                    'is_backload': False,
                 }
                 truck_id = request.env['truck.detail'].create(truck_detail)
 
@@ -109,6 +110,7 @@ class TransportOrderController(http.Controller):
 
                         'price': float(backload_prices[ii]),
                         'max_load': float(max_loads[ii]),
+                        'is_backload': True,
                     }
                     truck_id = request.env['truck.detail'].create(truck_detail)
 

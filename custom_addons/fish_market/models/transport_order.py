@@ -32,7 +32,7 @@ class TruckDetail(models.Model):
     _description = 'Truck Detail'
 
     name = fields.Char(
-        string="Truck Reference",
+        string="Truck Ref",
         required=True, copy=False, readonly=False,
         index='trigram',
         default=lambda self: default_name(self, prefix='TR'))
@@ -46,6 +46,7 @@ class TruckDetail(models.Model):
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     partner_id = fields.Many2one('res.partner')
     transport_order_id  = fields.Many2one('transport.order', string='Transport Order', ondelete='cascade')
+    is_backload = fields.Boolean(string='Is Backload', default=False)
 
     truck_number = fields.Char(string='Trailer Number')
     horse_number = fields.Char(string='Horse Number')
@@ -99,22 +100,6 @@ class TruckDetail(models.Model):
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'redistribution.wizard',
-            'view_mode': 'form',
-            'views': [(False, 'form')],
-            'res_id': truck_redistribution.id,
-            'target': 'new',
-            'context': {
-            },
-        }
-
-    def action_set_seal_number(self):
-        truck_redistribution = self.env['seal.wizard'].create({
-                'truck_id': self.id,
-            })
-
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'seal.wizard',
             'view_mode': 'form',
             'views': [(False, 'form')],
             'res_id': truck_redistribution.id,

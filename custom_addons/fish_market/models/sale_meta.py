@@ -44,22 +44,24 @@ class MetaSaleOrder(models.Model):
     transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist')
     transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id', string='Transport Pricelist Items')
     transport_pricelist_item_ids_no_backload = fields.One2many('product.pricelist.item', compute='_compute_transport_pricelist_item_ids_no_backload', string='Transport Pricelist Items')
+    container_demand = fields.Integer(string='Container Demand', compute='_compute_container_demand')
 
     transport_pricelist_backloads_count = fields.Integer(compute='_compute_transport_pricelist_backloads_count')
+
+    order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
+    transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
+    truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
+    truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload')
+
+    sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
+
+    def _compute_truck_ids_no_backload(self):
+        for record in self:
+            record.truck_ids_no_backload = record.truck_ids.filtered(lambda t: not t.is_backload)
 
     def _compute_transport_pricelist_backloads_count(self):
         for record in self:
             record.transport_pricelist_backloads_count = len(record.transport_pricelist_item_ids.mapped('backload_id'))
-
-    order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
-    transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
-
-    truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
-    truck_ids_with_load = fields.One2many('truck.detail', compute='_compute_truck_ids_with_load')
-
-    sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
-
-    container_demand = fields.Integer(string='Container Demand', compute='_compute_container_demand')
 
     @api.depends('order_line_ids')
     def _compute_container_demand(self):
@@ -67,15 +69,10 @@ class MetaSaleOrder(models.Model):
             total_weight = sum(line.quantity * line.product_id.weight for line in record.order_line_ids)
             record.container_demand = -(-total_weight // 35000) # ceil
 
-    def _compute_truck_ids_with_load(self):
-        for record in self:
-            record.truck_ids_with_load = record.truck_ids.filtered(lambda t: t.load_line_ids)
-
     @api.depends('transport_pricelist_item_ids')
     def _compute_transport_pricelist_item_ids_no_backload(self):
         for record in self:
             record.transport_pricelist_item_ids_no_backload = record.transport_pricelist_item_ids.filtered(lambda t: not t.is_backload)
-
 
     @api.model
     def get_warehouse(self, warehouse_id):
