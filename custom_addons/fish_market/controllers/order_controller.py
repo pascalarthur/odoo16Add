@@ -66,7 +66,7 @@ class TransportOrderController(http.Controller):
             product_pricelist_item_ids = []
 
             for ii in range(len(truck_numbers)):
-                price = float(price_per_truck[ii]) * exchange_rate if price_per_truck[ii] else 0.0
+                price = float(price_per_truck[ii]) / exchange_rate if price_per_truck[ii] else 0.0
 
                 truck_detail = {
                     'partner_id': token_record.partner_id.id,

@@ -97,7 +97,7 @@ function addVariantCombination(productSelect) {
 
 function updateUsdPrice(element) {
     var nadPrice = element.value; // Get the value from the passed element
-    var usdPrice = nadPrice * nad_to_usd_exchange_rate; // Perform the conversion
+    var usdPrice = nadPrice / nad_to_usd_exchange_rate; // Perform the conversion
 
     // Find the corresponding 'priceUsd' element
     var priceUsdElement = element.nextElementSibling;

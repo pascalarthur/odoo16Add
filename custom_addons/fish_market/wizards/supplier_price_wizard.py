@@ -1,4 +1,4 @@
-from odoo import models, fields, exceptions
+from odoo import api, models, fields, exceptions
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -15,6 +15,13 @@ class PricelistWizard(models.TransientModel):
         ('service', 'Service'),
         ('product', 'Storable Product'),
         ('transport', 'Transport')], string='Product Type', default='product', required=True)
+
+    available_product_templates_ids = fields.Many2many('product.template', string='Available Products', compute='_compute_available_product_templates_ids', readonly=True)
+
+    @api.depends('detailed_type')
+    def _compute_available_product_templates_ids(self):
+        self.ensure_one()
+        self.available_product_templates_ids = self.env['product.template'].search([('type', '=', self.detailed_type)])
 
     def confirm_selection(self):
         self.ensure_one()

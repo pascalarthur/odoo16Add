@@ -86,7 +86,7 @@ class SupplierBidOrderController(http.Controller):
                     'product_id': int(product_ids[i]),
                     'compute_price': 'fixed',
                     'applied_on': '0_product_variant',
-                    'fixed_price': float(product_prices[i]) * exchange_rate,
+                    'fixed_price': float(product_prices[i]) / exchange_rate,
                     'min_quantity': float(product_quantities[i]),
                     'date_start': fields.Datetime.now(),
 
@@ -96,6 +96,6 @@ class SupplierBidOrderController(http.Controller):
 
             # token_record.is_used = True
 
-            return "Form submitted successfully!"
+            return "Thank you for submitting your prices to Afromerge. The team will come back to you soon!"
         else:
             return "Token is invalid or has expired"

@@ -9,6 +9,11 @@
                     <field name="pricelist_id"/>
                     <field name="email_body"/>
                     <field name="detailed_type"/>
+                    <field name="available_product_templates_ids">
+                        <tree>
+                            <field name="name"/>
+                        </tree>
+                    </field>
                 </group>
                 <footer>
                     <button string="Confirm" type="object" name="confirm_selection" class="btn-primary"/>
