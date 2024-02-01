@@ -12,6 +12,19 @@ class TransportOrderController(http.Controller):
     def check_token(self, token_record) -> bool:
         return token_record and token_record.expiry_date > fields.Datetime.now()
 
+    def get_transport_product_product_ids(self, transport_order_id):
+        transport_product_id = transport_order_id.meta_sale_order_id.transport_product_id
+        transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', transport_product_id.id)])
+
+        attribute_values = http.request.env['product.template.attribute.value'].sudo().search([])
+        product_variants_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
+
+        transport_product_product_ids = {}
+        for product_variant_id in transport_variants:
+            for key in map(int, product_variant_id.combination_indices.split(',')):
+                transport_product_product_ids[product_variants_map[key]] = product_variant_id.id
+        return transport_product_product_ids
+
     @http.route('/transport_order/<string:token>', type='http', auth='public')
     def access_form(self, token, **kwargs):
         token_record = self.get_token_record(token)
@@ -19,23 +32,11 @@ class TransportOrderController(http.Controller):
             transport_order = token_record.transport_order_id
             nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
 
-            transport_product_id = transport_order.meta_sale_order_id.transport_product_id
-            transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', transport_product_id.id)])
-
-            attribute_values = http.request.env['product.template.attribute.value'].sudo().search([])
-            product_variants_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
-
-            transport_product_product_ids = {}
-            for product_variant_id in transport_variants:
-                for key in map(int, product_variant_id.combination_indices.split(',')):
-                    transport_product_product_ids[product_variants_map[key]] = product_variant_id.id
-
             # Pass transport order data to the template
             return http.request.render('fish_market.logistic_form_template', {
                 'supplier': token_record.partner_id,
                 'transport_order': transport_order,
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
-                'transport_product_product_ids': transport_product_product_ids,
                 'token': token,
             })
         else:
@@ -44,10 +45,13 @@ class TransportOrderController(http.Controller):
     @http.route('/submit_form', type='http', auth='public', methods=['POST'], csrf=False)
     def submit_form(self, **post):
         token = post.get('token')
-
-        exchange_rate = float(post.get('nad_to_usd_exchange_rate'))
-
         token_record = self.get_token_record(token)
+
+        transport_product_product_ids = self.get_transport_product_product_ids(token_record.transport_order_id)
+
+        if any(key not in transport_product_product_ids.keys() for key in ['One-Way', 'Backload']):
+            return "Please add the following product variants to the transport product: 'One-Way', 'Backload'"
+
         if self.check_token(token_record) is True:
             transport_order = token_record.transport_order_id
 
@@ -57,17 +61,11 @@ class TransportOrderController(http.Controller):
             container_numbers = request.httprequest.form.getlist('container_number[]')
             driver_names = request.httprequest.form.getlist('driver_name[]')
             telephone_numbers = request.httprequest.form.getlist('telephone_number[]')
-            price_per_truck = request.httprequest.form.getlist('price_per_truck[]')
+            prices_in_usd = request.httprequest.form.getlist('price_in_usd[]')
             max_loads = request.httprequest.form.getlist('max_load_per_truck[]')
-            product_prodcut_ids = request.httprequest.form.getlist('product_prodcut_ids[]')
-            backload_ids = request.httprequest.form.getlist('backload_ids[]')
-            item_ids = request.httprequest.form.getlist('item_ids[]')
-
-            product_pricelist_item_ids = []
+            backload_prices = request.httprequest.form.getlist('backload_price[]')
 
             for ii in range(len(truck_numbers)):
-                price = float(price_per_truck[ii]) / exchange_rate if price_per_truck[ii] else 0.0
-
                 truck_detail = {
                     'partner_id': token_record.partner_id.id,
                     'transport_order_id': transport_order.id,
@@ -78,10 +76,9 @@ class TransportOrderController(http.Controller):
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
 
-                    'price': price,
+                    'price': float(prices_in_usd[ii]),
                     'max_load': float(max_loads[ii]),
                 }
-
                 truck_id = request.env['truck.detail'].create(truck_detail)
 
                 product_detail = {
@@ -89,21 +86,48 @@ class TransportOrderController(http.Controller):
                     'pricelist_id': int(transport_order.meta_sale_order_id.transport_pricelist_id.id),
                     'partner_id': token_record.partner_id.id,
                     'product_tmpl_id': int(transport_order.meta_sale_order_id.transport_product_id.id),
-                    'product_id': int(product_prodcut_ids[ii]),
+                    'product_id': transport_product_product_ids['One-Way'],
                     'compute_price': 'fixed',
                     'applied_on': '0_product_variant',
-                    'fixed_price': price,
+                    'fixed_price': float(prices_in_usd[ii]),
 
                     'meta_sale_order_id': transport_order.meta_sale_order_id.id,
                 }
-
                 product_pricelist_item_id = request.env['product.pricelist.item'].create(product_detail)
 
                 # Every backload item has a corresponding product.pricelist.item
-                if backload_ids[ii] != '-1':
-                    product_pricelist_item_ids[item_ids.index(backload_ids[ii])].write({'backload_id': product_pricelist_item_id.id})
+                if backload_prices[ii] != '':
+                    truck_detail = {
+                        'partner_id': token_record.partner_id.id,
+                        'transport_order_id': transport_order.id,
+                        'meta_sale_order_id': transport_order.meta_sale_order_id.id,
+                        'truck_number': truck_numbers[ii],
+                        'horse_number': horse_numbers[ii],
+                        'container_number': container_numbers[ii],
+                        'driver_name': driver_names[ii],
+                        'telephone_number': telephone_numbers[ii],
 
-                product_pricelist_item_ids.append(product_pricelist_item_id)
+                        'price': float(backload_prices[ii]),
+                        'max_load': float(max_loads[ii]),
+                    }
+                    truck_id = request.env['truck.detail'].create(truck_detail)
+
+                    product_detail = {
+                        'truck_id': truck_id.id,
+                        'pricelist_id': int(transport_order.meta_sale_order_id.transport_pricelist_id.id),
+                        'partner_id': token_record.partner_id.id,
+                        'product_tmpl_id': int(transport_order.meta_sale_order_id.transport_product_id.id),
+                        'product_id': transport_product_product_ids['Backload'],
+                        'compute_price': 'fixed',
+                        'applied_on': '0_product_variant',
+                        'fixed_price': float(backload_prices[ii]),
+
+                        'meta_sale_order_id': transport_order.meta_sale_order_id.id,
+                    }
+                    product_pricelist_item_id_backload = request.env['product.pricelist.item'].create(product_detail)
+
+                    product_pricelist_item_id.write({'backload_id': product_pricelist_item_id_backload.id})
+
 
             transport_order.write({
                 'state': 'received',

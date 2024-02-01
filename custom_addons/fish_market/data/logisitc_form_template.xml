@@ -1,96 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="logistic_form_template" name="Public Form">
-        <form action="/submit_form" method="post" id="transport_order_form" class="logistic-form"
-            t-att-data-transport-product-product-ids="json.dumps(transport_product_product_ids)"
-            t-att-data-nad-to-usd-exchange-rate="nad_to_usd_exchange_rate">
-
-            <input type="hidden" name="token" t-att-value="token"/>
-            <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
-
-            <table>
-                <tr>
-                    <td><label>Start Address:</label></td>
-                    <td>
-                        <t t-if="transport_order.route_start_street">
-                            <t t-esc="transport_order.route_start_street"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_start_street2">
-                            <t t-esc="transport_order.route_start_street2"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_start_city">
-                            <t t-esc="transport_order.route_start_city"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_start_state_id">
-                            <t t-esc="transport_order.route_start_state_id.name"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_start_zip">
-                            <t t-esc="transport_order.route_start_zip"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_start_country_id">
-                            <t t-esc="transport_order.route_start_country_id.name"/><br/>
-                        </t>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td><label>End Address:</label></td>
-                    <td>
-                        <t t-if="transport_order.route_end_street">
-                            <t t-esc="transport_order.route_end_street"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_end_street2">
-                            <t t-esc="transport_order.route_end_street2"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_end_city">
-                            <t t-esc="transport_order.route_end_city"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_end_state_id">
-                            <t t-esc="transport_order.route_end_state_id.name"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_end_zip">
-                            <t t-esc="transport_order.route_end_zip"/><br/>
-                        </t>
-                        <t t-if="transport_order.route_end_country_id">
-                            <t t-esc="transport_order.route_end_country_id.name"/><br/>
-                        </t>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td><label>Number of Containers:</label></td>
-                    <td t-esc="transport_order.container_demand"/>
-                </tr>
-
-                <tr>
-                    <td><label>Additional Details:</label></td>
-                    <td t-esc="transport_order.additional_details" placeholder="No Additional Details"/>
-                </tr>
-            </table>
-
-
-
-            <!-- Truck Details Section -->
-            <div id="truck_details_section">
-                <label>Truck Details:</label><br/>
-                <div id="truck_details_container" class='truck-detail'>
-                    <!-- Dynamic truck detail entries will be added here -->
-                    <button type="button" onclick="addTruckDetail()">Add Truck</button>
+        <div id="page-container">
+            <header>
+                <div>
+                    <label>Afromerge Coorporation</label>
                 </div>
-            </div>
+            </header>
+            <form action="/submit_form" method="post" id="transport_order_form" class="logistic-form"
+                t-att-data-transport-product-product-ids="json.dumps(transport_product_product_ids)"
+                t-att-data-nad-to-usd-exchange-rate="nad_to_usd_exchange_rate">
 
-            <!-- Submit Button -->
-            <button type="button" value="Confirm Price" onclick="handleSubmit()">Submit</button>
+                <input type="hidden" name="token" t-att-value="token"/>
+                <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
+                <table>
+                    <tr>
+                        <td><label>Start Address:</label></td>
+                        <td>
+                            <t t-if="transport_order.route_start_street">
+                                <t t-esc="transport_order.route_start_street"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_start_street2">
+                                <t t-esc="transport_order.route_start_street2"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_start_city">
+                                <t t-esc="transport_order.route_start_city"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_start_state_id">
+                                <t t-esc="transport_order.route_start_state_id.name"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_start_zip">
+                                <t t-esc="transport_order.route_start_zip"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_start_country_id">
+                                <t t-esc="transport_order.route_start_country_id.name"/><br/>
+                            </t>
+                        </td>
+                    </tr>
 
+                    <tr>
+                        <td><label>End Address:</label></td>
+                        <td>
+                            <t t-if="transport_order.route_end_street">
+                                <t t-esc="transport_order.route_end_street"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_end_street2">
+                                <t t-esc="transport_order.route_end_street2"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_end_city">
+                                <t t-esc="transport_order.route_end_city"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_end_state_id">
+                                <t t-esc="transport_order.route_end_state_id.name"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_end_zip">
+                                <t t-esc="transport_order.route_end_zip"/><br/>
+                            </t>
+                            <t t-if="transport_order.route_end_country_id">
+                                <t t-esc="transport_order.route_end_country_id.name"/><br/>
+                            </t>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><label>Number of Containers:</label></td>
+                        <td t-esc="transport_order.container_demand"/>
+                    </tr>
+
+                    <tr>
+                        <td><label>Additional Details:</label></td>
+                        <td t-esc="transport_order.additional_details" placeholder="No Additional Details"/>
+                    </tr>
+                </table>
+
+                <!-- Truck Details Section -->
+                <div id="truck_details_section">
+                    <label>Truck Details:</label><br/>
+                    <p>
+                        Please add the truck details as well as the prices for your trucks. You can submit multiple prices for multiple trucks.
+                        If you also offer the option to book a backload, please press "Add Backload" and add the respective price.<br/>
+                        Once you are done adding all your trucks, please press "Submit".
+                    </p>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="button" onclick="addTruckDetail()">Add Truck</button><br/>
+                <button type="button" value="Confirm Price" onclick="handleSubmit()">Submit</button>
+            </form>
             <footer>
                 <div>
                     <label>Exchange Rate:</label>
                     <span type="text" id="exchange_rate_display"/>
                 </div>
             </footer>
-        </form>
+        </div>
     <script type="text/javascript" src="/fish_market/static/src/js/logistic_bid.js"></script>
     <style>
+        #page-container {
+            position: relative;
+            min-height: 100vh;
+            padding-bottom: 60px; /* Height of the footer */
+        }
         .logistic-form {
             max-width: 800px;
             margin: 0;
@@ -114,30 +124,45 @@
             border: 0px solid #ddd;
             vertical-align: top;
         }
-
-        .logistic-form label {
-            font-weight: bold;
-        }
-
-        .truck-detail {
-            margin-top: 15px;
-            margin-bottom: 15px;
+        .truck-details-container {
+            margin-top: 5px;
+            margin-bottom: 5px;
             padding: 10px;
+            padding-top: 0px;
             border: 1px solid #ccc;
             border-radius: 5px;
-        }
-        .truck-detail input {
-            margin-right: 10px;
         }
         #truck_details_section {
             margin-top: 20px;
         }
+        label {
+            font-weight: bold;
+        }
+        input {
+            margin: 5px;
+        }
+        button {
+            margin: 5px;
+        }
+        h3 {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        header {
+            top: 0;
+            width: 100%;
+            height: 60px; /* Set the height of your footer */
+            background-color: #a1a1a1; /* Background color of footer */
+            text-align: center;
+            line-height: 60px; /* Center text vertically */
+        }
         footer {
+            margin-top: 20px;
             position: absolute;
             bottom: 0;
             width: 100%;
             height: 60px; /* Set the height of your footer */
-            background-color: #f5f5f5; /* Background color of footer */
+            background-color: #a1a1a1; /* Background color of footer */
             text-align: center;
             line-height: 60px; /* Center text vertically */
         }
