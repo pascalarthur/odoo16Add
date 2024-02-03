@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Create a new form view for account.journal.currency.exchange -->
+    <!-- Create a new form view for account.account.currency.exchange -->
     <record id="view_account_journal_currency_exchange_form" model="ir.ui.view">
-        <field name="name">account.journal.currency.exchange.form</field>
-        <field name="model">account.journal.currency.exchange</field>
+        <field name="name">account.account.currency.exchange.form</field>
+        <field name="model">account.account.currency.exchange</field>
         <field name="arch" type="xml">
             <form>
                 <!-- Define the fields you want to display -->
@@ -33,8 +33,8 @@
     </record>
 
     <record id="view_account_journal_currency_exchange_tree" model="ir.ui.view">
-        <field name="name">account.journal.currency.exchange.tree</field>
-        <field name="model">account.journal.currency.exchange</field>
+        <field name="name">account.account.currency.exchange.tree</field>
+        <field name="model">account.account.currency.exchange</field>
         <field name="arch" type="xml">
             <tree>
                 <field name="location_id"/>
@@ -52,9 +52,9 @@
         </field>
     </record>
 
-    <record id="action_account_journal_currency_exchange_tree" model="ir.actions.act_window">
+    <record id="action_account_account_currency_exchange_tree" model="ir.actions.act_window">
         <field name="name">Exchange Transactions</field>
-        <field name="res_model">account.journal.currency.exchange</field>
+        <field name="res_model">account.account.currency.exchange</field>
         <field name="view_mode">tree,form</field>
     </record>
 </odoo>

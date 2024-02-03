@@ -1,17 +1,25 @@
 from odoo import api, _, fields, models
 
-class AccountJournalCurrencyExchange(models.Model):
-    _name = 'account.journal.currency.exchange'
+
+# class AccountJournalCurrencyExchange(models.Model):
+#     _name = 'account.journal.currency.exchange'
+
+class AccountAccountCurrencyExchange(models.Model):
+    _name = 'account.account.currency.exchange'
 
     location_id = fields.Many2one('stock.location', 'Location')
     exchange_partner_id = fields.Many2one('res.partner', string='Exchange Partner')
 
+    account_id = fields.Many2one('account.account', string='Account', required=True)
     journal_id = fields.Many2one('account.journal', string='Journal', required=True)
+    interbank_account_id = fields.Many2one('account.account', string='INTERBANK Account', required=True)
     destination_journal_id = fields.Many2one('account.journal', string='Destination Journal', required=True)
+    destination_account_id = fields.Many2one('account.account', string='Destination Account', required=True)
+
     amount = fields.Float(string='Amount', required=True, digits=(16, 7))
     exchange_rate = fields.Float(string='Exchange Rate', required=True, digits=(16, 7))
     currency_id = fields.Many2one('res.currency', related='journal_id.currency_id', string='Currency', readonly=True)
-    destination_currency_id = fields.Many2one('res.currency', related='destination_journal_id.currency_id', string='Destination Currency', readonly=True)
+    destination_currency_id = fields.Many2one('res.currency', related='destination_account_id.currency_id', string='Destination Currency', readonly=True)
 
     date = fields.Date(string='Date', required=True, default=fields.Date.today())
     note = fields.Char(string='Note')
@@ -38,5 +46,11 @@ class AccountJournalCurrencyExchange(models.Model):
         return self.create_accounting_entry()
 
     def create_accounting_entry(self):
-        AccountMove = self.env['account.move']
-        AccountMove.create_currency_conversion_journal_entry(source_journal_id=self.journal_id.id, dest_journal_id=self.destination_journal_id.id, amount=self.amount, date=self.date, exchange_rate=self.exchange_rate, memo='')
+        self.env['account.move'].create_currency_conversion_journal_entry(
+            source_journal_id=self.journal_id.id,
+            dest_journal_id=self.destination_journal_id.id,
+            amount=self.amount,
+            date=self.date,
+            exchange_rate=self.exchange_rate,
+            memo=''
+        )

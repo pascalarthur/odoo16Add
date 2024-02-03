@@ -38,7 +38,7 @@ class PosSession(models.Model):
                 'note': f"Exchange from default POS currency to {cash['name']}",
             }
 
-            exchange_record = self.env['account.journal.currency.exchange'].create(exchange_vals)
+            exchange_record = self.env['account.account.currency.exchange'].create(exchange_vals)
             exchange_record.action_confirm()
             exchange_record.action_done()
 

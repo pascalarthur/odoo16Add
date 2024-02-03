@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <record id="view_cash_dasboard_kanban" model="ir.ui.view">
-        <field name="name">account.journal.kanban</field>
-        <field name="model">account.journal</field>
+        <field name="name">account.account.kanban</field>
+        <field name="model">account.account</field>
         <field name="arch" type="xml">
             <kanban default_group_by="location_id"
                 class="o_kanban_small_column"
@@ -15,12 +15,11 @@
                     <t t-name="kanban-box">
                         <div class="oe_kanban_global_click">
                             <div class="oe_kanban_details">
-                                <field name="name"/>
-                                <div><strong><field name="currency_id"/></strong></div>
-                                <div><field name="current_statement_balance"/></div>
+                                <div><strong><field name="name"/></strong></div>
+                                <field name="currency_id"/>
+                                <div><field name="current_balance_currency"/></div>
                             </div>
-                            <button type="object" name="action_open_payment_form" class="oe_highlight">Exchange
-                            </button>
+                            <button type="object" name="action_open_payment_form" class="oe_highlight">Exchange</button>
                         </div>
                     </t>
                 </templates>
@@ -30,7 +29,7 @@
 
     <record id="action_cash_dasboard" model="ir.actions.act_window">
         <field name="name">Cash Dashboard</field>
-        <field name="res_model">account.journal</field>
+        <field name="res_model">account.account</field>
         <field name="view_mode">kanban</field>
         <field name="view_id" ref="view_cash_dasboard_kanban"/>
         <field name="target">current</field>
