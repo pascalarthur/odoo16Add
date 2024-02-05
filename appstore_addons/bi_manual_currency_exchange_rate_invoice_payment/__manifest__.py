@@ -3,14 +3,14 @@
 {
     "name" : "Manual Currency Exchange Rate on Invoice and Payment in Odoo",
     "version" : "17.0.0.0",
-    "depends" : ['base','account'],
+    "depends" : ['base','account', 'base_accounting_kit'],
     "author": "BrowseInfo",
     "summary": "Apps apply manual currency rate on invoice apply manual currency rate on payment apply custom currency rate on invoice custom currency rate on payment custom Currency Exchange Rate on Invoice custom Currency Exchange Rate on payment custom accounting rate",
     "description": """
     Odoo/OpenERP module for odoo manual currency rate converter
     odoo Currency Exchange Rate on Invoice Payment manual multi currency process on invoice multi currency payment
     odoo Currency Exchange Rate on Payment
-    odoo Manual Currency Exchange Rate on invoice payment Currency Exchange Rate for invoice Currency Exchange Rate in invoice 
+    odoo Manual Currency Exchange Rate on invoice payment Currency Exchange Rate for invoice Currency Exchange Rate in invoice
     odoo invoice Currency Exchange Rate invoice
     odoo Manual Currency Rate on invoice payment Exchange Rate Apply Manual Currency Exchange Rate on Invoice/Payment
     odoo Apply Manual Currency Exchange Rate on Payment
@@ -18,7 +18,7 @@
     odoo multi-currency process on invoice multi-currency payment currency converter on Odoo
     odoo invoice currency rate Manual Exchange rate of Currency apply manual currency rate on invoice
     odoo currency rate apply manually multiple currency rate many currency Exchange Currency rate custom exchange rate
-    odoo Rates of Exchange Exchange Rates custom exchange rate 
+    odoo Rates of Exchange Exchange Rates custom exchange rate
     odoo Customs Exchange Rate Conversion rates for invoice and payment
     odoo dollar exchange rate real exchange rate Currency Exchange Rate Update
     odoo Currency Rate Update Currency Rates Update multi-currency rates multicurrency exchanges rates
@@ -26,7 +26,7 @@
     odoo Invoice Currency Rate currency rate on invoice auto currency rates
 
     """,
-    "price": 15,    
+    "price": 15,
     "currency": "EUR",
     'category': 'Accounting',
     "website" : "https://www.browseinfo.com",

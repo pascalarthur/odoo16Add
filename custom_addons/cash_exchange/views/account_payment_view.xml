@@ -28,6 +28,7 @@
                 <field name="is_internal_transfer" invisible="1"/>
 
                 <field name="available_destination_journal_ids" invisible="1"/>
+                <field name="foreign_currency_id" invisible="1"/>
 
                 <div class="oe_button_box" name="button_box">
                     <!-- Statement stat button -->
@@ -64,9 +65,8 @@
 
                 <group name="main_group">
                     <group name="group1">
-                        <label for="amount_currency"/>
+                        <label for="amount"/>
                         <div name="amount_div" class="o_row">
-                            <field name="amount_currency" readonly="state != 'draft'"/>
                             <field name="amount" readonly="state != 'draft'"/>
                             <field name="currency_id"
                                     options="{'no_create': True, 'no_open': True}"
@@ -79,7 +79,7 @@
                         <field name="manual_currency_rate_active" force_save="True" invisible="1"/>
                         <field name="manual_currency_rate" invisible="manual_currency_rate_active == False" required="manual_currency_rate_active == True" readonly="state in ['posted','cancel']"/>
                         <field name="check_active_currency" invisible="1"/>
-                        <field name="amount_converted"/>
+                        <field name="amount_converted" widget="monetary"/>
 
                         <field name="date" readonly="state != 'draft'"/>
                         <field name="ref" string="Memo"/>
