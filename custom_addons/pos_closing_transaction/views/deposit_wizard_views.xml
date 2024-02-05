@@ -5,9 +5,11 @@
         <field name="model">deposit.wizard</field>
         <field name="arch" type="xml">
             <form>
+                <field name="currency_id" invisible="1"/>
                 <!-- Wizard fields -->
                 <group>
                     <field name="amount" widget="monetary"/>
+                    <field name="destination_journal_id"/>
                     <field name="amount_left" widget="monetary"/>
                 </group>
                 <footer>

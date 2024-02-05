@@ -10,13 +10,28 @@ class YourWizard(models.TransientModel):
     pos_config = fields.Many2one('pos.config', string='POS Config')
     pos_session = fields.Many2one('pos.session', string='POS Session')
 
-    def record_transaction(self):
-        if self.pos_config.last_session_closing_cash < self.amount:
-            raise UserError(_('You cannot deposit more than the amount left in the cash register'))
-        else:
-            self.pos_config.last_session_closing_cash -= self.amount
-            self.pos_session.cash_register_balance_end_real -= self.amount
+    destination_journal_id = fields.Many2one('account.journal', string='Destination Journal', domain="[('currency_id','=',currency_id)]", required=True)
 
     @api.onchange('amount')
     def _compute_amount_left(self):
         self.amount_left = self.pos_config.last_session_closing_cash - self.amount
+
+    def record_transaction(self):
+        if self.pos_config.last_session_closing_cash < self.amount:
+            raise UserError(_('You cannot deposit more than the amount left in the cash register'))
+
+        self.pos_config.last_session_closing_cash -= self.amount
+        self.pos_session.cash_register_balance_end_real -= self.amount
+
+        payment_id = self.env['account.payment'].create({
+            'is_internal_transfer': True,
+            'payment_type': 'outbound',
+            'journal_id': self.pos_session.cash_journal_id.id,
+            'destination_journal_id': self.destination_journal_id.id,
+            'amount': self.amount,
+            'currency_id': self.currency_id.id,
+            'date': fields.Date.today(),
+            'ref': f'POS-Deposit from {self.pos_session.cash_journal_id.name} to {self.destination_journal_id.name}',
+        })
+
+        payment_id.action_custom_post()
