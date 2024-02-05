@@ -6,6 +6,10 @@
         <field name="arch" type="xml">
             <form>
                 <h3>Start Address</h3>
+                <p>
+                    <italic>Address of the location where the transport will start. Information is obtained from selected transport product.
+                    If blank, check Start and end location of product.</italic>
+                </p>
                 <div class="o_address_format">
                     <field name="route_start_street" placeholder="Street..." class="o_address_street"/>
                     <field name="route_start_street2" placeholder="Street 2..." class="o_address_street"/>
