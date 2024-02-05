@@ -4,13 +4,15 @@ from odoo.exceptions import UserError
 class YourWizard(models.TransientModel):
     _name = 'deposit.wizard'
 
-    currency_id = fields.Many2one('res.currency', string='Currency')
-    amount = fields.Monetary(string='Amount', currency_field='currency_id')
-    amount_left = fields.Monetary(string='Amount Left', currency_field='currency_id', compute='_compute_amount_left', readonly=True)
+    # Prefilled in models/pos_config.py
     pos_config = fields.Many2one('pos.config', string='POS Config')
     pos_session = fields.Many2one('pos.session', string='POS Session')
+    currency_id = fields.Many2one('res.currency', string='Currency')
 
+    amount = fields.Monetary(string='Amount', currency_field='currency_id')
+    amount_left = fields.Monetary(string='Amount Left', currency_field='currency_id', compute='_compute_amount_left', readonly=True)
     destination_journal_id = fields.Many2one('account.journal', string='Destination Journal', domain="[('currency_id','=',currency_id)]", required=True)
+    destination_account_id = fields.Many2one('account.account', string='Destination Account', related='destination_journal_id.default_account_id' , readonly=True)
 
     @api.onchange('amount')
     def _compute_amount_left(self):

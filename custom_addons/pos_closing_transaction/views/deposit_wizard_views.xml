@@ -10,6 +10,7 @@
                 <group>
                     <field name="amount" widget="monetary"/>
                     <field name="destination_journal_id"/>
+                    <field name="destination_account_id"/>
                     <field name="amount_left" widget="monetary"/>
                 </group>
                 <footer>

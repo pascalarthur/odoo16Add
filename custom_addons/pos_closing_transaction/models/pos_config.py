@@ -20,6 +20,6 @@ class PosConfig(models.Model):
             'context': {
                 'default_pos_config': self.id,
                 'default_pos_session': session[0].id,
-                'default_currency_id': self.company_id.currency_id.id,
+                'default_currency_id': session[0].cash_journal_id.currency_id.id,
             }
         }
