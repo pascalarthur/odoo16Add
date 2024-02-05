@@ -29,18 +29,23 @@ class PosSession(models.Model):
             exchange_rate = cash['rate'] / default_cash['rate']
             # Create an AccountJournalCurrencyExchange record
             exchange_vals = {
-                'location_id': self.config_id.location_id.id,  # Assuming self has a location_id attribute
+                'is_internal_transfer': True,
+                'payment_type': 'outbound',
                 'journal_id': cash['journal_id'],
                 'destination_journal_id': default_journal_id,
                 'amount': cash['counted'],
-                'exchange_rate': exchange_rate,
+                'manual_currency_rate_active': True,
+                'manual_currency_rate': exchange_rate,
                 'date': fields.Date.today(),
-                'note': f"Exchange from default POS currency to {cash['name']}",
+                'ref': f"Exchange from default POS currency to {cash['name']}",
             }
 
-            exchange_record = self.env['account.account.currency.exchange'].create(exchange_vals)
-            exchange_record.action_confirm()
-            exchange_record.action_done()
+            # The payment is always in the currency that is not equal to the company currency
+            if cash['id'] == self.company_id.currency_id.id:
+                exchange_vals['amount'] *= exchange_rate
+
+            exchange_record = self.env['account.payment'].create(exchange_vals)
+            exchange_record.action_custom_post()
 
     def correct_cash_amounts_closing(self, cash_amounts_in_currencies: List[dict]):
         # print('correct_cash_amounts_closing', 'location_id', self.config_id.location_id.id)
@@ -63,22 +68,27 @@ class PosSession(models.Model):
             if cash['id'] == default_currency_id or cash['counted'] == 0:
                 continue
 
-            exchange_rate = default_cash['rate'] / cash['rate']
+            exchange_rate = cash['rate'] / default_cash['rate']
 
             # Create an AccountJournalCurrencyExchange record
             exchange_vals = {
-                'location_id': self.config_id.location_id.id,  # Assuming self has a location_id attribute
+                'is_internal_transfer': True,
+                'payment_type': 'outbound',
                 'journal_id': default_journal_id,
                 'destination_journal_id': cash['journal_id'],
-                'amount': cash['counted'] / exchange_rate,
-                'exchange_rate': exchange_rate,
+                'amount': cash['counted'],
+                'manual_currency_rate_active': True,
+                'manual_currency_rate': exchange_rate,
                 'date': fields.Date.today(),
-                'note': f"Exchange from {cash['name']} to default POS currency",
+                'ref': f"Exchange from {cash['name']} to default POS currency",
             }
 
-            exchange_record = self.env['account.journal.currency.exchange'].create(exchange_vals)
-            exchange_record.action_confirm()
-            exchange_record.action_done()
+            # The payment is always in the currency that is not equal to the company currency
+            if cash['id'] == self.company_id.currency_id.id:
+                exchange_vals['amount'] *= exchange_rate
+
+            exchange_record = self.env['account.payment'].create(exchange_vals)
+            exchange_record.action_custom_post()
 
     def get_available_product_quantities(self):
         available_product_quantities = {}
