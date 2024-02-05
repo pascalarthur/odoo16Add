@@ -16,7 +16,7 @@ patch(Product.prototype, {
 		this.pos.currency_rates.forEach(currency => {
 			if (currency.id !== currencyId.id) { // Skip the base currency
 				const exchangeRate = currency.rate; // Assuming the currency object has a 'rate' field
-				const convertedPrice = basePrice * exchangeRate;
+				const convertedPrice = basePrice / exchangeRate;
 				const formattedPrice = `${currency.symbol} ${convertedPrice.toFixed(2)}`; // Format the price
 
 				pricesInOtherCurrencies.push({
