@@ -37,27 +37,6 @@ class RouteDemand(models.Model):
 
         for partner in self.partner_ids:
 
-            # transport_order_dict = {
-            #     'meta_sale_order_id': self.meta_sale_order_id.id,
-            #     'route_start_street': self.route_start_street,
-            #     'route_start_street2': self.route_start_street2,
-            #     'route_start_city': self.route_start_city,
-            #     'route_start_zip': self.route_start_zip,
-            #     'route_start_state_id': self.route_start_state_id.id,
-            #     'route_start_country_id': self.route_start_country_id.id,
-            #     'route_end_street': self.route_end_street,
-            #     'route_end_street2': self.route_end_street2,
-            #     'route_end_city': self.route_end_city,
-            #     'route_end_zip': self.route_end_zip,
-            #     'route_end_state_id': self.route_end_state_id.id,
-            #     'route_end_country_id': self.route_end_country_id.id,
-            #     'container_demand': self.container_demand,
-            #     'additional_details': self.additional_details,
-            #     'partner_id': partner.id,
-            # }
-
-            # transport_order_id = self.env['transport.order'].create(transport_order_dict)
-
             token_record = self.env['access.token'].create([{
                 'partner_id': partner.id,
                 'expiry_date': fields.Datetime.add(datetime.now(), days=1),  # example for 1 day validity
