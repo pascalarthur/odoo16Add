@@ -73,28 +73,38 @@ class DamageOperation(models.Model):
         default='draft')
 
     origin = fields.Char('Source Document', index='trigram', help="Reference of the document", readonly=True)
+    damage_type = fields.Selection([('damaged', 'Damaged'), ('destroyed', 'Destroyed')], string='Damage Type', required=True, default='damaged')
+    damage_tooltip = fields.Char('Damage Tooltip', compute='_compute_damage_tooltip', store=True)
 
     damage_line_ids = fields.One2many('inventory.damage', 'damage_id', string='Damage Lines')
 
+    @api.depends('damage_type')
+    def _compute_damage_tooltip(self):
+        for record in self:
+            if record.damage_type == 'damaged':
+                record.damage_tooltip = 'The products will be converted from "OK" to "Damaged".'
+            else:
+                record.damage_tooltip = 'The products will be destroyed and removed from stock.'
+
     def action_confirm(self):
-        self.state = 'confirmed'
         for line in self.damage_line_ids:
             if line.stock_quant_id.quantity < line.quantity:
                 raise exceptions.UserError(_(f'Not enough stock for {line.source_product_id.name} at {line.location_id.name}'))
 
             line.stock_quant_id.write({'quantity': line.stock_quant_id.quantity - line.quantity})
 
-            existing_quant_id = self.env['stock.quant'].search([('location_id', '=', line.location_id.id),
-                                                            ('product_id', '=', line.damaged_product_id.id)])
-            if existing_quant_id.id == False:
-                self.env['stock.quant'].create({'location_id': line.location_id.id,
-                                                'product_id': line.damaged_product_id.id,
-                                                'quantity': line.quantity})
-            else:
-                existing_quant_id.write({'quantity': existing_quant_id.quantity + line.quantity})
+            if self.damage_type == 'damaged':
+                existing_quant_id = self.env['stock.quant'].search([('location_id', '=', line.location_id.id),
+                                                                ('product_id', '=', line.damaged_product_id.id)])
+                if existing_quant_id.id == False:
+                    self.env['stock.quant'].create({'location_id': line.location_id.id,
+                                                    'product_id': line.damaged_product_id.id,
+                                                    'quantity': line.quantity})
+                else:
+                    existing_quant_id.write({'quantity': existing_quant_id.quantity + line.quantity})
+        self.state = 'confirmed'
 
     def process_damaged_products(self):
-        print('process_damaged_products')
         selected_quants = self.env['stock.quant'].search([('selected_for_action', '=', True)])
         if not selected_quants:
             return False  # No selected products

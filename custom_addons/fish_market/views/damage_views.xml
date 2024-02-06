@@ -9,17 +9,28 @@
                     <field name="state" widget="statusbar"/>
                     <button string="Confirm" class="oe_highlight" type="object" name="action_confirm" invisible="state in ['confirmed']"/>
                 </header>
-                <group>
-                    <field name="name"/>
-                    <field name="origin"/>
-                    <field name="damage_line_ids" readonly="state == 'confirmed'">
-                        <tree editable="1">
-                            <field name="source_product_id"/>
-                            <field name="location_id"/>
-                            <field name="quantity" colspan="4"/>
-                        </tree>
-                    </field>
-                </group>
+                    <sheet>
+                    <group col="1">
+                        <div class="oe_title">
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <group col="1">
+                            <field name="name"/>
+                            <field name="origin"/>
+                            <field name="damage_type" widget="radio" options="{'horizontal': True}" readonly="state != 'draft'"/>
+                            <field name="damage_tooltip" string="" class="fst-italic text-muted"/>
+                        </group>
+                    </group>
+                    <group string="Damage Lines">
+                        <field name="damage_line_ids" readonly="state == 'confirmed'" string="">
+                            <tree editable="1">
+                                <field name="source_product_id"/>
+                                <field name="location_id"/>
+                                <field name="quantity" colspan="4"/>
+                            </tree>
+                        </field>
+                    </group>
+                </sheet>
             </form>
         </field>
     </record>
