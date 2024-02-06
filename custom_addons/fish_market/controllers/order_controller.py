@@ -13,16 +13,7 @@ class TransportOrderController(http.Controller):
         return token_record and token_record.expiry_date > fields.Datetime.now()
 
     def get_transport_product_product_ids(self, transport_order_id):
-        transport_product_id = transport_order_id.meta_sale_order_id.transport_product_id
-        transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', transport_product_id.id)])
 
-        attribute_values = http.request.env['product.template.attribute.value'].sudo().search([])
-        product_variants_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
-
-        transport_product_product_ids = {}
-        for product_variant_id in transport_variants:
-            for key in map(int, product_variant_id.combination_indices.split(',')):
-                transport_product_product_ids[product_variants_map[key]] = product_variant_id.id
         return transport_product_product_ids
 
     @http.route('/transport_order/<string:token>', type='http', auth='public')
@@ -47,7 +38,18 @@ class TransportOrderController(http.Controller):
         token = post.get('token')
         token_record = self.get_token_record(token)
 
-        transport_product_product_ids = self.get_transport_product_product_ids(token_record.transport_order_id)
+        transport_product_id = token_record.transport_order_id.meta_sale_order_id.transport_product_id
+        transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', transport_product_id.id)])
+
+        attribute_values = http.request.env['product.template.attribute.value'].sudo().search([])
+        product_variants_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
+
+        transport_product_product_ids = {}
+        for product_variant_id in transport_variants:
+            if product_variant_id.combination_indices == '':
+                return "Please add the following product variants to the transport product: 'One-Way', 'Backload'"
+            for key in map(int, product_variant_id.combination_indices.split(',')):
+                transport_product_product_ids[product_variants_map[key]] = product_variant_id.id
 
         if any(key not in transport_product_product_ids.keys() for key in ['One-Way', 'Backload']):
             return "Please add the following product variants to the transport product: 'One-Way', 'Backload'"

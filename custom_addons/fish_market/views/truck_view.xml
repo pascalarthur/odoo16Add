@@ -11,6 +11,8 @@
                     <field name="state" widget="statusbar"/>
                 </header>
                 <group>
+                    <field name="meta_sale_order_id"/>
+                    <field name="partner_id"/>
                     <field name="truck_number"/>
                     <field name="horse_number"/>
                     <field name="container_number"/>

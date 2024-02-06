@@ -21,7 +21,7 @@ class MetaSaleOrderLine(models.Model):
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Product', required=True)
-    product_weight = fields.Float('Product Weight [kg]', related='product_id.weight', store=True)
+    box_weight = fields.Float('Product Weight [kg]', related='product_id.box_weight', store=True)
     unit_price = fields.Float('Unit Price', default=0.0)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
@@ -51,7 +51,7 @@ class MetaSaleOrder(models.Model):
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
     truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
-    truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload')
+    truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload', readonly=False)
 
     sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
 
@@ -66,7 +66,7 @@ class MetaSaleOrder(models.Model):
     @api.depends('order_line_ids')
     def _compute_container_demand(self):
         for record in self:
-            total_weight = sum(line.quantity * line.product_id.weight for line in record.order_line_ids)
+            total_weight = sum(line.quantity * line.product_id.box_weight for line in record.order_line_ids)
             record.container_demand = -(-total_weight // 35000) # ceil
 
     @api.depends('transport_pricelist_item_ids')
@@ -121,36 +121,34 @@ class MetaSaleOrder(models.Model):
 
     def action_allocate_transporters(self):
         # Step 1: Raise a warning if no transporter replied yet
-        if not self.transport_pricelist_item_ids or not any(self.transport_pricelist_item_ids.mapped('truck_id')):
+        if not self.truck_ids_no_backload:
             raise exceptions.UserError("No transport offers have been received yet.")
 
         # Step 2: Clear existing allocations
-        for pricelist_item_id in self.transport_pricelist_item_ids:
-            pricelist_item_id.truck_id.load_line_ids.unlink()  # This will delete the TruckLoadLine records
+        for truck_id in self.truck_ids:
+            truck_id.load_line_ids.unlink()  # This will delete the TruckLoadLine records
 
         # Step 3: Proceed with new allocations
         for order_line in self.order_line_ids:
             product = order_line.product_id
-            if product.weight == 0.0:
-                raise exceptions.UserError(f"Please specify a weight for product: {product.display_name}")
-
-            location_id = order_line.location_id
+            if product.box_weight == 0.0:
+                raise exceptions.UserError(f"Please specify a box weight for product: {product.display_name}")
 
             required_quantity = order_line.quantity # Assuming 'quantity' is the correct field
             allocated_quantity = 0.0
-            truck_ids = self.transport_pricelist_item_ids.mapped('truck_id').sorted(key=lambda t: t.price_per_kg)
-            for truck in truck_ids:
+            truck_ids = self.truck_ids_no_backload.sorted(key=lambda t: t.price_per_kg)
+            for truck_id in truck_ids:
                 if allocated_quantity >= required_quantity:
                     break
 
                 # Assuming 'max_load' represents the capacity and there's a field to track allocated capacity
-                available_capacity = truck.max_load - sum(line.quantity * line.product_id.weight for line in truck.load_line_ids)
-                available_capacity = available_capacity // product.weight  # Convert to product quantity
+                available_capacity = truck_id.max_load - sum(line.quantity * line.product_id.box_weight for line in truck_id.load_line_ids)
+                available_capacity = available_capacity // product.box_weight  # Convert to product quantity
 
                 # It is only worthwile to pick up 10 boxes or more
                 if available_capacity > 10:
                     quantity_to_allocate = min(required_quantity - allocated_quantity, available_capacity)
-                    truck.allocate_product(product, order_line.unit_price, location_id, quantity_to_allocate)
+                    truck_id.allocate_product(product, order_line.unit_price, order_line.location_id, quantity_to_allocate)
                     allocated_quantity += quantity_to_allocate
 
         self.ensure_one()
@@ -251,7 +249,7 @@ class MetaSaleOrder(models.Model):
 
     def action_confirm_seals(self):
         self.ensure_one()
-        for truck_id in self.truck_ids_with_load:
+        for truck_id in self.truck_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
             if not truck_id.seal_number:
                 raise exceptions.UserError(f"Please enter a seal number for truck {truck_id.name}")
         self.state = 'send_invoice'
@@ -259,24 +257,28 @@ class MetaSaleOrder(models.Model):
     def action_send_invoice(self):
         self.ensure_one()
         for sale_id in self.sale_order_ids:
-            if sale_id.state == 'draft':
+            if sale_id.state in ['draft', 'sent']:
                 sale_id.action_confirm()
-            # sale_id.create_invoices()
+                invoice = sale_id._create_invoices()
+                invoice.action_post()
         self.state = 'handle_overload'
 
     def action_set_done(self):
         self.ensure_one()
         self.state = 'done'
+        self.state = 'transport'
 
-    def stay_on_dialog(self):
+    def action_add_truck(self):
+        self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
-            'res_model': 'meta.sale.order',
-            'res_id': self.id,
+            'name': 'Add Truck',
             'view_mode': 'form',
-            'views': [(False, 'form')],
+            'res_model': 'truck.detail',
             'target': 'new',
-            'context': {'form_view_initial_mode': 'edit'},
+            'context': {
+                'default_meta_sale_order_id': self.id,
+            },
         }
 
     def action_view_optional_backloads(self):

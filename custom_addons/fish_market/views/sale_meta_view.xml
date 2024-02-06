@@ -16,8 +16,9 @@
                     <button name="action_send_confirmations" string="Send Confirmations" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                     <button name="action_confirm_seals" string="Confirm Seals" type="object" class="oe_highlight" invisible="state not in ['seal_trucks']"/>
                     <button name="action_send_invoice" string="Send Invoice" type="object" class="oe_highlight" invisible="state not in ['send_invoice']"/>
-                    <button name="action_set_done" string="Done" type="object" class="oe_highlight" invisible="state not in ['handle_overload']"/>
+                    <button name="action_add_truck" string="Add Truck" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                     <button name="action_allocate_transporters" string="Allocate Trucks" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
+                    <button name="action_set_done" string="Done" type="object" class="oe_highlight" invisible="state not in ['handle_overload', 'done']"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,transport,allocated,send_confirmations,seal_trucks,send_invoice,handle_overload,done"/>
                 </header>
                 <sheet>
@@ -31,7 +32,7 @@
                             <tree editable="bottom">
                                 <field name="location_id"/>
                                 <field name="product_id"/>
-                                <field name="product_weight"/>
+                                <field name="box_weight" readonly="0"/>
                                 <field name="quantity"/>
                                 <field name="unit_price"/>
                             </tree>
@@ -52,7 +53,7 @@
                             widget="section_and_note_one2many"
                             mode="tree,kanban"
                             readonly="state == 'cancel'">
-                            <tree delete="0">
+                            <tree delete="0" create="0">
                                 <field name="is_backload" column_invisible="1"/>
                                 <field name="name"/>
                                 <field name="partner_id"/>
