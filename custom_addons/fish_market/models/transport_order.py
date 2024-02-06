@@ -45,7 +45,6 @@ class TruckDetail(models.Model):
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     partner_id = fields.Many2one('res.partner')
-    transport_order_id  = fields.Many2one('transport.order', string='Transport Order', ondelete='cascade')
     is_backload = fields.Boolean(string='Is Backload', default=False)
 
     truck_number = fields.Char(string='Trailer Number')
@@ -108,56 +107,3 @@ class TruckDetail(models.Model):
             },
         }
 
-
-class TransportOrder(models.Model):
-    _name = 'transport.order'
-    _description = 'Transport Order'
-
-    name = fields.Char(
-        string="Transport Reference",
-        required=True, copy=False, readonly=False,
-        index='trigram',
-        default=lambda self: default_name(self, prefix='T'))
-
-    meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
-
-    route_start_street = fields.Char()
-    route_start_street2 = fields.Char()
-    route_start_city = fields.Char()
-    route_start_zip = fields.Char()
-    route_start_state_id = fields.Many2one('res.country.state')
-    route_start_country_id = fields.Many2one('res.country')
-
-    route_end_street = fields.Char()
-    route_end_street2 = fields.Char()
-    route_end_city = fields.Char()
-    route_end_zip = fields.Char()
-    route_end_state_id = fields.Many2one('res.country.state')
-    route_end_country_id = fields.Many2one('res.country')
-
-    truck_ids = fields.One2many('truck.detail', 'transport_order_id', string='Truck Details')
-
-    container_demand = fields.Integer(string='Container Demand')
-    container_offer = fields.Integer(string='Container Offer', compute='_compute_container_offer')
-    additional_details = fields.Text(string='Additional Details')
-
-    product_template_id = fields.Many2one('product.template', string='Product Template')
-
-    partner_id = fields.Many2one('res.partner')
-
-    state = fields.Selection(
-        selection=TRANSPORT_ORDER_STATES,
-        string="Status",
-        readonly=True, copy=False, index=True,
-        default='sent')
-
-    price = fields.Float(string='Price')
-
-
-    def confirm_price(self):
-        self.state = 'received'
-
-    @api.depends('truck_ids')
-    def _compute_container_offer(self):
-        for record in self:
-            record.container_offer = len(record.truck_ids)

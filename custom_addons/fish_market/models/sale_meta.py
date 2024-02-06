@@ -49,7 +49,6 @@ class MetaSaleOrder(models.Model):
     transport_pricelist_backloads_count = fields.Integer(compute='_compute_transport_pricelist_backloads_count')
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
-    transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
     truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='All Trucks')
     truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload', readonly=False)
 
