@@ -8,13 +8,6 @@ TRUCK_STATES =[
 ]
 
 
-TRANSPORT_ORDER_STATES =[
-    ('draft', 'RFT'),
-    ('sent', 'RFT Sent'),
-    ('received', 'Offer Received'),
-]
-
-
 class TruckLoadLine(models.Model):
     _name = 'truck.detail.line'
     _description = 'Truck Detail Line'

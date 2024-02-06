@@ -1,4 +1,4 @@
-const formElement = document.getElementById('transport_order_form');
+const formElement = document.getElementById('route_demand_form');
 const nad_to_usd_exchange_rate = parseFloat(formElement.getAttribute('data-nad-to-usd-exchange-rate'));
 
 

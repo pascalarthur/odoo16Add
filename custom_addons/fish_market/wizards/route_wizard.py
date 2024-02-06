@@ -48,11 +48,11 @@ class RouteDemand(models.Model):
                 <p>Hello {partner_name},</p>
                 <p>We have a new route demand. Please fill in your price details by following the link below:</p>
                 <a href="{token_url}">Submit Price</a>
-            """.format(partner_name=partner.name, token_url=f"https://{base_url}/transport_order/{token_record.token}")
+            """.format(partner_name=partner.name, token_url=f"https://{base_url}/route_demand/{token_record.token}")
 
             # Send email with token link
             template = self.env.ref('fish_market.email_template_demand')
-            template.with_context(token_url=f"https://{base_url}/transport_order/{token_record.token}").send_mail(
+            template.with_context(token_url=f"https://{base_url}/route_demand/{token_record.token}").send_mail(
                 self.id,
                 email_values={'email_to': partner.email, 'email_from': my_company_email, 'body_html': email_body},
                 force_send=True

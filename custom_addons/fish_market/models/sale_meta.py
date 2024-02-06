@@ -160,24 +160,21 @@ class MetaSaleOrder(models.Model):
         my_company_email = self.env.user.company_id.email
 
         # Send confirmation to transporters
-        for transport_order in self.transport_order_ids:
-            transporter_email = transport_order.partner_id.email
+        for truck_id in self.truck_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+            transporter_email = truck_id.partner_id.email
             if transporter_email:
-                for truck in transport_order.truck_ids:
-                    if len(truck.load_line_ids) > 0:
-                        email_values = {
-                            'email_to': transporter_email,
-                            'email_from': my_company_email,
-                            'subject': 'Transport Order Confirmation',
-                            'body_html': self._prepare_email_content_for_transporter(truck),
-                        }
-                        template.send_mail(self.id, email_values=email_values, force_send=True)
+                email_values = {
+                    'email_to': transporter_email,
+                    'email_from': my_company_email,
+                    'subject': 'Transport Order Confirmation',
+                    'body_html': self._prepare_email_content_for_transporter(truck_id),
+                }
+                template.send_mail(self.id, email_values=email_values, force_send=True)
 
         location_load_map = defaultdict(list)
-        for transport_order in self.transport_order_ids:
-            for truck in transport_order.truck_ids:
-                for load_line in truck.load_line_ids:
-                    location_load_map[load_line.location_id].append(load_line)
+        for truck_id in self.truck_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+            for load_line in truck_id.load_line_ids:
+                location_load_map[load_line.location_id].append(load_line)
 
         for location_id, lines in location_load_map.items():
             warehouse_id = self.get_warehouse(location_id.warehouse_id)
@@ -196,7 +193,7 @@ class MetaSaleOrder(models.Model):
 
     def _prepare_email_content_for_transporter(self, truck):
         # Prepare the email content for the transporter
-        content = f"Dear {truck.transport_order_id.partner_id.name},<br/>"
+        content = f"Dear {truck.partner_id.name},<br/>"
         content += f"You are selected to pick up the following products:<br/>"
         for line in truck.load_line_ids:
             content += f"Product: {line.product_id.name}, Quantity: {line.quantity}, Location: {line.location_id.name}<br/>"
@@ -214,35 +211,29 @@ class MetaSaleOrder(models.Model):
         SaleOrder = self.env['sale.order']
         SaleOrderLine = self.env['sale.order.line']
 
-        for transport_order in self.transport_order_ids:
-            for truck in transport_order.truck_ids:
-                if len(truck.load_line_ids) > 0:
-                    # Create a sale order for each truck
-                    sale_order_vals = {
-                        'meta_sale_order_id': self.id,
-                        'partner_id': self.partner_id.id,
-                        'truck_detail_id': truck.id,
-                        'truck_number': truck.truck_number,
-                        'horse_number': truck.horse_number,
-                        'container_number': truck.container_number,
-                        'seal_number': truck.seal_number,
-                        'driver_name': truck.driver_name,
-                        'telephone_number': truck.telephone_number,
-                        # Add other necessary fields and values
-                    }
-                    sale_order = SaleOrder.create(sale_order_vals)
+        for truck_id in self.truck_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+            # Create a sale order for each truck
+            sale_order = SaleOrder.create({
+                'meta_sale_order_id': self.id,
+                'partner_id': self.partner_id.id,
+                'truck_detail_id': truck_id.id,
+                'truck_number': truck_id.truck_number,
+                'horse_number': truck_id.horse_number,
+                'container_number': truck_id.container_number,
+                'seal_number': truck_id.seal_number,
+                'driver_name': truck_id.driver_name,
+                'telephone_number': truck_id.telephone_number,
+            })
 
-                    for load_line in truck.load_line_ids:
-                        sale_order_line_vals = {
-                            'order_id': sale_order.id,
-                            'product_id': load_line.product_id.id,
-                            'product_uom_qty': load_line.quantity,
-                            'price_unit': load_line.unit_price,
-                            # Ensure to include other necessary fields like product_uom, price_unit, etc.
-                        }
-                        SaleOrderLine.create(sale_order_line_vals)
-                    sale_order.action_quotation_send_programmatically()
-                    sale_order.state = 'sent'
+            for load_line in truck_id.load_line_ids:
+                SaleOrderLine.create({
+                    'order_id': sale_order.id,
+                    'product_id': load_line.product_id.id,
+                    'product_uom_qty': load_line.quantity,
+                    'price_unit': load_line.unit_price,
+                })
+            sale_order.action_quotation_send_programmatically()
+            sale_order.state = 'sent'
 
         self.state = 'seal_trucks'
 

@@ -10,6 +10,6 @@ from . import sale_order
 from . import account_move
 from . import sale_meta
 from . import access_token
-from . import transport_order
+from . import truck_detail
 from . import res_partner_bank
 from . import damages

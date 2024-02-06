@@ -11,16 +11,15 @@ class TransportOrderController(http.Controller):
     def check_token(self, token_record) -> bool:
         return token_record and token_record.expiry_date > fields.Datetime.now()
 
-    @http.route('/transport_order/<string:token>', type='http', auth='public')
+    @http.route('/route_demand/<string:token>', type='http', auth='public')
     def access_form(self, token, **kwargs):
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
-            route_demand = token_record.route_demand_id
             nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
 
             return http.request.render('fish_market.logistic_form_template', {
                 'supplier': token_record.partner_id,
-                'route_demand': route_demand,
+                'route_demand_id': token_record.route_demand_id,
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'token': token,
             })
