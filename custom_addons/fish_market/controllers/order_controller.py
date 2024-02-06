@@ -15,13 +15,15 @@ class TransportOrderController(http.Controller):
     def access_form(self, token, **kwargs):
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
-            transport_order = token_record.transport_order_id
+            route_demand = token_record.route_demand_id
+            meta_sale_order_id = token_record.meta_sale_order_id
             nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
 
             # Pass transport order data to the template
             return http.request.render('fish_market.logistic_form_template', {
                 'supplier': token_record.partner_id,
-                'transport_order': transport_order,
+                'route_demand': route_demand,
+                'meta_sale_order_id': meta_sale_order_id,
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'token': token,
             })
@@ -32,8 +34,9 @@ class TransportOrderController(http.Controller):
     def submit_form(self, **post):
         token = post.get('token')
         token_record = self.get_token_record(token)
+        route_demand_id = token_record.route_demand_id
 
-        transport_product_id = token_record.transport_order_id.meta_sale_order_id.transport_product_id
+        transport_product_id = route_demand_id.meta_sale_order_id.transport_product_id
         transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', transport_product_id.id)])
 
         attribute_values = http.request.env['product.template.attribute.value'].sudo().search([])
@@ -50,7 +53,6 @@ class TransportOrderController(http.Controller):
             return "Please add the following product variants to the transport product: 'One-Way', 'Backload'"
 
         if self.check_token(token_record) is True:
-            transport_order = token_record.transport_order_id
 
             # Process each truck detail
             truck_numbers = request.httprequest.form.getlist('truck_number[]')
@@ -65,8 +67,7 @@ class TransportOrderController(http.Controller):
             for ii in range(len(truck_numbers)):
                 truck_detail = {
                     'partner_id': token_record.partner_id.id,
-                    'transport_order_id': transport_order.id,
-                    'meta_sale_order_id': transport_order.meta_sale_order_id.id,
+                    'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                     'truck_number': truck_numbers[ii],
                     'horse_number': horse_numbers[ii],
                     'container_number': container_numbers[ii],
@@ -81,15 +82,15 @@ class TransportOrderController(http.Controller):
 
                 product_detail = {
                     'truck_id': truck_id.id,
-                    'pricelist_id': int(transport_order.meta_sale_order_id.transport_pricelist_id.id),
+                    'pricelist_id': int(route_demand_id.meta_sale_order_id.transport_pricelist_id.id),
                     'partner_id': token_record.partner_id.id,
-                    'product_tmpl_id': int(transport_order.meta_sale_order_id.transport_product_id.id),
+                    'product_tmpl_id': int(route_demand_id.meta_sale_order_id.transport_product_id.id),
                     'product_id': transport_product_product_ids['One-Way'],
                     'compute_price': 'fixed',
                     'applied_on': '0_product_variant',
                     'fixed_price': float(prices_in_usd[ii]),
 
-                    'meta_sale_order_id': transport_order.meta_sale_order_id.id,
+                    'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                 }
                 product_pricelist_item_id = request.env['product.pricelist.item'].create(product_detail)
 
@@ -97,8 +98,7 @@ class TransportOrderController(http.Controller):
                 if backload_prices[ii] != '':
                     truck_detail = {
                         'partner_id': token_record.partner_id.id,
-                        'transport_order_id': transport_order.id,
-                        'meta_sale_order_id': transport_order.meta_sale_order_id.id,
+                        'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                         'truck_number': truck_numbers[ii],
                         'horse_number': horse_numbers[ii],
                         'container_number': container_numbers[ii],
@@ -113,24 +113,20 @@ class TransportOrderController(http.Controller):
 
                     product_detail = {
                         'truck_id': truck_id.id,
-                        'pricelist_id': int(transport_order.meta_sale_order_id.transport_pricelist_id.id),
+                        'pricelist_id': int(route_demand_id.meta_sale_order_id.transport_pricelist_id.id),
                         'partner_id': token_record.partner_id.id,
-                        'product_tmpl_id': int(transport_order.meta_sale_order_id.transport_product_id.id),
+                        'product_tmpl_id': int(route_demand_id.meta_sale_order_id.transport_product_id.id),
                         'product_id': transport_product_product_ids['Backload'],
                         'compute_price': 'fixed',
                         'applied_on': '0_product_variant',
                         'fixed_price': float(backload_prices[ii]),
 
-                        'meta_sale_order_id': transport_order.meta_sale_order_id.id,
+                        'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                     }
                     product_pricelist_item_id_backload = request.env['product.pricelist.item'].create(product_detail)
 
                     product_pricelist_item_id.write({'backload_id': product_pricelist_item_id_backload.id})
 
-
-            transport_order.write({
-                'state': 'received',
-            })
 
             # Optionally, mark the token as used
             # token_record.is_used = True
