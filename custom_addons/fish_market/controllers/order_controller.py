@@ -1,4 +1,3 @@
-from collections import defaultdict
 from odoo import http, fields
 from odoo.http import request
 
@@ -11,10 +10,6 @@ class TransportOrderController(http.Controller):
 
     def check_token(self, token_record) -> bool:
         return token_record and token_record.expiry_date > fields.Datetime.now()
-
-    def get_transport_product_product_ids(self, transport_order_id):
-
-        return transport_product_product_ids
 
     @http.route('/transport_order/<string:token>', type='http', auth='public')
     def access_form(self, token, **kwargs):

@@ -5,29 +5,30 @@
         <field name="model">meta.sale.order</field>
         <field name="arch" type="xml">
             <form>
-                <div class="oe_button_box" name="button_box">
-                    <button type="object" name="action_view_optional_backloads" class="oe_stat_button" icon="fa-exchange">
-                        <field name="transport_pricelist_backloads_count" widget="statinfo" string="Optional Backloads"/>
-                    </button>
-                </div>
-                <header>
-                    <button name="set_transport_state" string="Transport" type="object" class="oe_highlight" invisible="state not in ['draft']"/>
-                    <button name="action_find_transporters" string="Find Transport" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
-                    <button name="action_send_confirmations" string="Send Confirmations" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
-                    <button name="action_confirm_seals" string="Confirm Seals" type="object" class="oe_highlight" invisible="state not in ['seal_trucks']"/>
-                    <button name="action_send_invoice" string="Send Invoice" type="object" class="oe_highlight" invisible="state not in ['send_invoice']"/>
-                    <button name="action_add_truck" string="Add Truck" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
-                    <button name="action_allocate_transporters" string="Allocate Trucks" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
-                    <button name="action_set_done" string="Done" type="object" class="oe_highlight" invisible="state not in ['handle_overload', 'done']"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,transport,allocated,send_confirmations,seal_trucks,send_invoice,handle_overload,done"/>
-                </header>
                 <sheet>
-                    <group>
-                        <field name="name"/>
-                        <field name="partner_id"/>
-                        <field name="transport_product_id"/>
-                        <field name="transport_pricelist_id"/>
-
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_view_optional_backloads" class="oe_stat_button" icon="fa-exchange">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="transport_pricelist_backloads_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Optional Backloads
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <header>
+                        <button name="set_transport_state" string="Transport" type="object" class="oe_highlight" invisible="state not in ['draft']"/>
+                        <button name="action_find_transporters" string="Find Transport" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
+                        <button name="action_send_confirmations" string="Send Confirmations" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
+                        <button name="action_confirm_seals" string="Confirm Seals" type="object" class="oe_highlight" invisible="state not in ['seal_trucks']"/>
+                        <button name="action_allocate_transporters" string="Allocate Trucks" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
+                        <button name="action_send_invoice" string="Invoice" type="object" class="oe_highlight" invisible="state not in ['send_invoice']"/>
+                        <button name="action_set_done" string="Done" type="object" class="oe_highlight" invisible="state not in ['handle_overload', 'done']"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,transport,allocated,send_confirmations,seal_trucks,send_invoice,handle_overload,done"/>
+                    </header>
+                    <group col="1">
                         <field name="order_line_ids">
                             <tree editable="bottom">
                                 <field name="location_id"/>
@@ -37,39 +38,63 @@
                                 <field name="unit_price"/>
                             </tree>
                         </field>
-
-                        <field name="container_demand" readonly="1"/>
-                        <field name="transport_pricelist_item_ids_no_backload">
-                            <tree>
-                                <field name="partner_id"/>
-                                <field name="fixed_price"/>
-                                <field name="backload_id"/>
-                                <field name="backload_fixed_price"/>
-                            </tree>
-                        </field>
-
-                        <field
-                            name="truck_ids_no_backload"
-                            widget="section_and_note_one2many"
-                            mode="tree,kanban"
-                            readonly="state == 'cancel'">
-                            <tree delete="0" create="0">
-                                <field name="is_backload" column_invisible="1"/>
+                        <group col="2">
+                            <group col="1">
                                 <field name="name"/>
                                 <field name="partner_id"/>
-                                <field name="max_load"/>
-                                <field name="price"/>
-                                <field name="price_per_kg" string="USD/kg"/>
-                                <field name="truck_utilization" string="Truck Utilization [%]"/>
-                                <field name="seal_number"/>
+                                <field name="container_demand" readonly="1"/>
+                            </group>
+                            <group col="1">
+                                <field name="transport_product_id"/>
+                                <field name="transport_pricelist_id"/>
+                            </group>
+                        </group>
+                    </group>
 
-                                <field name="load_line_ids"/>
+                    <group string="Transport Bids" col="1">
+                        <group col="1">
+                            <field name="transport_pricelist_item_ids_no_backload" string="">
+                                <tree>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="partner_id"/>
+                                    <field name="fixed_price"/>
+                                    <field name="backload_id"/>
+                                    <field name="backload_fixed_price"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </group>
 
-                                <button name="action_handle_overload" string="Handle Overload" type="object" class="oe_highlight"/>
-                            </tree>
-                        </field>
+                    <group string="Trucks" col="1">
+ä                        <button name="action_add_truck" string="Add Truck" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/><br/>
+                        <group col="1">
+                            <field
+                                name="truck_ids_no_backload"
+                                widget="section_and_note_one2many"
+                                mode="tree,kanban"
+                                readonly="state == 'cancel'"
+                                string="">
+                                <tree delete="0" create="0">
+                                    <field name="is_backload" column_invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="max_load"/>
+                                    <field name="price"/>
+                                    <field name="price_per_kg" string="USD/kg"/>
+                                    <field name="truck_utilization" string="Truck Utilization [%]"/>
+                                    <field name="seal_number"/>
 
-                        <field name="sale_order_ids" invisible="state not in ['send_invoice','handle_overload', 'done']"/>
+                                    <field name="load_line_ids"/>
+
+                                    <button name="action_handle_overload" string="Handle Overload" type="object" class="oe_highlight"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </group>
+                    <group string="Sales Orders" col="1" invisible="state not in ['send_invoice','handle_overload', 'done']">
+                        <group col="1">
+                            <field name="sale_order_ids" string=""/>
+                        </group>
                     </group>
                 </sheet>
             </form>

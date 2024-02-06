@@ -9,7 +9,7 @@ META_SALE_STATES = [
     ('allocated', 'Allocated'),
     ('send_confirmations', 'Send Confirmations'),
     ('seal_trucks', 'Seal Trucks'),
-    ('send_invoice', 'Send Invoices'),
+    ('send_invoice', 'Invoice'),
     ('handle_overload', 'Handle Overload'),
     ('done', 'Done'),
 ]
@@ -42,15 +42,15 @@ class MetaSaleOrder(models.Model):
 
     transport_product_id = fields.Many2one('product.template', string='Transport Route', domain=[('type', '=', 'transport')])
     transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist')
-    transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id', string='Transport Pricelist Items')
-    transport_pricelist_item_ids_no_backload = fields.One2many('product.pricelist.item', compute='_compute_transport_pricelist_item_ids_no_backload', string='Transport Pricelist Items')
+    transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id', string='Transport Bids with Backloads')
+    transport_pricelist_item_ids_no_backload = fields.One2many('product.pricelist.item', compute='_compute_transport_pricelist_item_ids_no_backload', string='Transport Bids')
     container_demand = fields.Integer(string='Container Demand', compute='_compute_container_demand')
 
     transport_pricelist_backloads_count = fields.Integer(compute='_compute_transport_pricelist_backloads_count')
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     transport_order_ids = fields.One2many('transport.order', 'meta_sale_order_id', string='Transport Orders')
-    truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='Trucks')
+    truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='All Trucks')
     truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload', readonly=False)
 
     sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
