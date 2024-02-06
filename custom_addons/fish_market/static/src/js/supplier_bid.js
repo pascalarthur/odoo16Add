@@ -1,15 +1,15 @@
 // Access the data attributes
-const formElement = document.getElementById('supplier_order_form');
-const addresses = JSON.parse(formElement.getAttribute('data-addresses'));
-const product_temp_vars_dict = JSON.parse(formElement.getAttribute('data-product-temp-vars-dict'));
-const nad_to_usd_exchange_rate = parseFloat(formElement.getAttribute('data-nad-to-usd-exchange-rate'));
+const supplier_form_element = document.getElementById('supplier_order_form');
 
 
 function populateExchangeRate() {
+    const nad_to_usd_exchange_rate = parseFloat(supplier_form_element.getAttribute('data-nad-to-usd-exchange-rate'));
     document.getElementById('exchange_rate_display').innerText = `${parseFloat(nad_to_usd_exchange_rate).toFixed(5)} [NAD/USD]`;
 }
 
 function populateAddressDropdown() {
+    const addresses = JSON.parse(supplier_form_element.getAttribute('data-addresses'));
+
     var dropdown = document.getElementById('delivery_address_dropdown');
     dropdown.innerHTML = `<option value="">Select an address...</option>`;
     addresses.forEach(function(address) {
@@ -28,6 +28,7 @@ function populateAddressDropdown() {
 }
 
 function addProductTemplate() {
+    const product_temp_vars_dict = JSON.parse(supplier_form_element.getAttribute('data-product-temp-vars-dict'));
     var container = document.getElementById('product_templates_container');
     var productTemplateDetail = document.createElement('div');
     productTemplateDetail.classList.add('product-template-detail');
@@ -61,6 +62,8 @@ function addProductTemplate() {
 }
 
 function addVariantCombination(productSelect) {
+    const product_temp_vars_dict = JSON.parse(supplier_form_element.getAttribute('data-product-temp-vars-dict'));
+
     var templateId = productSelect.value;
     if (!templateId) return; // Exit if no product template is selected
 
@@ -96,6 +99,7 @@ function addVariantCombination(productSelect) {
 }
 
 function updateUsdPrice(element) {
+    const nad_to_usd_exchange_rate = parseFloat(supplier_form_element.getAttribute('data-nad-to-usd-exchange-rate'));
     var nadPrice = element.value; // Get the value from the passed element
     var usdPrice = nadPrice / nad_to_usd_exchange_rate; // Perform the conversion
 

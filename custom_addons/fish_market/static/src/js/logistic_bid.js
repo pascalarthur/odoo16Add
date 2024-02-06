@@ -1,13 +1,15 @@
-const formElement = document.getElementById('route_demand_form');
-const nad_to_usd_exchange_rate = parseFloat(formElement.getAttribute('data-nad-to-usd-exchange-rate'));
+const logistic_form_element = document.getElementById('route_demand_form');
 
 
 function populateExchangeRate() {
+    const nad_to_usd_exchange_rate = parseFloat(logistic_form_element.getAttribute('data-nad-to-usd-exchange-rate'));
     document.getElementById('exchange_rate_display').innerText = `${parseFloat(nad_to_usd_exchange_rate).toFixed(5)} [NAD/USD]`;
 }
 
 
 function update_usd_price(container) {
+    const nad_to_usd_exchange_rate = parseFloat(logistic_form_element.getAttribute('data-nad-to-usd-exchange-rate'));
+
     var price_nad_element = container.querySelector('.priceNad');
     var price_usd_element = container.querySelector('.priceUsd');
 
@@ -93,5 +95,5 @@ window.onload = function() {
 
 
 function handleSubmit() {
-    formElement.submit(); // Submit the form
+    logistic_form_element.submit(); // Submit the form
 };
