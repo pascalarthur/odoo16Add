@@ -9,7 +9,6 @@
                 <field name="journal_id" position="after">
                     <field name="manual_currency_rate_active" invisible="(can_edit_wizard == False) or (can_group_payments == True) and (group_payment == False)"/>
                     <field name="manual_currency_rate" invisible="manual_currency_rate_active == False" required="manual_currency_rate_active == True"/>
-                    <field name="check_active_currency" invisible="1"/>
                 </field>
             </field>
         </record>
@@ -22,21 +21,7 @@
                 <field name="journal_id" position="after">
                     <field name="manual_currency_rate_active" force_save="True" readonly="state in ['posted','cancel']"/>
                     <field name="manual_currency_rate" invisible="manual_currency_rate_active == False" required="manual_currency_rate_active == True" readonly="state in ['posted','cancel']"/>
-                    <field name="check_active_currency" invisible="1"/>
                 </field>
-                <!-- <field name="amount" position="attributes">
-                	<attribute name="invisible">1</attribute>
-                </field>
-                <label for="amount" position="attributes">
-                	<attribute name="invisible">1</attribute>
-                </label>
-                <div name="amount_div" position="before">
-                	<label for="amount_currency" string="Amount"/>
-                </div>
-                <field name="amount" position="after">
-                	<field name="amount_currency" readonly="state != 'draft'"/>
-
-                </field> -->
             </field>
         </record>
     </data>

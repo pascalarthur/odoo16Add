@@ -11,7 +11,6 @@ class AccountPayment(models.Model):
 
     manual_currency_rate_active = fields.Boolean('Apply Manual Exchange')
     manual_currency_rate = fields.Float('Rate', digits=(12, 6), default=1.0)
-    check_active_currency = fields.Boolean('Check Active Currency')
 
     @api.depends('amount', 'manual_currency_rate')
     def _compute_amount_converted(self):

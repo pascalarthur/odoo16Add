@@ -78,7 +78,6 @@
 
                         <field name="manual_currency_rate_active" force_save="True" invisible="1"/>
                         <field name="manual_currency_rate" invisible="manual_currency_rate_active == False" required="manual_currency_rate_active == True" readonly="state in ['posted','cancel']"/>
-                        <field name="check_active_currency" invisible="1"/>
                         <field name="amount_converted" widget="monetary"/>
 
                         <field name="date" readonly="state != 'draft'"/>

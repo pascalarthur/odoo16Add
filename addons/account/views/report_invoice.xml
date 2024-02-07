@@ -10,13 +10,14 @@
                         <div class="col-6">
                             <t t-set="information_block">
                                 <div groups="account.group_delivery_invoice_address" name="shipping_address_block">
-                                    <strong>Shipping Address:</strong>
+                                    <strong>Client:</strong>
                                     <div t-field="o.partner_shipping_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
                                 </div>
                             </t>
                         </div>
                         <div class="col-6" name="address_not_same_as_shipping">
                             <t t-set="address">
+                                <strong>Consignee:</strong>
                                 <address class="mb-0" t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
                                 <div t-if="o.partner_id.vat" id="partner_vat_address_not_same_as_shipping">
                                     <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-out="o.company_id.account_fiscal_country_id.vat_label" id="inv_tax_id_label"/>
@@ -28,6 +29,7 @@
                     <t t-elif="o.partner_shipping_id and (o.partner_shipping_id == o.partner_id)">
                         <div class="offset-col-6 col-6" name="address_same_as_shipping">
                             <t t-set="address">
+                                <strong>Consignee:</strong>
                                 <address class="mb-0" t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
                                 <div t-if="o.partner_id.vat" id="partner_vat_address_same_as_shipping">
                                     <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-out="o.company_id.account_fiscal_country_id.vat_label" id="inv_tax_id_label"/>
@@ -39,6 +41,7 @@
                     <t t-else="">
                         <div class="offset-col-6 col-6" name="no_shipping">
                             <t t-set="address">
+                                <strong>Consignee:</strong>
                                 <address class="mb-0" t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
                                 <div t-if="o.partner_id.vat" id="partner_vat_no_shipping">
                                     <t t-if="o.company_id.account_fiscal_country_id.vat_label" t-out="o.company_id.account_fiscal_country_id.vat_label" id="inv_tax_id_label"/>
