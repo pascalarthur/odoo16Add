@@ -12,7 +12,7 @@
         'views/account_account_views.xml',
         'views/account_payment_view.xml',
         'views/cash_dasboard.xml',
-        'views/menus.xml',
+        'views/menu.xml',
     ],
     'license': 'LGPL-3',
 }
