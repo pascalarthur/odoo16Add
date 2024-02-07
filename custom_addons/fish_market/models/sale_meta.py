@@ -249,14 +249,14 @@ class MetaSaleOrder(models.Model):
         for sale_id in self.sale_order_ids:
             if sale_id.state in ['draft', 'sent']:
                 sale_id.action_confirm()
-                invoice = sale_id._create_invoices()
-                invoice.action_post()
+                if sale_id.invoice_status != 'invoiced':
+                    invoice = sale_id._create_invoices()
+                    invoice.action_post()
         self.state = 'handle_overload'
 
     def action_set_done(self):
         self.ensure_one()
         self.state = 'done'
-        self.state = 'transport'
 
     def action_add_truck(self):
         self.ensure_one()

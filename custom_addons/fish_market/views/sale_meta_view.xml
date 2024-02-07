@@ -68,7 +68,7 @@
                     </group>
 
                     <group string="Trucks" col="1" invisible="state in ['draft']">
-                        <button name="action_add_truck" string="Add Truck" type="object" class="oe_highlight"/><br/>
+                        <button name="action_add_truck" string="Add Truck Manually" type="object" class="oe_highlight"/><br/>
                         <group col="1">
                             <field
                                 name="truck_ids_no_backload"

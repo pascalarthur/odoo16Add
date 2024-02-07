@@ -38,7 +38,7 @@
                                 <field name="truck_id" column_invisible="1"/>
                                 <field name="product_ids_from_load_lines" column_invisible="1"/>
                                 <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
-                                <field name="target_truck_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_id)]"/>
+                                <field name="target_truck_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_id), ('is_backload', '=', False)]"/>
                                 <field name="quantity"/>
                             </tree>
                         </field>
