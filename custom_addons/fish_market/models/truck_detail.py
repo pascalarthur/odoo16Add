@@ -37,7 +37,7 @@ class TruckDetail(models.Model):
         default='offer')
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
-    partner_id = fields.Many2one('res.partner')
+    partner_id = fields.Many2one('res.partner', string="Transporter")
     is_backload = fields.Boolean(string='Is Backload', default=False)
 
     truck_number = fields.Char(string='Trailer Number')
@@ -53,7 +53,7 @@ class TruckDetail(models.Model):
     price_per_kg = fields.Float(string='Price per Kg', compute='_compute_price_per_kg', digits=(4, 4))
     truck_utilization = fields.Float(string='Truck Utilization (%)', compute='_compute_truck_utilization', store=True)
 
-    load_line_ids = fields.One2many('truck.detail.line', 'truck_detail_id', string='Load Lines')
+    load_line_ids = fields.One2many('truck.detail.line', 'truck_detail_id', string='Load')
 
     @api.depends('load_line_ids.quantity', 'max_load')
     def _compute_truck_utilization(self):
@@ -83,6 +83,16 @@ class TruckDetail(models.Model):
             'quantity': quantity,
         })
 
+    def action_load_truck(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'truck.detail',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'new',
+            'res_id': self.id
+        }
+
     def action_handle_overload(self):
         truck_redistribution = self.env['redistribution.wizard'].create({
                 'truck_id': self.id,
@@ -96,7 +106,6 @@ class TruckDetail(models.Model):
             'views': [(False, 'form')],
             'res_id': truck_redistribution.id,
             'target': 'new',
-            'context': {
-            },
+            'context': {},
         }
 

@@ -53,6 +53,7 @@ class MetaSaleOrder(models.Model):
     truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload', readonly=False)
 
     sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
+    invoice_ids = fields.Many2many('account.move', string='Invoices', related='sale_order_ids.invoice_ids', readonly=True)
 
     def _compute_truck_ids_no_backload(self):
         for record in self:
