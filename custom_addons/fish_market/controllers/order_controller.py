@@ -74,7 +74,7 @@ class TransportOrderController(http.Controller):
                     'max_load': float(max_loads[ii]),
                     'is_backload': False,
                 }
-                truck_id = request.env['truck.detail'].create(truck_detail)
+                truck_id = request.env['truck.detail'].sudo().create(truck_detail)
 
                 product_detail = {
                     'truck_id': truck_id.id,
@@ -88,7 +88,7 @@ class TransportOrderController(http.Controller):
 
                     'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                 }
-                product_pricelist_item_id = request.env['product.pricelist.item'].create(product_detail)
+                product_pricelist_item_id = request.env['product.pricelist.item'].sudo().create(product_detail)
 
                 # Every backload item has a corresponding product.pricelist.item
                 if backload_prices[ii] != '':
@@ -105,7 +105,7 @@ class TransportOrderController(http.Controller):
                         'max_load': float(max_loads[ii]),
                         'is_backload': True,
                     }
-                    truck_id = request.env['truck.detail'].create(truck_detail)
+                    truck_id = request.env['truck.detail'].sudo().create(truck_detail)
 
                     product_detail = {
                         'truck_id': truck_id.id,
@@ -119,7 +119,7 @@ class TransportOrderController(http.Controller):
 
                         'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                     }
-                    product_pricelist_item_id_backload = request.env['product.pricelist.item'].create(product_detail)
+                    product_pricelist_item_id_backload = request.env['product.pricelist.item'].sudo().create(product_detail)
 
                     product_pricelist_item_id.write({'backload_id': product_pricelist_item_id_backload.id})
 
