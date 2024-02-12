@@ -1,21 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <template id="logistic_form_template" name="Public Form">
+    <template id="base_form_template" name="Base Form Template">
         <div id="page-container">
-            <header>
+            <header class="bid-header">
                 <div>
-                    <label>Afromerge Coorporation</label>
+                    <label class="my-label">Afromerge Corporation</label>
                 </div>
             </header>
-            <form action="/submit_form" method="post" id="route_demand_form" class="logistic-form"
-                t-att-data-transport-product-product-ids="json.dumps(transport_product_product_ids)"
-                t-att-data-nad-to-usd-exchange-rate="nad_to_usd_exchange_rate">
 
+            <!-- Placeholder for Form Content -->
+            <div id="form_content">
+                <form
+                    t-att-data-nad-to-usd-exchange-rate="nad_to_usd_exchange_rate"
+                    t-att-action="form_action"
+                    t-att-id="form_id"
+                />
+            </div>
+
+            <footer class="bid-footer">
+                <div>
+                    <label class="my-label">Exchange Rate:</label>
+                    <span type="text" id="exchange_rate_display"/>
+                </div>
+            </footer>
+        </div>
+        <script type="text/javascript" src="/fish_market/static/src/js/logistic_bid.js"></script>
+        <script type="text/javascript" src="/fish_market/static/src/js/supplier_bid.js"></script>
+        <link rel="stylesheet" type="text/css" href="/fish_market/static/src/scss/supplier_bid.css"/>
+    </template>
+
+    <template id="logistic_form_template" inherit_id="base_form_template" name="Logistic Form">
+        <xpath expr="//div[@id='form_content']/form" position="attributes">
+            <attribute name="t-att-data-transport-product-product-ids">json.dumps(transport_product_product_ids)</attribute>
+        </xpath>
+        <xpath expr="//div[@id='form_content']/form" position="inside">
+            <!-- Needed to block out the other templates -->
+            <form t-if="route_demand_id" method="post">
                 <input type="hidden" name="token" t-att-value="token"/>
                 <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
                 <table>
                     <tr>
-                        <td><label>Start Address:</label></td>
+                        <td><label class="my-label">Start Address:</label></td>
                         <td>
                             <t t-if="route_demand_id.route_start_street">
                                 <t t-esc="route_demand_id.route_start_street"/><br/>
@@ -39,7 +64,7 @@
                     </tr>
 
                     <tr>
-                        <td><label>End Address:</label></td>
+                        <td><label class="my-label">End Address:</label></td>
                         <td>
                             <t t-if="route_demand_id.route_end_street">
                                 <t t-esc="route_demand_id.route_end_street"/><br/>
@@ -63,19 +88,19 @@
                     </tr>
 
                     <tr>
-                        <td><label>Number of Containers:</label></td>
+                        <td><label class="my-label">Number of Containers:</label></td>
                         <td t-esc="route_demand_id.container_demand"/>
                     </tr>
 
                     <tr>
-                        <td><label>Additional Details:</label></td>
+                        <td><label class="my-label">Additional Details:</label></td>
                         <td t-esc="route_demand_id.additional_details" placeholder="No Additional Details"/>
                     </tr>
                 </table>
 
                 <!-- Truck Details Section -->
                 <div id="truck_details_section">
-                    <label>Truck Details:</label><br/>
+                    <label class="my-label">Truck Details:</label><br/>
                     <p>
                         Please add the truck details as well as the prices for your trucks. You can submit multiple prices for multiple trucks.
                         If you also offer the option to book a backload, please press "Add Backload" and add the respective price.<br/>
@@ -87,86 +112,38 @@
                 <button type="button" onclick="addTruckDetail()">Add Truck</button><br/>
                 <button type="button" value="Confirm Price" onclick="handleSubmit()">Submit</button>
             </form>
-            <footer>
-                <div>
-                    <label>Exchange Rate:</label>
-                    <span type="text" id="exchange_rate_display"/>
+        </xpath>
+    </template>
+
+    <template id="supplier_form_template" inherit_id="base_form_template" name="Supplier Form">
+        <xpath expr="//div[@id='form_content']/form" position="attributes">
+            <attribute name="t-att-data-product-temp-vars-dict">json.dumps(product_temp_vars_dict)</attribute>
+            <attribute name="t-att-data-addresses">json.dumps(addresses)</attribute>
+            <attribute name="class">logistic-form</attribute>
+        </xpath>
+        <xpath expr="//div[@id='form_content']/form" position="inside">
+            <!-- Needed to block out the other templates -->
+            <div t-if="product_temp_vars_dict">
+                <input type="hidden" name="token" t-att-value="token"/>
+                <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
+
+                <h2 class="bid-h2">Product Details</h2>
+                <div id="product_details_section">
+                    <div id="product_templates_container"></div>
+                    <button type="button" onclick="addProductTemplate()">Add Product</button>
                 </div>
-            </footer>
-        </div>
-    <script type="text/javascript" src="/fish_market/static/src/js/logistic_bid.js"></script>
-    <style>
-        #page-container {
-            position: relative;
-            min-height: 100vh;
-            padding-bottom: 60px; /* Height of the footer */
-        }
-        .logistic-form {
-            max-width: 800px;
-            margin: 0;
-            padding: 20px;
-            horizontal-align: left;
-        }
 
-        .logistic-form table {
-            width: 100%;
-            border-collapse: collapse;
-            horizontal-align: left;
-        }
-
-        .logistic-form tr {
-            border-bottom: 1px solid #ddd; /* Horizontal border for rows */
-            horizontal-align: left;
-        }
-
-        .logistic-form td {
-            padding: 10px;
-            border: 0px solid #ddd;
-            vertical-align: top;
-        }
-        .truck-details-container {
-            margin-top: 5px;
-            margin-bottom: 5px;
-            padding: 10px;
-            padding-top: 0px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        #truck_details_section {
-            margin-top: 20px;
-        }
-        label {
-            font-weight: bold;
-        }
-        input {
-            margin: 5px;
-        }
-        button {
-            margin: 5px;
-        }
-        h3 {
-            margin-top: 5px;
-            margin-bottom: 5px;
-        }
-        header {
-            top: 0;
-            width: 100%;
-            height: 60px; /* Set the height of your footer */
-            background-color: #a1a1a1; /* Background color of footer */
-            text-align: center;
-            line-height: 60px; /* Center text vertically */
-        }
-        footer {
-            margin-top: 20px;
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 60px; /* Set the height of your footer */
-            background-color: #a1a1a1; /* Background color of footer */
-            text-align: center;
-            line-height: 60px; /* Center text vertically */
-        }
-    </style>
+                <h2 class="bid-h2">Delivery Details</h2>
+                <div class="pickup-address-section">
+                    <label class="my-label" for="delivery_address">Pick-Up Address:</label><br/>
+                    <select name="delivery_address" id="delivery_address_dropdown"/><br/>
+                    <div id="other_address_section" style="display:none;">
+                        <input type="text" id="pickup_address" name="pickup_address" placeholder="Enter pick-up address" class="input-pickup-address"/>
+                    </div>
+                </div>
+                <input type="submit" value="Confirm" class="submit-button"/>
+            </div>
+        </xpath>
     </template>
 
 </odoo>

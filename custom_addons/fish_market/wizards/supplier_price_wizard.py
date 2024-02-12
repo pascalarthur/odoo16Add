@@ -10,13 +10,15 @@ class PricelistWizard(models.TransientModel):
 
     email_body = fields.Char(string='Email Body', required=True, default='Do you have new prices or products. Please fill in your price details by following the link below:')
 
+    logistic_partner_ids = fields.Many2many('res.partner')
+
     detailed_type = fields.Selection([
         ('consu', 'Consumable'),
         ('service', 'Service'),
         ('product', 'Storable Product'),
         ('transport', 'Transport')], string='Product Type', default='product', required=True)
 
-    available_product_templates_ids = fields.Many2many('product.template', string='Available Products', compute='_compute_available_product_templates_ids', readonly=True)
+    available_product_templates_ids = fields.Many2many('product.template', string='Available Products', compute='_compute_available_product_templates_ids', readonly=False)
 
     @api.depends('detailed_type')
     def _compute_available_product_templates_ids(self):
@@ -26,16 +28,14 @@ class PricelistWizard(models.TransientModel):
     def confirm_selection(self):
         self.ensure_one()
 
-        logistic_partner_ids = self.env['res.partner'].search([('category_id.name', '=', 'Supplier')])
-
-        if not logistic_partner_ids:
+        if not self.logistic_partner_ids:
             raise Exception('No suppliers found.')
 
         my_company_email = self.env.user.company_id.email
         if not my_company_email:
             raise exceptions.UserError(f'Please specify a valid email address for company: {self.env.user.name}.')
 
-        for partner_id in logistic_partner_ids:
+        for partner_id in self.logistic_partner_ids:
             token_record = self.env['access.token'].create([{
                 'partner_id': partner_id.id,
                 'pricelist_id': self.pricelist_id.id,

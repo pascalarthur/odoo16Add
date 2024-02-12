@@ -46,6 +46,7 @@ function addTruckDetail() {
     var truckDetail = getTruckDiv()
     var heading = document.createElement('h3');
     heading.innerText = 'One-Way';
+    heading.classList.add('bid-h3')
     truck_details_container.appendChild(heading);
     truck_details_container.appendChild(truckDetail);
 
@@ -53,7 +54,7 @@ function addTruckDetail() {
     var backloadDetail = document.createElement('div');
     backloadDetail.classList.add('backload-detail');
     backloadDetail.innerHTML = `
-        <h3>Backload</h3>
+        <h3 class="bid-h3">Backload</h3>
         <input class="priceNad" type="number" placeholder="Price in NAD"/>
         <span class="currency-label">NAD</span><br/>
         <input readonly type="number" name="backload_price[]" class="priceUsd" placeholder="Price in USD"/>

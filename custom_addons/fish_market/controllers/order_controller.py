@@ -22,6 +22,8 @@ class TransportOrderController(http.Controller):
                 'route_demand_id': token_record.route_demand_id,
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'token': token,
+                'form_action': '/submit_form',
+                'form_id': 'route_demand_form',
             })
         else:
             return "Token is invalid or has expired"

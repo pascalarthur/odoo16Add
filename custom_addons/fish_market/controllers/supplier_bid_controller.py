@@ -53,11 +53,13 @@ class SupplierBidOrderController(http.Controller):
                 'product_temp_vars_dict': product_temp_vars_dict,
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'addresses': addresses,
+                'form_action': '/supplier_bid',
+                'form_id': 'supplier_bid_form',
             })
         else:
             return "Token is invalid or has expired"
 
-    @http.route('/supplier_bid', type='http', auth='public', methods=['POST'], csrf=False)
+    @http.route('/supplier_bid/<string:token>', type='http', auth='public', methods=['POST'], csrf=False)
     def submit_form(self, **post):
         token = post.get('token')
         token_record = self.get_token_record(token)

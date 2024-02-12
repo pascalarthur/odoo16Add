@@ -11,5 +11,8 @@ class CustomPartner(models.Model):
                 'view_mode': 'form',
                 'res_model': 'supplier.price.wizard',
                 'target': 'new',
-                'context': {'default_pricelist_id': self.env['product.pricelist'].search([], limit=1).id}
+                'context': {
+                    'default_logistic_partner_ids': self.ids,
+                    'default_pricelist_id': self.env['product.pricelist'].search([], limit=1).id
+                }
             }
