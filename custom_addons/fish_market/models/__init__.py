@@ -11,5 +11,6 @@ from . import account_move
 from . import sale_meta
 from . import access_token
 from . import truck_detail
-from . import res_partner_bank
 from . import damages
+from . import res_partner_bank
+from . import res_company

@@ -66,11 +66,11 @@
     cursor: pointer; /* Changes the cursor to a pointer when hovering over the button */
 }
 
-h2 {
+.supplier-bid-h2 h2 {
     margin-bottom: 5px;
 }
 
-footer {
+.supplier-bid-footer footer {
     position: absolute;
     bottom: 0;
     width: 100%;

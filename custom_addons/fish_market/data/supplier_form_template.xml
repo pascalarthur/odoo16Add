@@ -9,13 +9,13 @@
             <input type="hidden" name="token" t-att-value="token"/>
             <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
 
-            <h2>Product Details</h2>
+            <h2 class="supplier-bid-h2">Product Details</h2>
             <div id="product_details_section">
                 <div id="product_templates_container"></div>
                 <button type="button" onclick="addProductTemplate()">Add Product</button>
             </div>
 
-            <h2>Delivery Details</h2>
+            <h2 class="supplier-bid-h2">Delivery Details</h2>
             <div class="pickup-address-section">
                 <label for="delivery_address">Pick-Up Address:</label><br/>
                 <select name="delivery_address" id="delivery_address_dropdown"/><br/>
@@ -27,7 +27,7 @@
 
             <input type="submit" value="Confirm" class="submit-button"/>
         </form>
-        <footer>
+        <footer class="supplier-bid-footer">
             <div>
                 <label>Exchange Rate:</label>
                 <span type="text" id="exchange_rate_display"/>
