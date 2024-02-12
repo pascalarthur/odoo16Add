@@ -8,7 +8,7 @@ class PriceCollectionItem(models.Model):
     partner_id = fields.Many2one('res.partner', string='Supplier')
     truck_id = fields.Many2one('truck.detail', string='Truck')
 
-    meta_sale_order_id = fields.Many2one('sale.order', string='meta.sale.order')
+    meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
     backload_id = fields.Many2one('product.pricelist.item', string='Backload')
     is_backload = fields.Boolean(string='Is Backload', compute='_is_backload')
 

@@ -14,3 +14,4 @@ from . import truck_detail
 from . import damages
 from . import res_partner_bank
 from . import res_company
+from . import route_demand
