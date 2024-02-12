@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_dasboard_kanban" model="ir.ui.view">
+        <field name="name">hr.employee.pos.kanban</field>
+        <field name="model">hr.employee</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_small_column"
+                create="false"
+                group_create="false"
+                group_edit="false"
+                group_delete="false">
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_global_click">
+                            <div class="oe_kanban_details">
+                                <div><strong><field name="name"/></strong></div>
+                                <div>Turnover POS (last month): <field name="turnover_last_month_pos" widget="monetary"/></div>
+                                <div>Turnover Sales (last month): <field name="turnover_last_month_sales" widget="monetary"/></div>
+                            </div>
+                            <button type="object" name="action_get_employee_report" class="oe_highlight">Get Report</button>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_employee_dasboard" model="ir.actions.act_window">
+        <field name="name">Employee Dashboard</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_employee_dasboard_kanban"/>
+        <field name="target">current</field>
+    </record>
+</odoo>

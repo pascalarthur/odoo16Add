@@ -1,7 +1,7 @@
 {
     'name': "Point of Sale - Multiple Currencies - Cash",
     'version': '1.0',
-    'depends': ['base', 'point_of_sale', 'pos_multi_currency'],
+    'depends': ['base', 'point_of_sale'],
     'author': "Ludwig Gräf",
     'category': 'Category',
     'description': """
@@ -9,14 +9,13 @@
     """,
     # data files always loaded at installation
     'data': [
-        'views/pos_config.xml',
+        'security/ir.model.access.csv',
+
+        'views/employee_dasboard.xml',
+        'views/pos_employee_report.xml',
+        'views/menu.xml',
     ],
 
     'installable': True,
-
-    'assets': {
-        'point_of_sale._assets_pos': [
-        ],
-    },
     'license': 'LGPL-3',
 }

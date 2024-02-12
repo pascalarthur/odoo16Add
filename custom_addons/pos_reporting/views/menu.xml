@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<menuitem id="action_employee_dasboard_menu" name="Employee Report" action="action_employee_dasboard" parent="point_of_sale.menu_point_rep" sequence="5"/>
+</odoo>

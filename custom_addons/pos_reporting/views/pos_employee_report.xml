@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_hr_employee_form" model="ir.ui.view">
+        <field name="name">pos.employee.report.wizard.form</field>
+        <field name="model">pos.employee.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="POS Employee Report">
+                <group>
+                    <field name="employee_id" invisible="1"/>
+                    <field name="name"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                </group>
+                <footer>
+                    <button name="create_report" string="Generate Report" type="object" class="oe_highlight"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
