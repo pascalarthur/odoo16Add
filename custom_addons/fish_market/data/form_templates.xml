@@ -93,6 +93,18 @@
                         <td><label class="my-label">Additional Details:</label></td>
                         <td t-esc="route_demand_id.additional_details" placeholder="No Additional Details"/>
                     </tr>
+
+                    <tr>
+                        <td><label class="my-label">Start Date:</label></td>
+                        <td t-esc="route_demand_id.start_date"/>
+                    </tr>
+
+                    <tr>
+                        <td><label class="my-label">End Date:</label></td>
+                        <td t-esc="route_demand_id.end_date"/>
+                    </tr>
+
+
                 </table>
 
                 <!-- Truck Details Section -->

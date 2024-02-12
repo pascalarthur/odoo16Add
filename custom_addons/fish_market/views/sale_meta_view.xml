@@ -33,12 +33,16 @@
                         </div>
                         <group col="2">
                             <group col="1">
-                                <field name="partner_id"/>
+                                <field name="partner_id" readonly="state not in ['draft', 'transport']"/>
                                 <field name="container_demand" readonly="1"/>
                             </group>
                             <group col="1">
-                                <field name="transport_product_id"/>
-                                <field name="transport_pricelist_id"/>
+                                <field name="transport_product_id" readonly="state not in ['draft', 'transport']"/>
+                                <field name="transport_pricelist_id" readonly="state not in ['draft', 'transport']"/>
+                            </group>
+                            <group col="1">
+                                <field name="start_date" widget="date" readonly="state not in ['draft', 'transport']"/>
+                                <field name="end_date" widget="date" readonly="state not in ['draft', 'transport']"/>
                             </group>
                         </group>
                         <field name="order_line_ids">

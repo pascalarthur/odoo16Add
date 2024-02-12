@@ -66,6 +66,8 @@ class PriceCollectionItem(models.Model):
 
     def action_ask_exporters(self):
         for record in self:
+            export_partner_ids = self.env['res.partner'].search([('category_id.name', '=', 'Exporter')])
+
             return {
                 'name': 'Select Pricelist',
                 'type': 'ir.actions.act_window',
@@ -73,6 +75,7 @@ class PriceCollectionItem(models.Model):
                 'res_model': 'supplier.price.wizard',
                 'target': 'new',
                 'context': {
+                    'default_logistic_partner_ids': export_partner_ids.ids,
                     'default_pricelist_id': record.pricelist_id.id,
                     'default_email_body': f'Please fill in your price details by following the link below:',
                 },

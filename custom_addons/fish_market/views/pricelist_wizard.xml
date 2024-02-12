@@ -9,12 +9,24 @@
                     <field name="pricelist_id"/>
                     <field name="email_body"/>
                     <field name="detailed_type"/>
-                    <field name="available_product_templates_ids">
-                        <tree>
-                            <field name="name"/>
-                        </tree>
-                    </field>
                 </group>
+                <notebook>
+                    <page string="Products">
+                        <field name="available_product_templates_ids">
+                            <tree>
+                                <field name="name"/>
+                            </tree>
+                        </field>
+                    </page>
+                    <page string="Partners">
+                        <field name="logistic_partner_ids">
+                            <tree>
+                                <field name="name"/>
+                                <field name="email"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
                 <footer>
                     <button string="Confirm" type="object" name="confirm_selection" class="btn-primary"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"/>

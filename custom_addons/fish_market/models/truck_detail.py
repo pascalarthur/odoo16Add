@@ -55,6 +55,9 @@ class TruckDetail(models.Model):
 
     load_line_ids = fields.One2many('truck.detail.line', 'truck_detail_id', string='Load')
 
+    start_date = fields.Date(string='Start Date')
+    end_date = fields.Date(string='End Date')
+
     @api.depends('load_line_ids.quantity', 'max_load')
     def _compute_truck_utilization(self):
         for record in self:
