@@ -54,26 +54,22 @@ class SupplierBidOrderController(http.Controller):
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'addresses': addresses,
                 'form_action': '/supplier_bid',
-                'form_id': 'supplier_bid_form',
+                'form_id': 'supplier_order_form',
             })
         else:
             return "Token is invalid or has expired"
 
-    @http.route('/supplier_bid/<string:token>', type='http', auth='public', methods=['POST'], csrf=False)
+    @http.route('/supplier_bid', type='http', auth='public', methods=['POST'], csrf=False)
     def submit_form(self, **post):
         token = post.get('token')
         token_record = self.get_token_record(token)
-
-        currency_usd_id = request.env['res.currency'].sudo().search([('name', '=', 'USD')], limit=1).id
-
-        exchange_rate = float(post.get('nad_to_usd_exchange_rate'))
 
         if self.check_token(token_record) is True:
             # Process product details
             product_template_ids = request.httprequest.form.getlist('product_id[]')
             product_ids = request.httprequest.form.getlist('variant_id[]')
             product_quantities = request.httprequest.form.getlist('product_quantity[]')
-            product_prices = request.httprequest.form.getlist('product_price[]')
+            price_in_usd = request.httprequest.form.getlist('price_in_usd[]')
 
             delivery_address = post.get('delivery_address')
             pickup_address = post.get('pickup_address')
@@ -88,7 +84,7 @@ class SupplierBidOrderController(http.Controller):
                     'product_id': int(product_ids[i]),
                     'compute_price': 'fixed',
                     'applied_on': '0_product_variant',
-                    'fixed_price': float(product_prices[i]) / exchange_rate,
+                    'fixed_price': float(price_in_usd[i]),
                     'min_quantity': float(product_quantities[i]),
                     'date_start': fields.Datetime.now(),
 

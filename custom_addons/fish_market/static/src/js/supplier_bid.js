@@ -2,11 +2,6 @@
 const supplier_form_element = document.getElementById('supplier_order_form');
 
 
-function populateExchangeRate() {
-    const nad_to_usd_exchange_rate = parseFloat(supplier_form_element.getAttribute('data-nad-to-usd-exchange-rate'));
-    document.getElementById('exchange_rate_display').innerText = `${parseFloat(nad_to_usd_exchange_rate).toFixed(5)} [NAD/USD]`;
-}
-
 function populateAddressDropdown() {
     const addresses = JSON.parse(supplier_form_element.getAttribute('data-addresses'));
 
@@ -85,36 +80,18 @@ function addVariantCombination(productSelect) {
     }
     attributeSelectHTML += `</select>`;
 
-    var quantityInputHTML = `<input type="number" name="product_quantity[]" required placeholder="Quantity [kg]" style="margin-left: 10px;"/>`;
-    var priceInputNadHTML = `<input type="number" name="product_price[]" required placeholder="Price in NAD" onchange="updateUsdPrice(this)"/>`;
+    var priceInputHTML = `
+        <input type="number" name="product_quantity[]" required placeholder="Quantity [kg]" style="margin-left: 10px;"/>
+        <input class="priceNad" required type="number" placeholder="Price in NAD" onchange="update_usd_price(this.parentNode)"/>
+        <span class="currency-label">NAD/Box</span><br/>
+        <input readonly type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price in USD"/>
+        <span class="currency-label">USD/Box</span><br/>
+    `;
 
-
-    // Display element for USD price
-    var priceDisplayHTML = `<span class="priceUsd" style="margin-left: 10px;">0 USD/Box</span>`;
-
-    variantCombination.innerHTML += attributeSelectHTML + quantityInputHTML + priceInputNadHTML + priceDisplayHTML +
+    variantCombination.innerHTML += attributeSelectHTML + priceInputHTML +
         `<button type="button" onclick="removeVariantCombination(this)" style="margin-left: 10px;">Remove Variant</button>`;
 
     variantsContainer.appendChild(variantCombination);
-}
-
-function updateUsdPrice(element) {
-    const nad_to_usd_exchange_rate = parseFloat(supplier_form_element.getAttribute('data-nad-to-usd-exchange-rate'));
-    var nadPrice = element.value; // Get the value from the passed element
-    var usdPrice = nadPrice / nad_to_usd_exchange_rate; // Perform the conversion
-
-    // Find the corresponding 'priceUsd' element
-    var priceUsdElement = element.nextElementSibling;
-    while (!priceUsdElement.classList.contains('priceUsd')) {
-        priceUsdElement = priceUsdElement.nextElementSibling;
-        if (priceUsdElement == null) {
-            break;
-        }
-    }
-
-    if (priceUsdElement) {
-        priceUsdElement.innerText = usdPrice.toFixed(2) + ' USD/Box'; // Update the display
-    }
 }
 
 function removeVariantCombination(button) {
@@ -128,7 +105,9 @@ function removeProductTemplate(button) {
 
 // Call these functions to initialize the form
 window.onload = function() {
-    populateAddressDropdown(); // Populate the address dropdown on load
-    addProductTemplate(); // Add at least one product template dropdown on load
     populateExchangeRate(); // Populate the exchange rate on load
+    if (supplier_form_element) {
+        populateAddressDropdown(); // Populate the address dropdown on load
+        addProductTemplate(); // Add at least one product template dropdown on load
+    }
 };

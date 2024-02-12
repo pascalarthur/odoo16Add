@@ -9,12 +9,11 @@
             </header>
 
             <!-- Placeholder for Form Content -->
-            <div id="form_content">
-                <form
-                    t-att-data-nad-to-usd-exchange-rate="nad_to_usd_exchange_rate"
-                    t-att-action="form_action"
-                    t-att-id="form_id"
-                />
+            <div id="form_content" t-att-data-nad-to-usd-exchange-rate="nad_to_usd_exchange_rate">
+                <form t-att-action="form_action" t-att-id="form_id" method="post">
+                    <input type="hidden" name="token" t-att-value="token"/>
+                    <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
+                </form>
             </div>
 
             <footer class="bid-footer">
@@ -24,9 +23,9 @@
                 </div>
             </footer>
         </div>
-        <script type="text/javascript" src="/fish_market/static/src/js/logistic_bid.js"></script>
-        <script type="text/javascript" src="/fish_market/static/src/js/supplier_bid.js"></script>
         <link rel="stylesheet" type="text/css" href="/fish_market/static/src/scss/supplier_bid.css"/>
+        <script type="text/javascript" src="/fish_market/static/src/js/supplier_bid.js"></script>
+        <script type="text/javascript" src="/fish_market/static/src/js/logistic_bid.js"></script>
     </template>
 
     <template id="logistic_form_template" inherit_id="base_form_template" name="Logistic Form">
@@ -36,8 +35,6 @@
         <xpath expr="//div[@id='form_content']/form" position="inside">
             <!-- Needed to block out the other templates -->
             <form t-if="route_demand_id" method="post">
-                <input type="hidden" name="token" t-att-value="token"/>
-                <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
                 <table>
                     <tr>
                         <td><label class="my-label">Start Address:</label></td>
@@ -110,7 +107,7 @@
 
                 <!-- Submit Button -->
                 <button type="button" onclick="addTruckDetail()">Add Truck</button><br/>
-                <button type="button" value="Confirm Price" onclick="handleSubmit()">Submit</button>
+                <input type="submit" value="Confirm" class="submit-button"/>
             </form>
         </xpath>
     </template>
@@ -124,9 +121,6 @@
         <xpath expr="//div[@id='form_content']/form" position="inside">
             <!-- Needed to block out the other templates -->
             <div t-if="product_temp_vars_dict">
-                <input type="hidden" name="token" t-att-value="token"/>
-                <input type="hidden" name="nad_to_usd_exchange_rate" t-att-value="nad_to_usd_exchange_rate"/>
-
                 <h2 class="bid-h2">Product Details</h2>
                 <div id="product_details_section">
                     <div id="product_templates_container"></div>
@@ -145,5 +139,4 @@
             </div>
         </xpath>
     </template>
-
 </odoo>

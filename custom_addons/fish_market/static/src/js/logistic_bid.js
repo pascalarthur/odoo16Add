@@ -1,14 +1,15 @@
 const logistic_form_element = document.getElementById('route_demand_form');
+const form_content_element = document.getElementById('form_content');
 
 
 function populateExchangeRate() {
-    const nad_to_usd_exchange_rate = parseFloat(logistic_form_element.getAttribute('data-nad-to-usd-exchange-rate'));
+    const nad_to_usd_exchange_rate = parseFloat(form_content_element.getAttribute('data-nad-to-usd-exchange-rate'));
     document.getElementById('exchange_rate_display').innerText = `${parseFloat(nad_to_usd_exchange_rate).toFixed(5)} [NAD/USD]`;
 }
 
 
 function update_usd_price(container) {
-    const nad_to_usd_exchange_rate = parseFloat(logistic_form_element.getAttribute('data-nad-to-usd-exchange-rate'));
+    const nad_to_usd_exchange_rate = parseFloat(form_content_element.getAttribute('data-nad-to-usd-exchange-rate'));
 
     var price_nad_element = container.querySelector('.priceNad');
     var price_usd_element = container.querySelector('.priceUsd');
@@ -87,14 +88,4 @@ function toggle_backload(button_element) {
 
 function removeTruckDetail(element) {
     element.parentNode.parentNode.remove();
-};
-
-
-window.onload = function() {
-    populateExchangeRate(); // Populate the exchange rate on load
-};
-
-
-function handleSubmit() {
-    logistic_form_element.submit(); // Submit the form
 };
