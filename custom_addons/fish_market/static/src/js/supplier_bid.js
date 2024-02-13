@@ -118,15 +118,15 @@ function add_product_offers() {
     console.log(product_offer_form_container);
     for (const [ii, item] of product_pricelist_items.entries()) {
         var product_product_description = item['product_id'][1]
-        var date_start = item['date_start']
+        var date_start = item['date_start'] ? item['date_start'] : 'Date unspecified';
 
         var pricelist_item_element = document.createElement('div');
-        pricelist_item_element.classList.add('variant-combination');
+        // pricelist_item_element.classList.add('variant-combination');
 
         pricelist_item_element.innerHTML = `
-            <p>${product_product_description}:</p>
             <input hidden type="number" name="product_pricelist_item_id[]"/>
             <input hidden type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price in USD"/>
+            <p style="margin-bottom: 5">${date_start} (Start Date): ${product_product_description}: </p>
             <input type="number" onchange=synch_price_product_offer(this) placeholder="Price in USD"/>
         `;
         pricelist_item_element.querySelector('input[name="product_pricelist_item_id[]"]').value = item['id'];
