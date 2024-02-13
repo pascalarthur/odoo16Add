@@ -3,3 +3,4 @@
 
 from . import order_controller
 from . import supplier_bid_controller
+from . import product_offer_controller

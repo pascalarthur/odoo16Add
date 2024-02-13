@@ -1,5 +1,5 @@
 {
-    'name': "Point of Sale - Multiple Currencies - Cash",
+    'name': "Point of Sale - Reporting on Employee Level",
     'version': '1.0',
     'depends': ['base', 'point_of_sale'],
     'author': "Ludwig Gräf",

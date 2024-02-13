@@ -72,10 +72,11 @@ class PriceCollectionItem(models.Model):
                 'name': 'Select Pricelist',
                 'type': 'ir.actions.act_window',
                 'view_mode': 'form',
-                'res_model': 'supplier.price.wizard',
+                'res_model': 'product.offer.wizard',
                 'target': 'new',
                 'context': {
-                    'default_logistic_partner_ids': export_partner_ids.ids,
+                    'default_available_product_pricelist_item': self.ids,
+                    'default_partner_ids': export_partner_ids.ids,
                     'default_pricelist_id': record.pricelist_id.id,
                     'default_email_body': f'Please fill in your price details by following the link below:',
                 },

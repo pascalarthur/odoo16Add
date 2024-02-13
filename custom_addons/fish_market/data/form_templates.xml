@@ -24,8 +24,8 @@
             </footer>
         </div>
         <link rel="stylesheet" type="text/css" href="/fish_market/static/src/scss/supplier_bid.css"/>
-        <script type="text/javascript" src="/fish_market/static/src/js/supplier_bid.js"></script>
         <script type="text/javascript" src="/fish_market/static/src/js/logistic_bid.js"></script>
+        <script type="text/javascript" src="/fish_market/static/src/js/supplier_bid.js"></script>
     </template>
 
     <template id="logistic_form_template" inherit_id="base_form_template" name="Logistic Form">
@@ -133,6 +133,9 @@
         <xpath expr="//div[@id='form_content']/form" position="inside">
             <!-- Needed to block out the other templates -->
             <div t-if="product_temp_vars_dict">
+                <input type="hidden" name="start_date" t-att-value="start_date"/>
+                <input type="hidden" name="end_date" t-att-value="end_date"/>
+
                 <h2 class="bid-h2">Product Details</h2>
                 <div id="product_details_section">
                     <div id="product_templates_container"></div>
@@ -149,6 +152,20 @@
                 </div>
                 <input type="submit" value="Confirm" class="submit-button"/>
             </div>
+        </xpath>
+    </template>
+    <template id="product_offer_template" inherit_id="base_form_template" name="Supplier Form">
+        <xpath expr="//div[@id='form_content']/form" position="attributes">
+            <attribute name="t-att-data-product-pricelist-items-list">json.dumps(product_pricelist_items)</attribute>
+        </xpath>
+        <xpath expr="//div[@id='form_content']/form" position="inside">
+            <div t-if="product_pricelist_items" onload="add_product_offers">
+                <div id="product_offer_form_container">
+                    <h2 class="bid-h2">Product Offers</h2>
+                    <div id="product_offer_templates_container"></div>
+                </div>
+            </div>
+            <input type="submit" value="Confirm" class="submit-button"/>
         </xpath>
     </template>
 </odoo>

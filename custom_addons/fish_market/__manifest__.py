@@ -23,6 +23,7 @@
         'views/damage_views.xml',
         'views/truck_redistribution_wizard.xml',
         'views/pricelist_wizard.xml',
+        'views/product_offer_wizard.xml',
         'views/res_partner_logisitic_views.xml',
         'views/product.xml',
         'views/stock_picking.xml',

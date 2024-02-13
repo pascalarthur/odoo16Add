@@ -34,6 +34,9 @@ class TransportOrderController(http.Controller):
         token_record = self.get_token_record(token)
         route_demand_id = token_record.route_demand_id
 
+        start_date = token_record.route_demand_id.start_date
+        end_date = token_record.route_demand_id.end_date
+
         transport_product_id = route_demand_id.meta_sale_order_id.transport_product_id
         transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', transport_product_id.id)])
 
@@ -72,6 +75,9 @@ class TransportOrderController(http.Controller):
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
 
+                    'start_date': start_date,
+                    'end_date': end_date,
+
                     'price': float(prices_in_usd[ii]),
                     'max_load': float(max_loads[ii]),
                     'is_backload': False,
@@ -88,6 +94,9 @@ class TransportOrderController(http.Controller):
                     'applied_on': '0_product_variant',
                     'fixed_price': float(prices_in_usd[ii]),
 
+                    'date_start': start_date,
+                    'date_end': end_date,
+
                     'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                 }
                 product_pricelist_item_id = request.env['product.pricelist.item'].sudo().create(product_detail)
@@ -102,6 +111,8 @@ class TransportOrderController(http.Controller):
                         'container_number': container_numbers[ii],
                         'driver_name': driver_names[ii],
                         'telephone_number': telephone_numbers[ii],
+
+                        'start_date': end_date,
 
                         'price': float(backload_prices[ii]),
                         'max_load': float(max_loads[ii]),
@@ -118,6 +129,8 @@ class TransportOrderController(http.Controller):
                         'compute_price': 'fixed',
                         'applied_on': '0_product_variant',
                         'fixed_price': float(backload_prices[ii]),
+
+                        'date_start': end_date,
 
                         'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                     }
