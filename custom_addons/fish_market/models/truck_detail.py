@@ -58,6 +58,20 @@ class TruckDetail(models.Model):
     start_date = fields.Date(string='Start Date')
     end_date = fields.Date(string='End Date')
 
+    route_start_street = fields.Char()
+    route_start_street2 = fields.Char()
+    route_start_city = fields.Char()
+    route_start_zip = fields.Char()
+    route_start_state_id = fields.Many2one('res.country.state')
+    route_start_country_id = fields.Many2one('res.country')
+
+    route_end_street = fields.Char()
+    route_end_street2 = fields.Char()
+    route_end_city = fields.Char()
+    route_end_zip = fields.Char()
+    route_end_state_id = fields.Many2one('res.country.state')
+    route_end_country_id = fields.Many2one('res.country')
+
     @api.depends('load_line_ids.quantity', 'max_load')
     def _compute_truck_utilization(self):
         for record in self:

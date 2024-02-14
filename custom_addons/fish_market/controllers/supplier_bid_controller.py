@@ -66,7 +66,6 @@ class SupplierBidOrderController(http.Controller):
 
         if self.check_token(token_record) is True:
             # Process product details
-            product_template_ids = request.httprequest.form.getlist('product_id[]')
             product_ids = request.httprequest.form.getlist('variant_id[]')
             product_quantities = request.httprequest.form.getlist('product_quantity[]')
             price_in_usd = request.httprequest.form.getlist('price_in_usd[]')
@@ -76,16 +75,18 @@ class SupplierBidOrderController(http.Controller):
 
             notes = f"Delivery Address: {pickup_address if delivery_address == 'other' else delivery_address}"
 
-            for i in range(len(product_template_ids)):
+            for ii, product_id in enumerate(product_ids):
+                product_id = http.request.env['product.product'].sudo().search([('id', '=', int(product_id))])
+
                 product_detail = {
                     'pricelist_id': token_record.pricelist_id.id,
                     'partner_id': token_record.partner_id.id,
-                    'product_tmpl_id': int(product_template_ids[i]),
-                    'product_id': int(product_ids[i]),
+                    'product_tmpl_id': product_id.product_tmpl_id.id,
+                    'product_id': product_id.id,
                     'compute_price': 'fixed',
                     'applied_on': '0_product_variant',
-                    'fixed_price': float(price_in_usd[i]),
-                    'min_quantity': float(product_quantities[i]),
+                    'fixed_price': float(price_in_usd[ii]),
+                    'min_quantity': float(product_quantities[ii]),
                     'date_start': fields.Datetime.now(),
 
                     'notes': notes,

@@ -14,7 +14,6 @@
 }
 
 .variant-combination {
-    display: flex; /* Use flexbox to layout children inline */
     align-items: center; /* Align children vertically */
     margin-bottom: 10px; /* Margin at the bottom of each variant combination */
 }

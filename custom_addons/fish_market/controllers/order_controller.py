@@ -78,6 +78,20 @@ class TransportOrderController(http.Controller):
                     'start_date': start_date,
                     'end_date': end_date,
 
+                    'route_start_street': route_demand_id.route_start_street,
+                    'route_start_street2': route_demand_id.route_start_street2,
+                    'route_start_city': route_demand_id.route_start_city,
+                    'route_start_zip': route_demand_id.route_start_zip,
+                    'route_start_state_id': route_demand_id.route_start_state_id.id,
+                    'route_start_country_id': route_demand_id.route_start_country_id.id,
+
+                    'route_end_street': route_demand_id.route_end_street,
+                    'route_end_street2': route_demand_id.route_end_street2,
+                    'route_end_city': route_demand_id.route_end_city,
+                    'route_end_zip': route_demand_id.route_end_zip,
+                    'route_end_state_id': route_demand_id.route_end_state_id.id,
+                    'route_end_country_id': route_demand_id.route_end_country_id.id,
+
                     'price': float(prices_in_usd[ii]),
                     'max_load': float(max_loads[ii]),
                     'is_backload': False,
@@ -113,6 +127,20 @@ class TransportOrderController(http.Controller):
                         'telephone_number': telephone_numbers[ii],
 
                         'start_date': end_date,
+
+                        'route_end_street': route_demand_id.route_end_street,
+                        'route_end_street2': route_demand_id.route_end_street2,
+                        'route_end_city': route_demand_id.route_end_city,
+                        'route_end_zip': route_demand_id.route_end_zip,
+                        'route_end_state_id': route_demand_id.route_end_state_id.id,
+                        'route_end_country_id': route_demand_id.route_end_country_id.id,
+
+                        'route_start_street': route_demand_id.route_start_street,
+                        'route_start_street2': route_demand_id.route_start_street2,
+                        'route_start_city': route_demand_id.route_start_city,
+                        'route_start_zip': route_demand_id.route_start_zip,
+                        'route_start_state_id': route_demand_id.route_start_state_id.id,
+                        'route_start_country_id': route_demand_id.route_start_country_id.id,
 
                         'price': float(backload_prices[ii]),
                         'max_load': float(max_loads[ii]),

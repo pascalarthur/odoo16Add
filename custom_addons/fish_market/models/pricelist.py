@@ -75,7 +75,7 @@ class PriceCollectionItem(models.Model):
                 'res_model': 'product.offer.wizard',
                 'target': 'new',
                 'context': {
-                    'default_available_product_pricelist_item': self.ids,
+                    'default_available_product_pricelist_item_ids': self.ids,
                     'default_partner_ids': export_partner_ids.ids,
                     'default_pricelist_id': record.pricelist_id.id,
                     'default_email_body': f'Please fill in your price details by following the link below:',

@@ -31,60 +31,15 @@
     <template id="logistic_form_template" inherit_id="base_form_template" name="Logistic Form">
         <xpath expr="//div[@id='form_content']/form" position="attributes">
             <attribute name="t-att-data-transport-product-product-ids">json.dumps(transport_product_product_ids)</attribute>
+            <attribute name="t-att-data-obj-start-end">json.dumps(route_demand_id)</attribute>
+            <attribute name="class">logistic-form</attribute>
         </xpath>
         <xpath expr="//div[@id='form_content']/form" position="inside">
             <!-- Needed to block out the other templates -->
             <form t-if="route_demand_id" method="post">
+                <div id="product_details_1"/>
                 <table>
-                    <tr>
-                        <td><label class="my-label">Start Address:</label></td>
-                        <td>
-                            <t t-if="route_demand_id.route_start_street">
-                                <t t-esc="route_demand_id.route_start_street"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_start_street2">
-                                <t t-esc="route_demand_id.route_start_street2"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_start_city">
-                                <t t-esc="route_demand_id.route_start_city"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_start_state_id">
-                                <t t-esc="route_demand_id.route_start_state_id.name"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_start_zip">
-                                <t t-esc="route_demand_id.route_start_zip"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_start_country_id">
-                                <t t-esc="route_demand_id.route_start_country_id.name"/><br/>
-                            </t>
-                        </td>
-                    </tr>
-
-                    <tr>
-                        <td><label class="my-label">End Address:</label></td>
-                        <td>
-                            <t t-if="route_demand_id.route_end_street">
-                                <t t-esc="route_demand_id.route_end_street"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_end_street2">
-                                <t t-esc="route_demand_id.route_end_street2"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_end_city">
-                                <t t-esc="route_demand_id.route_end_city"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_end_state_id">
-                                <t t-esc="route_demand_id.route_end_state_id.name"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_end_zip">
-                                <t t-esc="route_demand_id.route_end_zip"/><br/>
-                            </t>
-                            <t t-if="route_demand_id.route_end_country_id">
-                                <t t-esc="route_demand_id.route_end_country_id.name"/><br/>
-                            </t>
-                        </td>
-                    </tr>
-
-                    <tr>
+                   <tr>
                         <td><label class="my-label">Number of Containers:</label></td>
                         <td t-esc="route_demand_id.container_demand"/>
                     </tr>
@@ -103,8 +58,6 @@
                         <td><label class="my-label">End Date:</label></td>
                         <td t-esc="route_demand_id.end_date"/>
                     </tr>
-
-
                 </table>
 
                 <!-- Truck Details Section -->
@@ -128,7 +81,6 @@
         <xpath expr="//div[@id='form_content']/form" position="attributes">
             <attribute name="t-att-data-product-temp-vars-dict">json.dumps(product_temp_vars_dict)</attribute>
             <attribute name="t-att-data-addresses">json.dumps(addresses)</attribute>
-            <attribute name="class">logistic-form</attribute>
         </xpath>
         <xpath expr="//div[@id='form_content']/form" position="inside">
             <!-- Needed to block out the other templates -->
@@ -157,15 +109,17 @@
     <template id="product_offer_template" inherit_id="base_form_template" name="Supplier Form">
         <xpath expr="//div[@id='form_content']/form" position="attributes">
             <attribute name="t-att-data-product-pricelist-items-list">json.dumps(product_pricelist_items)</attribute>
+            <attribute name="t-att-data-obj-start-end">json.dumps(first_truck_dict)</attribute>
         </xpath>
         <xpath expr="//div[@id='form_content']/form" position="inside">
-            <div t-if="product_pricelist_items" onload="add_product_offers">
+            <div t-if="product_pricelist_items">
+                <div id="product_details_1"/>
                 <div id="product_offer_form_container">
                     <h2 class="bid-h2">Product Offers</h2>
                     <div id="product_offer_templates_container"></div>
                 </div>
+                <input type="submit" value="Confirm" class="submit-button"/>
             </div>
-            <input type="submit" value="Confirm" class="submit-button"/>
         </xpath>
     </template>
 </odoo>

@@ -20,16 +20,29 @@ class ProductOfferController(http.Controller):
 
             product_pricelist_items = http.request.env['product.pricelist.item'].sudo().search_read(
                 [('id', 'in', token_record.product_pricelist_item_ids.ids)],
-                ['product_tmpl_id', 'product_id', 'fixed_price', 'date_start']
+                ['product_tmpl_id', 'product_id', 'fixed_price', 'date_start', 'truck_id']
             )
             for product_pricelist_item in product_pricelist_items:
                 if product_pricelist_item['date_start']:
                     product_pricelist_item['date_start'] = product_pricelist_item['date_start'].strftime('%Y-%m-%d')
+
+            first_truck_dict = http.request.env['truck.detail'].sudo().search_read(
+                [('id', '=', product_pricelist_items[0]['truck_id'][0])],
+                ['route_start_street', 'route_start_street2', 'route_start_city', 'route_start_zip', 'route_start_state_id', 'route_start_country_id',
+                 'route_end_street', 'route_end_street2', 'route_end_city', 'route_end_zip', 'route_end_state_id', 'route_end_country_id']
+            )[0]
+
+            # route_start_state_id, ... are tuples of type (id, name)
+            for key, value in first_truck_dict.items():
+                if type(value) is tuple:
+                    first_truck_dict[key] = first_truck_dict[key][1]
+
             return http.request.render('fish_market.supplier_form_template', {
                 'token': token,
                 'supplier': token_record.partner_id,
                 'pricelist_id': token_record.pricelist_id,
                 'product_pricelist_items': product_pricelist_items,
+                'first_truck_dict': first_truck_dict,
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'form_action': '/product_offer',
                 'form_id': 'product_offer_form',

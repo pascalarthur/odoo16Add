@@ -82,7 +82,7 @@ function addVariantCombination(productSelect) {
     attributeSelectHTML += `</select>`;
 
     var priceInputHTML = `
-        <input type="number" name="product_quantity[]" required placeholder="Quantity [kg]" style="margin-left: 10px;"/>
+        <input type="number" name="product_quantity[]" required placeholder="Quantity [kg]" style="margin-left: 10px;"/><br/>
         <input class="priceNad" required type="number" placeholder="Price in NAD" onchange="update_usd_price(this.parentNode)"/>
         <span class="currency-label">NAD/Box</span><br/>
         <input readonly type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price in USD"/>
@@ -111,11 +111,36 @@ function synch_price_product_offer(element) {
     element.parentNode.querySelector('.priceUsd').value = element.value;
 }
 
+function add_start_end_location(parent_element, obj) {
+    var table_element = document.createElement('table');
+
+    var start_end_location_items = {
+        'Start Address:': ['route_start_street', 'route_start_street2', 'route_start_city', 'route_start_zip', 'route_start_state_id', 'route_start_country_id'],
+        'End Address:': ['route_end_street', 'route_end_street2', 'route_end_city', 'route_end_zip', 'route_end_state_id', 'route_end_country_id']
+    };
+
+    for (const [key, value] of Object.entries(start_end_location_items)) {
+        var tr_element = document.createElement('tr');
+        tr_element.innerHTML = `<td><label class="my-label">${key}</label></td>`;
+        var td_element = document.createElement('td');
+        for (const [ii, item] of value.entries()) {
+            if (item in obj && obj[item] != false) {
+                var input_element = document.createElement('t');
+                input_element.name = item;
+                input_element.innerHTML = obj[item];
+                td_element.appendChild(input_element);
+                td_element.appendChild(document.createElement('br'));
+            }
+        }
+        tr_element.appendChild(td_element);
+        table_element.appendChild(tr_element);
+    }
+    parent_element.appendChild(table_element);
+}
+
 function add_product_offers() {
     const product_pricelist_items = JSON.parse(product_offer_form_element.getAttribute('data-product-pricelist-items-list'));
     const product_offer_form_container = product_offer_form_element.querySelector('#product_offer_templates_container')
-    console.log(product_pricelist_items);
-    console.log(product_offer_form_container);
     for (const [ii, item] of product_pricelist_items.entries()) {
         var product_product_description = item['product_id'][1]
         var date_start = item['date_start'] ? item['date_start'] : 'Date unspecified';
@@ -144,7 +169,14 @@ window.onload = function() {
         addProductTemplate(); // Add at least one product template dropdown on load
     }
 
+    if (logistic_form_element) {
+        start_end_route_details_element = logistic_form_element.querySelector('#product_details_1');
+        add_start_end_location(start_end_route_details_element, JSON.parse(logistic_form_element.getAttribute('data-obj-start-end')));
+    }
+
     if (product_offer_form_element) {
+        start_end_route_details_element = product_offer_form_element.querySelector('#product_details_1');
+        add_start_end_location(start_end_route_details_element, JSON.parse(product_offer_form_element.getAttribute('data-obj-start-end')));
         add_product_offers(); // Populate the exchange rate on load
     }
 };
