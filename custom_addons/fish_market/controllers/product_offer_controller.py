@@ -20,11 +20,13 @@ class ProductOfferController(http.Controller):
 
             product_pricelist_items = http.request.env['product.pricelist.item'].sudo().search_read(
                 [('id', 'in', token_record.product_pricelist_item_ids.ids)],
-                ['product_tmpl_id', 'product_id', 'fixed_price', 'date_start', 'truck_id']
+                ['product_tmpl_id', 'product_id', 'fixed_price', 'date_start', 'date_end', 'truck_id']
             )
             for product_pricelist_item in product_pricelist_items:
                 if product_pricelist_item['date_start']:
-                    product_pricelist_item['date_start'] = product_pricelist_item['date_start'].strftime('%Y-%m-%d')
+                    product_pricelist_item['date_start'] = product_pricelist_item['date_start'].strftime('%d-%m-%Y')
+                if product_pricelist_item['date_end']:
+                    product_pricelist_item['date_end'] = product_pricelist_item['date_end'].strftime('%d-%m-%Y')
 
             obj_start_end_dict = http.request.env['truck.detail'].sudo().search_read(
                 [('id', '=', product_pricelist_items[0]['truck_id'][0])],
