@@ -3,10 +3,9 @@
     margin-bottom: 15px;
     padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 5px;
 }
 .product-template-detail input, .product-template-detail select {
-    margin-right: 10px;
+    margin: 5px;
 }
 
 #product_details_section {
@@ -16,21 +15,22 @@
 .variant-combination {
     align-items: center; /* Align children vertically */
     margin-bottom: 10px; /* Margin at the bottom of each variant combination */
+    border: 1px solid #ccc;
 }
 
 .variant-combination select {
     flex-grow: 1; /* Dropdown takes up the available space */
-    margin-right: 10px; /* Margin between the dropdown and the button */
 }
 
 .variant-combination button {
     white-space: nowrap; /* Prevent the button text from wrapping */
+    margin: 5px;
 }
 
 .controls-container {
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .controls-container select {
@@ -54,6 +54,10 @@
 #pickup_address {
     margin-top: 10px;
     width: 100%;
+}
+
+.input-no-border {
+    border: solid rgba(0, 0, 0, 0);;
 }
 
 .submit-button {
@@ -97,6 +101,7 @@
     border: 0px solid #ddd;
     vertical-align: top;
 }
+
 .truck-details-container {
     margin-top: 5px;
     margin-bottom: 5px;
@@ -105,17 +110,17 @@
     border: 1px solid #ccc;
     border-radius: 5px;
 }
+
+.truck-details-container input {
+    margin: 5px;
+}
+
 #truck_details_section {
     margin-top: 20px;
 }
+
 .my-label {
     font-weight: bold;
-}
-input {
-    margin: 5px;
-}
-button {
-    margin: 5px;
 }
 
 .bid-header {

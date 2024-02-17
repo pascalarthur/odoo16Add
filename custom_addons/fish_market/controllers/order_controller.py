@@ -17,9 +17,17 @@ class TransportOrderController(http.Controller):
         if self.check_token(token_record) is True:
             nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
 
+            obj_start_end_dict = token_record.route_demand_id.read(['route_start_street', 'route_start_street2', 'route_start_city', 'route_start_zip', 'route_start_state_id', 'route_start_country_id',
+                                                                    'route_end_street', 'route_end_street2', 'route_end_city', 'route_end_zip', 'route_end_state_id', 'route_end_country_id'])[0]
+            # route_start_state_id, ... are tuples of type (id, name)
+            for key, value in obj_start_end_dict.items():
+                if type(value) is tuple:
+                    obj_start_end_dict[key] = obj_start_end_dict[key][1]
+
             return http.request.render('fish_market.logistic_form_template', {
                 'supplier': token_record.partner_id,
                 'route_demand_id': token_record.route_demand_id,
+                'obj_start_end': obj_start_end_dict,
                 'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
                 'token': token,
                 'form_action': '/submit_form',

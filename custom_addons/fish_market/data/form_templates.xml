@@ -37,28 +37,25 @@
         <xpath expr="//div[@id='form_content']/form" position="inside">
             <!-- Needed to block out the other templates -->
             <form t-if="route_demand_id" method="post">
-                <div id="product_details_1"/>
-                <table>
-                   <tr>
+                <table id="table_info">
+                    <tr>
                         <td><label class="my-label">Number of Containers:</label></td>
                         <td t-esc="route_demand_id.container_demand"/>
-                    </tr>
-
+                    </tr>´
                     <tr>
                         <td><label class="my-label">Additional Details:</label></td>
                         <td t-esc="route_demand_id.additional_details" placeholder="No Additional Details"/>
                     </tr>
-
                     <tr>
                         <td><label class="my-label">Start Date:</label></td>
                         <td t-esc="route_demand_id.start_date"/>
                     </tr>
-
                     <tr>
                         <td><label class="my-label">End Date:</label></td>
                         <td t-esc="route_demand_id.end_date"/>
                     </tr>
                 </table>
+
 
                 <!-- Truck Details Section -->
                 <div id="truck_details_section">
@@ -109,11 +106,11 @@
     <template id="product_offer_template" inherit_id="base_form_template" name="Supplier Form">
         <xpath expr="//div[@id='form_content']/form" position="attributes">
             <attribute name="t-att-data-product-pricelist-items-list">json.dumps(product_pricelist_items)</attribute>
-            <attribute name="t-att-data-obj-start-end">json.dumps(first_truck_dict)</attribute>
+            <attribute name="t-att-data-obj-start-end">json.dumps(obj_start_end)</attribute>
         </xpath>
         <xpath expr="//div[@id='form_content']/form" position="inside">
             <div t-if="product_pricelist_items">
-                <div id="product_details_1"/>
+                <table id="table_info"/>
                 <div id="product_offer_form_container">
                     <h2 class="bid-h2">Product Offers</h2>
                     <div id="product_offer_templates_container"></div>

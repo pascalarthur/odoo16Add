@@ -21,7 +21,7 @@ class MetaSaleOrderLine(models.Model):
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Product', required=True)
-    box_weight = fields.Float('Product Weight [kg]', related='product_id.box_weight', store=True)
+    box_weight = fields.Float('Box Weight [kg]', related='product_id.box_weight', store=True)
     unit_price = fields.Float('Unit Price', default=0.0)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
@@ -40,8 +40,8 @@ class MetaSaleOrder(models.Model):
     state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft')
     partner_id = fields.Many2one('res.partner', string='Customer')
 
-    transport_product_id = fields.Many2one('product.template', string='Transport Route', domain=[('type', '=', 'transport')])
-    transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist')
+    transport_product_id = fields.Many2one('product.template', string='Transport Route', domain=[('type', '=', 'transport')], required=True)
+    transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist', required=True)
     transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id', string='Transport Bids with Backloads')
     transport_pricelist_item_ids_no_backload = fields.One2many('product.pricelist.item', compute='_compute_transport_pricelist_item_ids_no_backload', string='Transport Bids')
     container_demand = fields.Integer(string='Container Demand', compute='_compute_container_demand')

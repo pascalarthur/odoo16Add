@@ -80,17 +80,16 @@ function addVariantCombination(productSelect) {
         attributeSelectHTML += `<option value="${value}">${product_template_dict['product_variants_str'][ii]}</option>`;
     }
     attributeSelectHTML += `</select>`;
+    variantCombination.innerHTML += attributeSelectHTML;
 
-    var priceInputHTML = `
+    variantCombination.innerHTML += `
         <input type="number" name="product_quantity[]" required placeholder="Quantity [kg]" style="margin-left: 10px;"/><br/>
         <input class="priceNad" required type="number" placeholder="Price in NAD" onchange="update_usd_price(this.parentNode)"/>
         <span class="currency-label">NAD/Box</span><br/>
-        <input readonly type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price in USD"/>
+        <input readonly type="number" name="price_in_usd[]" class="priceUsd input-no-border" placeholder="Price in USD"/>
         <span class="currency-label">USD/Box</span><br/>
+        <button type="button" onclick="removeVariantCombination(this)" style="margin-left: 10px;">Remove Variant</button>
     `;
-
-    variantCombination.innerHTML += attributeSelectHTML + priceInputHTML +
-        `<button type="button" onclick="removeVariantCombination(this)" style="margin-left: 10px;">Remove Variant</button>`;
 
     variantsContainer.appendChild(variantCombination);
 }
@@ -105,15 +104,7 @@ function removeProductTemplate(button) {
 }
 
 
-// PRODUCT OFFER TEMPLATE
-
-function synch_price_product_offer(element) {
-    element.parentNode.querySelector('.priceUsd').value = element.value;
-}
-
-function add_start_end_location(parent_element, obj) {
-    var table_element = document.createElement('table');
-
+function add_start_end_location(table_element, obj) {
     var start_end_location_items = {
         'Start Address:': ['route_start_street', 'route_start_street2', 'route_start_city', 'route_start_zip', 'route_start_state_id', 'route_start_country_id'],
         'End Address:': ['route_end_street', 'route_end_street2', 'route_end_city', 'route_end_zip', 'route_end_state_id', 'route_end_country_id']
@@ -135,7 +126,13 @@ function add_start_end_location(parent_element, obj) {
         tr_element.appendChild(td_element);
         table_element.appendChild(tr_element);
     }
-    parent_element.appendChild(table_element);
+}
+
+
+// PRODUCT OFFER TEMPLATE
+
+function synch_price_product_offer(element) {
+    element.parentNode.querySelector('.priceUsd').value = element.value;
 }
 
 function add_product_offers() {
@@ -170,12 +167,12 @@ window.onload = function() {
     }
 
     if (logistic_form_element) {
-        start_end_route_details_element = logistic_form_element.querySelector('#product_details_1');
+        var start_end_route_details_element = logistic_form_element.querySelector('#table_info');
         add_start_end_location(start_end_route_details_element, JSON.parse(logistic_form_element.getAttribute('data-obj-start-end')));
     }
 
     if (product_offer_form_element) {
-        start_end_route_details_element = product_offer_form_element.querySelector('#product_details_1');
+        var start_end_route_details_element = product_offer_form_element.querySelector('#table_info');
         add_start_end_location(start_end_route_details_element, JSON.parse(product_offer_form_element.getAttribute('data-obj-start-end')));
         add_product_offers(); // Populate the exchange rate on load
     }

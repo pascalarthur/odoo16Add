@@ -31,7 +31,7 @@ function getTruckDiv() {
         <input required type="number" name="max_load_per_truck[]" placeholder="Max. Load [kg]"/><br/>
         <input class="priceNad" required type="number" placeholder="Price in NAD" onchange="update_usd_price(this.parentNode)"/>
         <span class="currency-label">NAD</span><br/>
-        <input readonly type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price in USD"/>
+        <input readonly type="number" name="price_in_usd[]" class="priceUsd input-no-border" placeholder="Price in USD"/>
         <span class="currency-label">USD</span><br/>
         <button class="backload-button" type="button" onclick="toggle_backload(this)">Add Backload</button>
         <button class="remove-truck-detail-button" type="button" onclick="removeTruckDetail(this)">Remove Truck</button>
