@@ -23,6 +23,8 @@
                     <field name="price_per_kg"/>
                     <field name="seal_number"/>
                     <field name="is_backload"/>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
                 </group>
 
                 <field name="load_line_ids">

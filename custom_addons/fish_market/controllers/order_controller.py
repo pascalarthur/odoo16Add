@@ -72,6 +72,9 @@ class TransportOrderController(http.Controller):
             prices_in_usd = request.httprequest.form.getlist('price_in_usd[]')
             max_loads = request.httprequest.form.getlist('max_load_per_truck[]')
             backload_prices = request.httprequest.form.getlist('backload_price[]')
+            dates_start = request.httprequest.form.getlist('date_start[]')
+            dates_end = request.httprequest.form.getlist('date_end[]')
+            dates_end_backload = request.httprequest.form.getlist('date_end_backload[]')
 
             for ii in range(len(truck_numbers)):
                 truck_detail = {
@@ -83,8 +86,8 @@ class TransportOrderController(http.Controller):
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
 
-                    'start_date': start_date,
-                    'end_date': end_date,
+                    'start_date': dates_start[ii],
+                    'end_date': dates_end[ii],
 
                     'route_start_street': route_demand_id.route_start_street,
                     'route_start_street2': route_demand_id.route_start_street2,
@@ -116,8 +119,8 @@ class TransportOrderController(http.Controller):
                     'applied_on': '0_product_variant',
                     'fixed_price': float(prices_in_usd[ii]),
 
-                    'date_start': start_date,
-                    'date_end': end_date,
+                    'date_start': dates_start[ii],
+                    'date_end': dates_end[ii],
 
                     'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                 }
@@ -134,7 +137,8 @@ class TransportOrderController(http.Controller):
                         'driver_name': driver_names[ii],
                         'telephone_number': telephone_numbers[ii],
 
-                        'start_date': end_date,
+                        'start_date': dates_end[ii],
+                        'end_date': dates_end_backload[ii],
 
                         'route_end_street': route_demand_id.route_end_street,
                         'route_end_street2': route_demand_id.route_end_street2,
@@ -166,7 +170,8 @@ class TransportOrderController(http.Controller):
                         'applied_on': '0_product_variant',
                         'fixed_price': float(backload_prices[ii]),
 
-                        'date_start': end_date,
+                        'date_start': dates_end[ii],
+                        'date_end': dates_end_backload[ii],
 
                         'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                     }

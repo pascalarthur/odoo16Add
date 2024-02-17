@@ -41,7 +41,7 @@
                     <tr>
                         <td><label class="my-label">Number of Containers:</label></td>
                         <td t-esc="route_demand_id.container_demand"/>
-                    </tr>´
+                    </tr>
                     <tr>
                         <td><label class="my-label">Additional Details:</label></td>
                         <td t-esc="route_demand_id.additional_details" placeholder="No Additional Details"/>
@@ -68,7 +68,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="button" onclick="addTruckDetail()">Add Truck</button><br/>
+                <button type="button" onclick="addTruck()">Add Truck</button><br/>
                 <input type="submit" value="Confirm" class="submit-button"/>
             </form>
         </xpath>

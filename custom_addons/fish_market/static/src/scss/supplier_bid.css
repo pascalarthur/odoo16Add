@@ -81,22 +81,19 @@
     min-height: 100vh;
     padding-bottom: 60px; /* Height of the footer */
 }
-.logistic-form {
+#table_info {
     max-width: 800px;
     margin: 0;
     padding: 20px;
-}
-
-.logistic-form table {
     width: 100%;
     border-collapse: collapse;
 }
 
-.logistic-form tr {
+#table_info tr {
     border-bottom: 1px solid #ddd; /* Horizontal border for rows */
 }
 
-.logistic-form td {
+#table_info td {
     padding: 10px;
     border: 0px solid #ddd;
     vertical-align: top;
@@ -141,4 +138,11 @@
     background-color: #a1a1a1; /* Background color of footer */
     text-align: center;
     line-height: 60px; /* Center text vertically */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px; /* Adjust the spacing between form elements as needed */
 }

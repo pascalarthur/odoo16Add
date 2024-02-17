@@ -33,6 +33,16 @@ function getTruckDiv() {
         <span class="currency-label">NAD</span><br/>
         <input readonly type="number" name="price_in_usd[]" class="priceUsd input-no-border" placeholder="Price in USD"/>
         <span class="currency-label">USD</span><br/>
+        <table>
+            <tr>
+                <td><label>Start Date:</label></td>
+                <td><input required type="date" name="date_start[]"/></td>
+            </tr>
+            <tr>
+                <td><label>End Date:</label></td>
+                <td><input required type="date" name="date_end[]"/></td>
+            </tr>
+        </table>
         <button class="backload-button" type="button" onclick="toggle_backload(this)">Add Backload</button>
         <button class="remove-truck-detail-button" type="button" onclick="removeTruckDetail(this)">Remove Truck</button>
     `;
@@ -40,7 +50,7 @@ function getTruckDiv() {
 }
 
 
-function addTruckDetail() {
+function addTruck() {
     var truck_details_container = document.createElement('div');
     truck_details_container.classList.add('truck-details-container');
 
@@ -60,8 +70,13 @@ function addTruckDetail() {
         <span class="currency-label">NAD</span><br/>
         <input readonly type="number" name="backload_price[]" class="priceUsd" placeholder="Price in USD"/>
         <span class="currency-label">USD</span>
+        <table>
+            <tr>
+                <td><label>End Date:</label></td>
+                <td><input required type="date" name="date_end_backload[]"/></td>
+            </tr>
+        </table>
     `;
-
     backloadDetail.addEventListener('change', function() { update_usd_price(backloadDetail) });
 
     backloadDetail.style.display = 'none';
@@ -80,7 +95,8 @@ function toggle_backload(button_element) {
         button_element.innerText = 'Remove Backload';
     } else {
         backload_detail.style.display = 'none';
-        backload_detail.querySelector('input').value = 'NA';
+        backload_detail.querySelector('.priceNad').value = NaN;
+        backload_detail.querySelector('.priceUsd').value = NaN;
         button_element.innerText = 'Add Backload';
     }
 };
