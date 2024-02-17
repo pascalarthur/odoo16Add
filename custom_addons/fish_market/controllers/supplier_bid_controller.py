@@ -4,7 +4,6 @@ from odoo.http import request
 
 
 class SupplierBidOrderController(http.Controller):
-
     def get_token_record(self, token):
         AccessToken = http.request.env['access.token'].sudo()
         return AccessToken.search([('token', '=', token), ('is_used', '=', False)], limit=1)
@@ -34,28 +33,37 @@ class SupplierBidOrderController(http.Controller):
 
                     product_temp_vars_dict[product_template_id.id]['product_variants'] = defaultdict(list)
                     product_temp_vars_dict[product_template_id.id]['product_variants_str'] = []
-                    product_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', product_template_id.id)])
+                    product_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=',
+                                                                                           product_template_id.id)])
                     for product_variant_id in product_variants:
                         if product_variant_id.combination_indices:
                             for key in map(int, product_variant_id.combination_indices.split(',')):
-                                product_temp_vars_dict[product_template_id.id]['product_variants'][product_variants_map[key]].append(attribute_values_map[key])
-                            product_temp_vars_dict[product_template_id.id]['product_variants_str'].append("; ".join([f'{cat}: {lst[-1]}' for cat, lst in product_temp_vars_dict[product_template_id.id]['product_variants'].items()]))
+                                product_temp_vars_dict[product_template_id.id]['product_variants'][
+                                    product_variants_map[key]].append(attribute_values_map[key])
+                            product_temp_vars_dict[product_template_id.id]['product_variants_str'].append("; ".join([
+                                f'{cat}: {lst[-1]}' for cat, lst in product_temp_vars_dict[product_template_id.id]
+                                ['product_variants'].items()
+                            ]))
                     product_temp_vars_dict[product_template_id.id]['product_variants_ids'] = product_variants.ids
 
-            addresses = [f'{token_record.partner_id.street}, {token_record.partner_id.city}, {token_record.partner_id.country_id.name}']
+            addresses = [
+                f'{token_record.partner_id.street}, {token_record.partner_id.city}, {token_record.partner_id.country_id.name}'
+            ]
 
-            nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
+            nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')
+                                                                                       ]).inverse_rate
 
-            return http.request.render('fish_market.supplier_form_template', {
-                'supplier': token_record.partner_id,
-                'pricelist_id': token_record.pricelist_id,
-                'token': token,
-                'product_temp_vars_dict': product_temp_vars_dict,
-                'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
-                'addresses': addresses,
-                'form_action': '/supplier_bid',
-                'form_id': 'supplier_order_form',
-            })
+            return http.request.render(
+                'fish_market.supplier_form_template', {
+                    'supplier': token_record.partner_id,
+                    'pricelist_id': token_record.pricelist_id,
+                    'token': token,
+                    'product_temp_vars_dict': product_temp_vars_dict,
+                    'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
+                    'addresses': addresses,
+                    'form_action': '/supplier_bid',
+                    'form_id': 'supplier_order_form',
+                })
         else:
             return "Token is invalid or has expired"
 
@@ -88,7 +96,6 @@ class SupplierBidOrderController(http.Controller):
                     'fixed_price': float(price_in_usd[ii]),
                     'min_quantity': float(product_quantities[ii]),
                     'date_start': fields.Datetime.now(),
-
                     'notes': notes,
                 }
                 request.env['product.pricelist.item'].sudo().create(product_detail)

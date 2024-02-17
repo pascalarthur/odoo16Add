@@ -31,10 +31,8 @@ class ReportPartnerLedger(models.AbstractModel):
     def _lines(self, data, partner):
         full_account = []
         currency = self.env['res.currency']
-        query_get_data = self.env['account.move.line'].with_context(
-            data['form'].get('used_context', {}))._query_get()
-        reconcile_clause = "" if data['form'][
-            'reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
+        query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
+        reconcile_clause = "" if data['form']['reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
         params = [partner.id, tuple(data['computed']['move_state']),
                   tuple(data['computed']['account_ids'])] + \
                  query_get_data[2]
@@ -64,10 +62,8 @@ class ReportPartnerLedger(models.AbstractModel):
         date_format = lang_id.date_format
         for r in res:
             r['date'] = r['date']
-            r['displayed_name'] = '-'.join(
-                r[field_name] for field_name in ('move_name', 'ref', 'name')
-                if r[field_name] not in (None, '', '/')
-            )
+            r['displayed_name'] = '-'.join(r[field_name] for field_name in ('move_name', 'ref', 'name')
+                                           if r[field_name] not in (None, '', '/'))
             sum += r['debit'] - r['credit']
             r['progress'] = sum
             r['currency_id'] = currency.browse(r.get('currency_id'))
@@ -78,10 +74,8 @@ class ReportPartnerLedger(models.AbstractModel):
         if field not in ['debit', 'credit', 'debit - credit']:
             return
         result = 0.0
-        query_get_data = self.env['account.move.line'].with_context(
-            data['form'].get('used_context', {}))._query_get()
-        reconcile_clause = "" if data['form'][
-            'reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
+        query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
+        reconcile_clause = "" if data['form']['reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
         params = [partner.id, tuple(data['computed']['move_state']),
                   tuple(data['computed']['account_ids'])] + \
                  query_get_data[2]
@@ -102,12 +96,10 @@ class ReportPartnerLedger(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
         if not data.get('form'):
-            raise UserError(
-                _("Form content is missing, this report cannot be printed."))
+            raise UserError(_("Form content is missing, this report cannot be printed."))
         data['computed'] = {}
         obj_partner = self.env['res.partner']
-        query_get_data = self.env['account.move.line'].with_context(
-            data['form'].get('used_context', {}))._query_get()
+        query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
         data['computed']['move_state'] = ['draft', 'posted']
         if data['form'].get('target_move', 'all') == 'posted':
             data['computed']['move_state'] = ['posted']
@@ -118,18 +110,15 @@ class ReportPartnerLedger(models.AbstractModel):
             data['computed']['ACCOUNT_TYPE'] = ['asset_receivable']
         else:
             data['computed']['ACCOUNT_TYPE'] = ['liability_payable', 'asset_receivable']
-        self.env.cr.execute("""
+        self.env.cr.execute(
+            """
             SELECT a.id
             FROM account_account a
             WHERE a.account_type IN %s
-            AND NOT a.deprecated""",
-                            (tuple(data['computed']['ACCOUNT_TYPE']),))
-        data['computed']['account_ids'] = [a for (a,) in
-                                           self.env.cr.fetchall()]
-        params = [tuple(data['computed']['move_state']),
-                  tuple(data['computed']['account_ids'])] + query_get_data[2]
-        reconcile_clause = "" if data['form'][
-            'reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
+            AND NOT a.deprecated""", (tuple(data['computed']['ACCOUNT_TYPE']), ))
+        data['computed']['account_ids'] = [a for (a, ) in self.env.cr.fetchall()]
+        params = [tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])] + query_get_data[2]
+        reconcile_clause = "" if data['form']['reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
         query = """
             SELECT DISTINCT "account_move_line".partner_id
             FROM """ + query_get_data[0] + """, account_account AS account, account_move AS am

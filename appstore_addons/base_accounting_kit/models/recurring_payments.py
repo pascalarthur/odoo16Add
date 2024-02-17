@@ -55,48 +55,30 @@ class RecurringPayments(models.Model):
             self.next_date = start_date.date()
 
     name = fields.Char(string='Name')
-    debit_account = fields.Many2one('account.account',
-                                    'Debit Account',
-                                    required=True,
+    debit_account = fields.Many2one('account.account', 'Debit Account', required=True,
                                     domain="['|', ('company_id', '=', False), "
-                                           "('company_id', '=', company_id)]")
-    credit_account = fields.Many2one('account.account',
-                                     'Credit Account',
-                                     required=True,
+                                    "('company_id', '=', company_id)]")
+    credit_account = fields.Many2one('account.account', 'Credit Account', required=True,
                                      domain="['|', ('company_id', '=', False), "
-                                            "('company_id', '=', company_id)]")
-    journal_id = fields.Many2one('account.journal',
-                                 'Journal', required=True)
-    analytic_account_id = fields.Many2one('account.analytic.account',
-                                          'Analytic Account')
-    date = fields.Date('Starting Date', required=True,
-                       default=date.today())
-    next_date = fields.Date('Next Schedule',
-                            compute=_get_next_schedule,
-                            readonly=True, copy=False)
-    recurring_period = fields.Selection(selection=[('days', 'Days'),
-                                                   ('weeks', 'Weeks'),
-                                                   ('months', 'Months'),
-                                                   ('years', 'Years')],
-                                        store=True, required=True)
+                                     "('company_id', '=', company_id)]")
+    journal_id = fields.Many2one('account.journal', 'Journal', required=True)
+    analytic_account_id = fields.Many2one('account.analytic.account', 'Analytic Account')
+    date = fields.Date('Starting Date', required=True, default=date.today())
+    next_date = fields.Date('Next Schedule', compute=_get_next_schedule, readonly=True, copy=False)
+    recurring_period = fields.Selection(
+        selection=[('days', 'Days'), ('weeks', 'Weeks'), ('months', 'Months'), ('years', 'Years')], store=True,
+        required=True)
     amount = fields.Float('Amount')
     description = fields.Text('Description')
-    state = fields.Selection(selection=[('draft', 'Draft'),
-                                        ('running', 'Running')],
-                             default='draft', string='Status')
-    journal_state = fields.Selection(selection=[('draft', 'Unposted'),
-                                                ('posted', 'Posted')],
-                                     required=True, default='draft',
-                                     string='Generate Journal As')
+    state = fields.Selection(selection=[('draft', 'Draft'), ('running', 'Running')], default='draft', string='Status')
+    journal_state = fields.Selection(selection=[('draft', 'Unposted'), ('posted', 'Posted')], required=True,
+                                     default='draft', string='Generate Journal As')
     recurring_interval = fields.Integer('Recurring Interval', default=1)
     partner_id = fields.Many2one('res.partner', 'Partner')
-    pay_time = fields.Selection(selection=[('pay_now', 'Pay Directly'),
-                                           ('pay_later', 'Pay Later')],
-                                store=True, required=True)
-    company_id = fields.Many2one('res.company',
-                                 default=lambda l: l.env.company.id)
-    recurring_lines = fields.One2many(
-        'account.recurring.entries.line', 'tmpl_id')
+    pay_time = fields.Selection(selection=[('pay_now', 'Pay Directly'), ('pay_later', 'Pay Later')], store=True,
+                                required=True)
+    company_id = fields.Many2one('res.company', default=lambda l: l.env.company.id)
+    recurring_lines = fields.One2many('account.recurring.entries.line', 'tmpl_id')
 
     @api.onchange('partner_id')
     def onchange_partner_id(self):
@@ -106,10 +88,8 @@ class RecurringPayments(models.Model):
 
     @api.model
     def _cron_generate_entries(self):
-        data = self.env['account.recurring.payments'].search(
-            [('state', '=', 'running')])
-        entries = self.env['account.move'].search(
-            [('recurring_ref', '!=', False)])
+        data = self.env['account.recurring.payments'].search([('state', '=', 'running')])
+        entries = self.env['account.move'].search([('recurring_ref', '!=', False)])
         journal_dates = []
         journal_codes = []
         remaining_dates = []
@@ -121,22 +101,17 @@ class RecurringPayments(models.Model):
         for line in data:
             if line.date:
                 recurr_dates = []
-                start_date = datetime.strptime(str(line.date),
-                                               '%Y-%m-%d')
+                start_date = datetime.strptime(str(line.date), '%Y-%m-%d')
                 while start_date <= today:
                     recurr_dates.append(str(start_date.date()))
                     if line.recurring_period == 'days':
-                        start_date += relativedelta(
-                            days=line.recurring_interval)
+                        start_date += relativedelta(days=line.recurring_interval)
                     elif line.recurring_period == 'weeks':
-                        start_date += relativedelta(
-                            weeks=line.recurring_interval)
+                        start_date += relativedelta(weeks=line.recurring_interval)
                     elif line.recurring_period == 'months':
-                        start_date += relativedelta(
-                            months=line.recurring_interval)
+                        start_date += relativedelta(months=line.recurring_interval)
                     else:
-                        start_date += relativedelta(
-                            years=line.recurring_interval)
+                        start_date += relativedelta(years=line.recurring_interval)
                 for rec in recurr_dates:
                     recurr_code = str(line.id) + '/' + str(rec)
                     if recurr_code not in journal_codes:
@@ -150,17 +125,26 @@ class RecurringPayments(models.Model):
         for line in child_ids:
             tmpl_id = line.tmpl_id
             recurr_code = str(tmpl_id.id) + '/' + str(line.date)
-            line_ids = [(0, 0, {
-                'account_id': tmpl_id.credit_account.id,
-                'partner_id': tmpl_id.partner_id.id,
-                'credit': line.amount,
-                # 'analytic_account_id': tmpl_id.analytic_account_id.id,
-            }), (0, 0, {
-                'account_id': tmpl_id.debit_account.id,
-                'partner_id': tmpl_id.partner_id.id,
-                'debit': line.amount,
-                # 'analytic_account_id': tmpl_id.analytic_account_id.id,
-            })]
+            line_ids = [
+                (
+                    0,
+                    0,
+                    {
+                        'account_id': tmpl_id.credit_account.id,
+                        'partner_id': tmpl_id.partner_id.id,
+                        'credit': line.amount,
+                        # 'analytic_account_id': tmpl_id.analytic_account_id.id,
+                    }),
+                (
+                    0,
+                    0,
+                    {
+                        'account_id': tmpl_id.debit_account.id,
+                        'partner_id': tmpl_id.partner_id.id,
+                        'debit': line.amount,
+                        # 'analytic_account_id': tmpl_id.analytic_account_id.id,
+                    })
+            ]
             vals = {
                 'date': line.date,
                 'recurring_ref': recurr_code,
@@ -182,7 +166,4 @@ class GetAllRecurringEntries(models.TransientModel):
     date = fields.Date('Date')
     template_name = fields.Char('Name')
     amount = fields.Float('Amount')
-    tmpl_id = fields.Many2one('account.recurring.payments',
-                              string='id')
-
-
+    tmpl_id = fields.Many2one('account.recurring.payments', string='id')

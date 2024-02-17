@@ -30,29 +30,20 @@ class AssetAssetReport(models.Model):
     name = fields.Char(string='Year', required=False, readonly=True)
     date = fields.Date(readonly=True)
     depreciation_date = fields.Date(string='Depreciation Date', readonly=True)
-    asset_id = fields.Many2one('account.asset.asset',
-                               string='Asset', readonly=True)
-    asset_category_id = fields.Many2one('account.asset.category',
-                                        string='Asset category', readonly=True)
-    partner_id = fields.Many2one('res.partner', string='Partner',
-                                 readonly=True)
-    state = fields.Selection([('draft', 'Draft'), ('open', 'Running'),
-                              ('close', 'Close')], string='Status',
+    asset_id = fields.Many2one('account.asset.asset', string='Asset', readonly=True)
+    asset_category_id = fields.Many2one('account.asset.category', string='Asset category', readonly=True)
+    partner_id = fields.Many2one('res.partner', string='Partner', readonly=True)
+    state = fields.Selection([('draft', 'Draft'), ('open', 'Running'), ('close', 'Close')], string='Status',
                              readonly=True)
-    depreciation_value = fields.Float(string='Amount of Depreciation Lines',
-                                      readonly=True)
-    installment_value = fields.Float(string='Amount of Installment Lines',
-                                     readonly=True)
+    depreciation_value = fields.Float(string='Amount of Depreciation Lines', readonly=True)
+    installment_value = fields.Float(string='Amount of Installment Lines', readonly=True)
     move_check = fields.Boolean(string='Posted', readonly=True)
-    installment_nbr = fields.Integer(string='# of Installment Lines',
-                                     readonly=True)
-    depreciation_nbr = fields.Integer(string='# of Depreciation Lines',
-                                      readonly=True)
+    installment_nbr = fields.Integer(string='# of Installment Lines', readonly=True)
+    depreciation_nbr = fields.Integer(string='# of Depreciation Lines', readonly=True)
     gross_value = fields.Float(string='Gross Amount', readonly=True)
     posted_value = fields.Float(string='Posted Amount', readonly=True)
     unposted_value = fields.Float(string='Unposted Amount', readonly=True)
-    company_id = fields.Many2one('res.company', string='Company',
-                                 readonly=True)
+    company_id = fields.Many2one('res.company', string='Company', readonly=True)
 
     def init(self):
         tools.drop_view_if_exists(self._cr, 'asset_asset_report')

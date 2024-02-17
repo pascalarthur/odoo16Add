@@ -33,7 +33,9 @@ class StockQuant(models.Model):
             'views': [(False, 'form')],
             'res_id': meta_sale_order.id,
             'target': 'current',
-            'context': {'default_create_date': fields.Datetime.now()},
+            'context': {
+                'default_create_date': fields.Datetime.now()
+            },
         }
 
 
@@ -49,4 +51,3 @@ class StockQuantController(http.Controller):
         inventory_damage_operation = http.request.env['inventory.damage.operation']
 
         return inventory_damage_operation.process_damaged_products()
-

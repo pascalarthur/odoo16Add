@@ -15,5 +15,7 @@ class ShStockPicking(models.Model):
                 'view_mode': 'form',
                 'res_model': 'sh.product.bundle.wizard',
                 'target': 'new',
-                'context': {'default_sh_partner_id': self.partner_id.id},
+                'context': {
+                    'default_sh_partner_id': self.partner_id.id
+                },
             }

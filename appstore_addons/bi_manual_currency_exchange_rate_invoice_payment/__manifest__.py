@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
 {
-    "name" : "Manual Currency Exchange Rate on Invoice and Payment in Odoo",
-    "version" : "17.0.0.0",
-    "depends" : ['base','account', 'base_accounting_kit'],
+    "name": "Manual Currency Exchange Rate on Invoice and Payment in Odoo",
+    "version": "17.0.0.0",
+    "depends": ['base', 'account', 'base_accounting_kit'],
     "author": "BrowseInfo",
-    "summary": "Apps apply manual currency rate on invoice apply manual currency rate on payment apply custom currency rate on invoice custom currency rate on payment custom Currency Exchange Rate on Invoice custom Currency Exchange Rate on payment custom accounting rate",
+    "summary":
+    "Apps apply manual currency rate on invoice apply manual currency rate on payment apply custom currency rate on invoice custom currency rate on payment custom Currency Exchange Rate on Invoice custom Currency Exchange Rate on payment custom accounting rate",
     "description": """
     Odoo/OpenERP module for odoo manual currency rate converter
     odoo Currency Exchange Rate on Invoice Payment manual multi currency process on invoice multi currency payment
@@ -29,17 +30,16 @@
     "price": 15,
     "currency": "EUR",
     'category': 'Accounting',
-    "website" : "https://www.browseinfo.com",
-    "data" :[
-             "views/customer_invoice.xml",
-             "views/account_payment_view.xml",
+    "website": "https://www.browseinfo.com",
+    "data": [
+        "views/customer_invoice.xml",
+        "views/account_payment_view.xml",
     ],
-    'qweb':[
-    ],
+    'qweb': [],
     "auto_install": False,
     "installable": True,
     "live_test_url": "https://youtu.be/-uuQ3XYOY08",
-	"images":['static/description/Banner.gif'],
+    "images": ['static/description/Banner.gif'],
     "license": "OPL-1",
 }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

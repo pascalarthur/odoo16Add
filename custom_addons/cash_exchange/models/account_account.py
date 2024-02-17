@@ -17,7 +17,8 @@ class AccountAccount(models.Model):
 
     def _compute_current_balance_currency(self):
         for account in self:
-            account.current_balance_currency = sum(self.env['account.move.line'].search([('account_id', '=', account.id)]).mapped('amount_currency'))
+            account.current_balance_currency = sum(self.env['account.move.line'].search([('account_id', '=', account.id)
+                                                                                         ]).mapped('amount_currency'))
 
     def action_open_payment_form(self):
         available_journal_ids = self.env['account.journal'].search([
@@ -57,7 +58,8 @@ class AccountAccount(models.Model):
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    def create_currency_conversion_journal_entry(self, source_journal_id, dest_journal_id, amount, date, exchange_rate, memo):
+    def create_currency_conversion_journal_entry(self, source_journal_id, dest_journal_id, amount, date, exchange_rate,
+                                                 memo):
         """
         Create a journal entry to convert currency from one journal to another.
 

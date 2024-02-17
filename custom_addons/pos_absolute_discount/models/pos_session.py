@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 
+
 class PosSession(models.Model):
     _inherit = 'pos.session'
 

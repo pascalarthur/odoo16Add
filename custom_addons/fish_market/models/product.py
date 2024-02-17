@@ -7,11 +7,17 @@ class ProductTemplate(models.Model):
     detailed_type = fields.Selection(selection_add=[
         ('product', 'Storable Product'),
         ('transport', 'Transport'),
-    ], tracking=True, ondelete={'product': 'set consu', 'transport': 'set consu'}, default='product')
+    ], tracking=True, ondelete={
+        'product': 'set consu',
+        'transport': 'set consu'
+    }, default='product')
     type = fields.Selection(selection_add=[
         ('product', 'Storable Product'),
         ('transport', 'Transport'),
-    ], ondelete={'product': 'set consu', 'transport': 'set consu'}, default='product')
+    ], ondelete={
+        'product': 'set consu',
+        'transport': 'set consu'
+    }, default='product')
 
     start_warehouse_id = fields.Many2one('stock.warehouse', string='Start Warehouse')
     destination_warehouse_id = fields.Many2one('stock.warehouse', string='Destination Warehouse')

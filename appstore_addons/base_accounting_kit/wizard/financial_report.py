@@ -28,35 +28,25 @@ class FinancialReport(models.TransientModel):
     _inherit = "account.report"
     _description = "Financial Reports"
 
-    section_main_report_ids = fields.Many2many(string="Section Of",
-                                               comodel_name='account.report',
-                                               relation="account_financial_report_section_rel",
-                                               column1="sub_report_id",
+    section_main_report_ids = fields.Many2many(string="Section Of", comodel_name='account.report',
+                                               relation="account_financial_report_section_rel", column1="sub_report_id",
                                                column2="main_report_id")
-    section_report_ids = fields.Many2many(string="Sections",
-                                          comodel_name='account.report',
-                                          relation="account_financial_report_section_rel",
-                                          column1="main_report_id",
+    section_report_ids = fields.Many2many(string="Sections", comodel_name='account.report',
+                                          relation="account_financial_report_section_rel", column1="main_report_id",
                                           column2="sub_report_id")
-    name = fields.Char(string="Financial Report", default="Financial Report",
-                       required=True, translate=True)
-    target_move = fields.Selection([('posted', 'All Posted Entries'),
-                                    ('all', 'All Entries'),
-                                    ], string='Target Moves', required=True,
-                                   default='posted')
+    name = fields.Char(string="Financial Report", default="Financial Report", required=True, translate=True)
+    target_move = fields.Selection([
+        ('posted', 'All Posted Entries'),
+        ('all', 'All Entries'),
+    ], string='Target Moves', required=True, default='posted')
 
-    view_format = fields.Selection([
-        ('vertical', 'Vertical'),
-        ('horizontal', 'Horizontal')],
-        default='vertical',
-        string="Format")
+    view_format = fields.Selection([('vertical', 'Vertical'), ('horizontal', 'Horizontal')], default='vertical',
+                                   string="Format")
 
     def _build_contexts(self, data):
         result = {}
-        result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
-            'journal_ids'] or False
-        result['state'] = 'target_move' in data['form'] and data['form'][
-            'target_move'] or ''
+        result['journal_ids'] = 'journal_ids' in data['form'] and data['form']['journal_ids'] or False
+        result['state'] = 'target_move' in data['form'] and data['form']['target_move'] or ''
         result['date_from'] = data['form']['date_from'] or False
         result['date_to'] = data['form']['date_to'] or False
         result['strict_range'] = True if result['date_from'] else False
@@ -66,35 +56,22 @@ class FinancialReport(models.TransientModel):
     def _get_account_report(self):
         reports = []
         if self._context.get('active_id'):
-            menu = self.env['ir.ui.menu'].browse(
-                self._context.get('active_id')).name
-            reports = self.env['account.financial.report'].search([
-                ('name', 'ilike', menu)])
+            menu = self.env['ir.ui.menu'].browse(self._context.get('active_id')).name
+            reports = self.env['account.financial.report'].search([('name', 'ilike', menu)])
         return reports and reports[0] or False
 
-    enable_filter = fields.Boolean(
-        string='Enable Comparison',
-        default=False)
-    account_report_id = fields.Many2one(
-        'account.financial.report',
-        string='Account Reports',
-        required=True)
+    enable_filter = fields.Boolean(string='Enable Comparison', default=False)
+    account_report_id = fields.Many2one('account.financial.report', string='Account Reports', required=True)
     date_from = fields.Date(string='Start Date')
     date_to = fields.Date(string='End Date')
     debit_credit = fields.Boolean(
-        string='Display Debit/Credit Columns',
-        default=True,
-        help="This option allows you to"
-             " get more details about the "
-             "way your balances are computed."
-             " Because it is space consuming,"
-             " we do not allow to use it "
-             "while doing a comparison.")
-    company_id = fields.Many2one(
-        'res.company',
-        string='Company',
-        index=True,
-        default=lambda self: self.env.company.id)
+        string='Display Debit/Credit Columns', default=True, help="This option allows you to"
+        " get more details about the "
+        "way your balances are computed."
+        " Because it is space consuming,"
+        " we do not allow to use it "
+        "while doing a comparison.")
+    company_id = fields.Many2one('res.company', string='Company', index=True, default=lambda self: self.env.company.id)
 
     def view_report_pdf(self):
         """This function will be executed when we click the view button
@@ -104,14 +81,12 @@ class FinancialReport(models.TransientModel):
         data = dict()
         data['ids'] = self.env.context.get('active_ids', [])
         data['model'] = self.env.context.get('active_model', 'ir.ui.menu')
-        data['form'] = self.read(
-            ['date_from', 'enable_filter', 'debit_credit', 'date_to',
-             'account_report_id', 'target_move', 'view_format',
-             'company_id'])[0]
+        data['form'] = self.read([
+            'date_from', 'enable_filter', 'debit_credit', 'date_to', 'account_report_id', 'target_move', 'view_format',
+            'company_id'
+        ])[0]
         used_context = self._build_contexts(data)
-        data['form']['used_context'] = dict(
-            used_context,
-            lang=self.env.context.get('lang') or 'en_US')
+        data['form']['used_context'] = dict(used_context, lang=self.env.context.get('lang') or 'en_US')
         report_lines = self.get_account_lines(data['form'])
         # find the journal items of these accounts
         journal_items = self.find_journal_items(report_lines, data['form'])
@@ -140,41 +115,31 @@ class FinancialReport(models.TransientModel):
         data['journal_items'] = journal_items
         data['report_lines'] = report_lines
         # checking view type
-        return self.env.ref(
-            'base_accounting_kit.financial_report_pdf').report_action(self,
-                                                                      data)
+        return self.env.ref('base_accounting_kit.financial_report_pdf').report_action(self, data)
 
     def _compute_account_balance(self, accounts):
         """ compute the balance, debit
         and credit for the provided accounts
         """
         mapping = {
-            'balance':
-                "COALESCE(SUM(debit),0) - COALESCE(SUM(credit), 0)"
-                " as balance",
+            'balance': "COALESCE(SUM(debit),0) - COALESCE(SUM(credit), 0)"
+            " as balance",
             'debit': "COALESCE(SUM(debit), 0) as debit",
             'credit': "COALESCE(SUM(credit), 0) as credit",
         }
         res = {}
         for account in accounts:
-            res[account.id] = dict((fn, 0.0)
-                                   for fn in mapping.keys())
+            res[account.id] = dict((fn, 0.0) for fn in mapping.keys())
         if accounts:
-            tables, where_clause, where_params = (
-                self.env['account.move.line']._query_get())
-            tables = tables.replace(
-                '"', '') if tables else "account_move_line"
+            tables, where_clause, where_params = (self.env['account.move.line']._query_get())
+            tables = tables.replace('"', '') if tables else "account_move_line"
             wheres = [""]
             if where_clause.strip():
                 wheres.append(where_clause.strip())
             filters = " AND ".join(wheres)
-            request = ("SELECT account_id as id, " +
-                       ', '.join(mapping.values()) +
-                       " FROM " + tables +
-                       " WHERE account_id IN %s " +
-                       filters +
-                       " GROUP BY account_id")
-            params = (tuple(accounts._ids),) + tuple(where_params)
+            request = ("SELECT account_id as id, " + ', '.join(mapping.values()) + " FROM " + tables +
+                       " WHERE account_id IN %s " + filters + " GROUP BY account_id")
+            params = (tuple(accounts._ids), ) + tuple(where_params)
             self.env.cr.execute(request, params)
             for row in self.env.cr.dictfetchall():
                 res[row['id']] = row
@@ -198,9 +163,7 @@ class FinancialReport(models.TransientModel):
             res[report.id] = dict((fn, 0.0) for fn in fields)
             if report.type == 'accounts':
                 # it's the sum of the linked accounts
-                res[report.id]['account'] = self._compute_account_balance(
-                    report.account_ids
-                )
+                res[report.id]['account'] = self._compute_account_balance(report.account_ids)
                 for value in \
                         res[report.id]['account'].values():
                     for field in fields:
@@ -208,30 +171,22 @@ class FinancialReport(models.TransientModel):
             elif report.type == 'account_type':
                 # it's the sum the leaf accounts
                 #  with such an account type
-                accounts = self.env['account.account'].search([
-                    ('account_type', '=', report.account_type_ids)
-                ])
+                accounts = self.env['account.account'].search([('account_type', '=', report.account_type_ids)])
                 if report.name == "Expenses":
                     accounts = self.env['account.account'].search([
-                        ('account_type', 'in', ["expense",
-                                                "expense_depreciation",
-                                                "expense_direct_cost"])
+                        ('account_type', 'in', ["expense", "expense_depreciation", "expense_direct_cost"])
                     ])
                 if report.name == "Liability":
                     accounts = self.env['account.account'].search([
                         ('account_type', 'in',
-                         ["liability_payable", "equity", "liability_current",
-                          "liability_non_current"])
+                         ["liability_payable", "equity", "liability_current", "liability_non_current"])
                     ])
                 if report.name == "Assets":
-                    accounts = self.env['account.account'].search([
-                        ('account_type', 'in',
-                         ["asset_receivable", "asset_cash", "asset_current",
-                          "asset_non_current", "asset_prepayments",
-                          "asset_fixed"])
-                    ])
-                res[report.id]['account'] = self._compute_account_balance(
-                    accounts)
+                    accounts = self.env['account.account'].search([('account_type', 'in', [
+                        "asset_receivable", "asset_cash", "asset_current", "asset_non_current", "asset_prepayments",
+                        "asset_fixed"
+                    ])])
+                res[report.id]['account'] = self._compute_account_balance(accounts)
                 for value in res[report.id]['account'].values():
                     for field in fields:
                         res[report.id][field] += value.get(field)
@@ -251,12 +206,9 @@ class FinancialReport(models.TransientModel):
 
     def get_account_lines(self, data):
         lines = []
-        account_report = self.env['account.financial.report'].search([
-            ('id', '=', data['account_report_id'][0])
-        ])
+        account_report = self.env['account.financial.report'].search([('id', '=', data['account_report_id'][0])])
         child_reports = account_report._get_children_by_order()
-        res = self.with_context(
-            data.get('used_context'))._compute_report_balance(child_reports)
+        res = self.with_context(data.get('used_context'))._compute_report_balance(child_reports)
         if data['enable_filter']:
             comparison_res = self._compute_report_balance(child_reports)
             for report_id, value in comparison_res.items():
@@ -271,8 +223,7 @@ class FinancialReport(models.TransientModel):
             r_name = re.sub('[^0-9a-zA-Z]+', '', r_name)
             if report.parent_id:
                 p_name = str(report.parent_id.name)
-                p_name = re.sub('[^0-9a-zA-Z]+', '', p_name) + str(
-                    report.parent_id.id)
+                p_name = re.sub('[^0-9a-zA-Z]+', '', p_name) + str(report.parent_id.id)
             else:
                 p_name = False
             vals = {
@@ -283,9 +234,7 @@ class FinancialReport(models.TransientModel):
                 'name': report.name,
                 'balance': res[report.id]['balance'] * int(report.sign),
                 'type': 'report',
-                'level': bool(
-                    report.style_overwrite) and report.style_overwrite or
-                         report.level,
+                'level': bool(report.style_overwrite) and report.style_overwrite or report.level,
                 'account_type': report.type or False,
                 # used to underline the financial report balances
             }
@@ -294,8 +243,7 @@ class FinancialReport(models.TransientModel):
                 vals['credit'] = res[report.id]['credit']
 
             if data['enable_filter']:
-                vals['balance_cmp'] = res[report.id]['comp_bal'] * int(
-                    report.sign)
+                vals['balance_cmp'] = res[report.id]['comp_bal'] * int(report.sign)
 
             lines.append(vals)
             if report.display_detail == 'no_detail':
@@ -319,18 +267,12 @@ class FinancialReport(models.TransientModel):
                     # new_r_name = new_r_name.replace(" ", "-") + "-"
                     vals = {
                         'account': account.id,
-                        'a_id': account.code + re.sub('[^0-9a-zA-Z]+',
-                                                      'acnt',
-                                                      account.name) + str(
-                            account.id),
+                        'a_id': account.code + re.sub('[^0-9a-zA-Z]+', 'acnt', account.name) + str(account.id),
                         'name': account.code + '-' + account.name,
                         'balance': value['balance'] * int(report.sign) or 0.0,
                         'type': 'account',
                         'parent': r_name + str(report.id),
-                        'level': (
-                                report.display_detail ==
-                                'detail_with_hierarchy' and
-                                4),
+                        'level': (report.display_detail == 'detail_with_hierarchy' and 4),
                         'account_type': account.account_type,
                     }
                     if data['debit_credit']:
@@ -341,19 +283,15 @@ class FinancialReport(models.TransientModel):
                                 not account.company_id.currency_id.is_zero(
                                     vals['credit']):
                             flag = True
-                    if not account.company_id.currency_id.is_zero(
-                            vals['balance']):
+                    if not account.company_id.currency_id.is_zero(vals['balance']):
                         flag = True
                     if data['enable_filter']:
-                        vals['balance_cmp'] = value['comp_bal'] * int(
-                            report.sign)
-                        if not account.company_id.currency_id.is_zero(
-                                vals['balance_cmp']):
+                        vals['balance_cmp'] = value['comp_bal'] * int(report.sign)
+                        if not account.company_id.currency_id.is_zero(vals['balance_cmp']):
                             flag = True
                     if flag:
                         sub_lines.append(vals)
-                lines += sorted(sub_lines,
-                                key=lambda sub_line: sub_line['name'])
+                lines += sorted(sub_lines, key=lambda sub_line: sub_line['name'])
         return lines
 
     def find_journal_items(self, report_lines, form):
@@ -397,9 +335,7 @@ class FinancialReport(models.TransientModel):
                 items = cr.dictfetchall()
                 for j in items:
                     temp = j['id']
-                    j['id'] = re.sub('[^0-9a-zA-Z]+', '',
-                                     i['name']) + str(
-                        temp)
+                    j['id'] = re.sub('[^0-9a-zA-Z]+', '', i['name']) + str(temp)
                     j['p_id'] = str(i['a_id'])
                     j['type'] = 'journal_item'
                     journal_items.append(j)
@@ -407,8 +343,7 @@ class FinancialReport(models.TransientModel):
 
     @api.model
     def _get_currency(self):
-        journal = self.env['account.journal'].browse(
-            self.env.context.get('default_journal_id', False))
+        journal = self.env['account.journal'].browse(self.env.context.get('default_journal_id', False))
         if journal.currency_id:
             return journal.currency_id.id
         return self.env.company.currency_id.symbol

@@ -56,7 +56,8 @@ class RouteDemand(models.Model):
             # Send email with token link
             template = self.env.ref('fish_market.email_template_demand')
             template.with_context(token_url=f"https://{base_url}/route_demand/{token_record.token}").send_mail(
-                self.id,
-                email_values={'email_to': partner.email, 'email_from': my_company_email, 'body_html': email_body},
-                force_send=True
-            )
+                self.id, email_values={
+                    'email_to': partner.email,
+                    'email_from': my_company_email,
+                    'body_html': email_body
+                }, force_send=True)

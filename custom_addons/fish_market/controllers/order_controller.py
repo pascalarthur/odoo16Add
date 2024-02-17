@@ -3,7 +3,6 @@ from odoo.http import request
 
 
 class TransportOrderController(http.Controller):
-
     def get_token_record(self, token):
         AccessToken = http.request.env['access.token'].sudo()
         return AccessToken.search([('token', '=', token), ('is_used', '=', False)], limit=1)
@@ -15,24 +14,29 @@ class TransportOrderController(http.Controller):
     def access_form(self, token, **kwargs):
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
-            nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')]).inverse_rate
+            nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')
+                                                                                       ]).inverse_rate
 
-            obj_start_end_dict = token_record.route_demand_id.read(['route_start_street', 'route_start_street2', 'route_start_city', 'route_start_zip', 'route_start_state_id', 'route_start_country_id',
-                                                                    'route_end_street', 'route_end_street2', 'route_end_city', 'route_end_zip', 'route_end_state_id', 'route_end_country_id'])[0]
+            obj_start_end_dict = token_record.route_demand_id.read([
+                'route_start_street', 'route_start_street2', 'route_start_city', 'route_start_zip',
+                'route_start_state_id', 'route_start_country_id', 'route_end_street', 'route_end_street2',
+                'route_end_city', 'route_end_zip', 'route_end_state_id', 'route_end_country_id'
+            ])[0]
             # route_start_state_id, ... are tuples of type (id, name)
             for key, value in obj_start_end_dict.items():
                 if type(value) is tuple:
                     obj_start_end_dict[key] = obj_start_end_dict[key][1]
 
-            return http.request.render('fish_market.logistic_form_template', {
-                'supplier': token_record.partner_id,
-                'route_demand_id': token_record.route_demand_id,
-                'obj_start_end': obj_start_end_dict,
-                'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
-                'token': token,
-                'form_action': '/submit_form',
-                'form_id': 'route_demand_form',
-            })
+            return http.request.render(
+                'fish_market.logistic_form_template', {
+                    'supplier': token_record.partner_id,
+                    'route_demand_id': token_record.route_demand_id,
+                    'obj_start_end': obj_start_end_dict,
+                    'nad_to_usd_exchange_rate': nad_to_usd_exchange_rate,
+                    'token': token,
+                    'form_action': '/submit_form',
+                    'form_id': 'route_demand_form',
+                })
         else:
             return "Token is invalid or has expired"
 
@@ -43,7 +47,8 @@ class TransportOrderController(http.Controller):
         route_demand_id = token_record.route_demand_id
 
         transport_product_id = route_demand_id.meta_sale_order_id.transport_product_id
-        transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=', transport_product_id.id)])
+        transport_variants = http.request.env['product.product'].sudo().search([('product_tmpl_id', '=',
+                                                                                 transport_product_id.id)])
 
         attribute_values = http.request.env['product.template.attribute.value'].sudo().search([])
         product_variants_map = {attr_val.id: attr_val.name for attr_val in attribute_values}
@@ -82,24 +87,20 @@ class TransportOrderController(http.Controller):
                     'container_number': container_numbers[ii],
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
-
                     'start_date': dates_start[ii],
                     'end_date': dates_end[ii],
-
                     'route_start_street': route_demand_id.route_start_street,
                     'route_start_street2': route_demand_id.route_start_street2,
                     'route_start_city': route_demand_id.route_start_city,
                     'route_start_zip': route_demand_id.route_start_zip,
                     'route_start_state_id': route_demand_id.route_start_state_id.id,
                     'route_start_country_id': route_demand_id.route_start_country_id.id,
-
                     'route_end_street': route_demand_id.route_end_street,
                     'route_end_street2': route_demand_id.route_end_street2,
                     'route_end_city': route_demand_id.route_end_city,
                     'route_end_zip': route_demand_id.route_end_zip,
                     'route_end_state_id': route_demand_id.route_end_state_id.id,
                     'route_end_country_id': route_demand_id.route_end_country_id.id,
-
                     'price': float(prices_in_usd[ii]),
                     'max_load': float(max_loads[ii]),
                     'is_backload': False,
@@ -115,10 +116,8 @@ class TransportOrderController(http.Controller):
                     'compute_price': 'fixed',
                     'applied_on': '0_product_variant',
                     'fixed_price': float(prices_in_usd[ii]),
-
                     'date_start': dates_start[ii],
                     'date_end': dates_end[ii],
-
                     'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                 }
                 product_pricelist_item_id = request.env['product.pricelist.item'].sudo().create(product_detail)
@@ -133,24 +132,20 @@ class TransportOrderController(http.Controller):
                         'container_number': container_numbers[ii],
                         'driver_name': driver_names[ii],
                         'telephone_number': telephone_numbers[ii],
-
                         'start_date': dates_end[ii],
                         'end_date': dates_end_backload[ii],
-
                         'route_start_street': route_demand_id.route_end_street,
                         'route_start_street2': route_demand_id.route_end_street2,
                         'route_start_city': route_demand_id.route_end_city,
                         'route_start_zip': route_demand_id.route_end_zip,
                         'route_start_state_id': route_demand_id.route_end_state_id.id,
                         'route_start_country_id': route_demand_id.route_end_country_id.id,
-
                         'route_end_street': route_demand_id.route_start_street,
                         'route_end_street2': route_demand_id.route_start_street2,
                         'route_end_city': route_demand_id.route_start_city,
                         'route_end_zip': route_demand_id.route_start_zip,
                         'route_end_state_id': route_demand_id.route_start_state_id.id,
                         'route_end_country_id': route_demand_id.route_start_country_id.id,
-
                         'price': float(backload_prices[ii]),
                         'max_load': float(max_loads[ii]),
                         'is_backload': True,
@@ -166,16 +161,14 @@ class TransportOrderController(http.Controller):
                         'compute_price': 'fixed',
                         'applied_on': '0_product_variant',
                         'fixed_price': float(backload_prices[ii]),
-
                         'date_start': dates_end[ii],
                         'date_end': dates_end_backload[ii],
-
                         'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                     }
-                    product_pricelist_item_id_backload = request.env['product.pricelist.item'].sudo().create(product_detail)
+                    product_pricelist_item_id_backload = request.env['product.pricelist.item'].sudo().create(
+                        product_detail)
 
                     product_pricelist_item_id.write({'backload_id': product_pricelist_item_id_backload.id})
-
 
             # Optionally, mark the token as used
             # token_record.is_used = True

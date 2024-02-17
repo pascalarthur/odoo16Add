@@ -57,24 +57,20 @@ class ResCompany(models.Model):
                 if rate == "Not found":
                     continue
                 rate = rate * curr1.rate
-                already_exists = currency_rate.search(
-                    [
-                        ("name", "=", today),
-                        ("currency_id", "=", curr2.id),
-                        ("company_id", "=", company.id),
-                    ]
-                )
+                already_exists = currency_rate.search([
+                    ("name", "=", today),
+                    ("currency_id", "=", curr2.id),
+                    ("company_id", "=", company.id),
+                ])
                 if already_exists:
                     already_exists.rate = rate
                 else:
-                    currency_rate.create(
-                        {
-                            "name": today,
-                            "currency_id": curr2.id,
-                            "rate": rate,
-                            "company_id": company.id,
-                        }
-                    )
+                    currency_rate.create({
+                        "name": today,
+                        "currency_id": curr2.id,
+                        "rate": rate,
+                        "company_id": company.id,
+                    })
         return True
 
     @api.model

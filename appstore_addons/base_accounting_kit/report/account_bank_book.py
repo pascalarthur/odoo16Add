@@ -29,24 +29,19 @@ class ReportBankBook(models.AbstractModel):
     _name = 'report.base_accounting_kit.report_bank_book'
     _description = 'Bank Book Report'
 
-    def _get_account_move_entry(self, accounts, init_balance, sortby,
-                                display_account):
+    def _get_account_move_entry(self, accounts, init_balance, sortby, display_account):
         cr = self.env.cr
         move_line = self.env['account.move.line']
         move_lines = {x: [] for x in accounts.ids}
         # Prepare initial sql query and Get the initial move lines
         if init_balance:
-            init_tables, init_where_clause, init_where_params = (
-                move_line.with_context(
-                    date_from=self.env.context.get('date_from'), date_to=False,
-                    initial_bal=True)._query_get())
+            init_tables, init_where_clause, init_where_params = (move_line.with_context(
+                date_from=self.env.context.get('date_from'), date_to=False, initial_bal=True)._query_get())
             init_wheres = [""]
             if init_where_clause.strip():
                 init_wheres.append(init_where_clause.strip())
             init_filters = " AND ".join(init_wheres)
-            filters = init_filters.replace('account_move_line__move_id',
-                                           'm').replace(
-                'account_move_line', 'l')
+            filters = init_filters.replace('account_move_line__move_id', 'm').replace('account_move_line', 'l')
             sql = ("""SELECT 0 AS lid, l.account_id AS account_id, \
             '' AS ldate, '' AS lcode, 0.0 AS amount_currency, \
             '' AS lref, 'Initial Balance' AS lname, \
@@ -64,7 +59,7 @@ class ReportBankBook(models.AbstractModel):
             LEFT JOIN res_partner p ON (l.partner_id=p.id)\
             JOIN account_journal j ON (l.journal_id=j.id)\
             WHERE l.account_id IN %s""" + filters + ' GROUP BY l.account_id')
-            params = (tuple(accounts.ids),) + tuple(init_where_params)
+            params = (tuple(accounts.ids), ) + tuple(init_where_params)
             cr.execute(sql, params)
             for row in cr.dictfetchall():
                 move_lines[row.pop('account_id')].append(row)
@@ -78,9 +73,7 @@ class ReportBankBook(models.AbstractModel):
         if where_clause.strip():
             wheres.append(where_clause.strip())
         filters = " AND ".join(wheres)
-        filters = filters.replace(
-            'account_move_line__move_id', 'm').replace(
-            'account_move_line', 'l')
+        filters = filters.replace('account_move_line__move_id', 'm').replace('account_move_line', 'l')
 
         # Get move lines base on sql query and Calculate the total
         # balance of move lines
@@ -102,7 +95,7 @@ class ReportBankBook(models.AbstractModel):
                 l.id, l.account_id, l.date, j.code, l.currency_id, \
                 l.amount_currency, l.ref, l.name, m.name, \
                 c.symbol, p.name ORDER BY ''' + sql_sort)
-        params = (tuple(accounts.ids),) + tuple(where_params)
+        params = (tuple(accounts.ids), ) + tuple(where_params)
         cr.execute(sql, params)
 
         for row in cr.dictfetchall():
@@ -129,16 +122,14 @@ class ReportBankBook(models.AbstractModel):
                 account_res.append(res)
             if display_account == 'movement' and res.get('move_lines'):
                 account_res.append(res)
-            if display_account == 'not_zero' and not currency.is_zero(
-                    res['balance']):
+            if display_account == 'not_zero' and not currency.is_zero(res['balance']):
                 account_res.append(res)
         return account_res
 
     @api.model
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
-            raise UserError(
-                _("Form content is missing, this report cannot be printed."))
+            raise UserError(_("Form content is missing, this report cannot be printed."))
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         init_balance = data['form'].get('initial_balance', True)
@@ -146,28 +137,20 @@ class ReportBankBook(models.AbstractModel):
         display_account = 'movement'
         codes = []
         if data['form'].get('journal_ids', False):
-            codes = [journal.code for journal in
-                     self.env['account.journal'].search(
-                         [('id', 'in', data['form']['journal_ids'])])]
+            codes = [
+                journal.code
+                for journal in self.env['account.journal'].search([('id', 'in', data['form']['journal_ids'])])
+            ]
         account_ids = data['form']['account_ids']
-        accounts = self.env['account.account'].search(
-            [('id', 'in', account_ids)])
+        accounts = self.env['account.account'].search([('id', 'in', account_ids)])
         if not accounts:
-            journals = self.env['account.journal'].search(
-                [('type', '=', 'bank')])
+            journals = self.env['account.journal'].search([('type', '=', 'bank')])
             accounts = []
             for journal in journals:
-                accounts.append(
-                    journal.company_id.
-                    account_journal_payment_credit_account_id.id)
-            accounts = self.env['account.account'].search(
-                [('id', 'in', accounts)])
-        accounts_res = self.with_context(
-            data['form'].get('used_context', {}))._get_account_move_entry(
-            accounts,
-            init_balance,
-            sortby,
-            display_account)
+                accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
+            accounts = self.env['account.account'].search([('id', 'in', accounts)])
+        accounts_res = self.with_context(data['form'].get('used_context', {}))._get_account_move_entry(
+            accounts, init_balance, sortby, display_account)
         return {
             'doc_ids': docids,
             'doc_model': model,

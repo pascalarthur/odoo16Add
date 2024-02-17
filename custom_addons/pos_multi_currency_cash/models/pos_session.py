@@ -6,7 +6,6 @@ from odoo.exceptions import ValidationError, UserError
 class PosSession(models.Model):
     _inherit = 'pos.session'
 
-
     def correct_cash_amounts_opening(self, cash_amounts_in_currencies: List[dict]):
         # Find the cash payment method in the POS configuration
         cash_payment_method = self.config_id.payment_method_ids.filtered(lambda pm: pm.is_cash_count and pm.journal_id)
@@ -95,8 +94,7 @@ class PosSession(models.Model):
         for product in self.config_id.available_product_ids:
             stocked_products = self.env['stock.quant'].search([
                 ('product_id', '=', product.id),
-                ('location_id', '=', self.config_id.picking_type_id.default_location_src_id.id),
-                ('quantity', '>', 0)
+                ('location_id', '=', self.config_id.picking_type_id.default_location_src_id.id), ('quantity', '>', 0)
             ])
             available_product_quantities[product.id] = sum(stocked_products.mapped('quantity'))
 
@@ -112,8 +110,7 @@ class PosSession(models.Model):
             loaded_data["pos.payment.method"][ii]['currency_rate'] = pm_complete.journal_id.currency_id.rate
 
         journal_ids = self.env['account.journal'].sudo().search(
-			domain=[('id', 'in', self.config_id.currency_journal_ids.ids)],
-		)
+            domain=[('id', 'in', self.config_id.currency_journal_ids.ids)], )
 
         currencies = []
         for journal_id in journal_ids:

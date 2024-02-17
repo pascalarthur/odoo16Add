@@ -8,12 +8,11 @@ class ShProductBundleWizard(models.TransientModel):
     _description = 'Bundle Wizard'
 
     sh_partner_id = fields.Many2one('res.partner', 'Customer', required=True)
-    sh_bundle_id = fields.Many2one(
-        'product.template', 'Add Pack / Bundle', required=True, domain=[('sh_is_bundle', '=', True)])
+    sh_bundle_id = fields.Many2one('product.template', 'Add Pack / Bundle', required=True,
+                                   domain=[('sh_is_bundle', '=', True)])
     sh_qty = fields.Float('Quantity', default=1.00, required=True)
     sh_price = fields.Float('Pack / Bundle Price')
-    sh_bundle_lines = fields.One2many(
-        'sh.product.bundle.wizard.line', 'wizard_id', string='Bundle Lines')
+    sh_bundle_lines = fields.One2many('sh.product.bundle.wizard.line', 'wizard_id', string='Bundle Lines')
 
     @api.onchange('sh_qty')
     def onchange_bundle_line(self):
@@ -71,8 +70,7 @@ class ShProductBundleWizard(models.TransientModel):
     def action_add_pack(self):
         context = self.env.context
         if context.get('active_model') == 'sale.order':
-            sale_order = self.env['sale.order'].sudo().search(
-                [('id', '=', context.get('active_id'))], limit=1)
+            sale_order = self.env['sale.order'].sudo().search([('id', '=', context.get('active_id'))], limit=1)
             if sale_order and self.sh_bundle_lines:
                 product_lines = []
                 line_vals = {}
@@ -97,8 +95,7 @@ class ShProductBundleWizard(models.TransientModel):
                     product_lines.append((0, 0, product_line_vals))
                 sale_order.order_line = product_lines
         elif context.get('active_model') == 'stock.picking':
-            picking_id = self.env['stock.picking'].sudo().search(
-                [('id', '=', context.get('active_id'))], limit=1)
+            picking_id = self.env['stock.picking'].sudo().search([('id', '=', context.get('active_id'))], limit=1)
             src_location = None
             dest_location = None
             if picking_id.picking_type_code == 'incoming':
@@ -138,8 +135,7 @@ class ShProductBundleWizard(models.TransientModel):
                     product_lines.append((0, 0, product_line_vals))
                 picking_id.move_ids_without_package = product_lines
         elif context.get('active_model') == 'purchase.order':
-            purchase_order = self.env['purchase.order'].sudo().search(
-                [('id', '=', context.get('active_id'))], limit=1)
+            purchase_order = self.env['purchase.order'].sudo().search([('id', '=', context.get('active_id'))], limit=1)
             if purchase_order and self.sh_bundle_lines:
                 product_lines = []
                 line_vals = {}
@@ -166,10 +162,8 @@ class ShProductBundleWizard(models.TransientModel):
                     product_lines.append((0, 0, product_line_vals))
                 purchase_order.order_line = product_lines
         elif context.get('active_model') == 'account.move':
-            account_invoice = self.env['account.move'].sudo().search(
-                [('id', '=', context.get('active_id'))], limit=1)
-            accounts = self.sh_bundle_id.get_product_accounts(
-                account_invoice.fiscal_position_id)
+            account_invoice = self.env['account.move'].sudo().search([('id', '=', context.get('active_id'))], limit=1)
+            accounts = self.sh_bundle_id.get_product_accounts(account_invoice.fiscal_position_id)
             if account_invoice.move_type in ['out_invoice', 'out_refund'] and self.sh_bundle_lines:
                 product_lines = []
                 line_vals = {}
@@ -227,7 +221,6 @@ class ShProductBundleWizardLine(models.TransientModel):
     _description = 'Bundle Wizard Lines'
 
     wizard_id = fields.Many2one('sh.product.bundle.wizard', 'Wizard ID')
-    sh_product_id = fields.Many2one(
-        'product.product', 'Product', required=True)
+    sh_product_id = fields.Many2one('product.product', 'Product', required=True)
     sh_bundle_quantity = fields.Float("Quantity")
     sh_bundle_uom = fields.Many2one("uom.uom", "Unit Of Measure")

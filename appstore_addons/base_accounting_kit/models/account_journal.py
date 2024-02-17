@@ -33,18 +33,18 @@ class AccountJournal(models.Model):
         if self.type in ['bank', 'cash']:
             # Open reconciliation view for bank statements belonging
             # to this journal
-            bank_stmt = self.env['account.bank.statement'].search(
-                [('journal_id', 'in', self.ids)]).mapped('line_ids')
+            bank_stmt = self.env['account.bank.statement'].search([('journal_id', 'in', self.ids)]).mapped('line_ids')
             return {
                 'type': 'ir.actions.client',
                 'tag': 'bank_statement_reconciliation_view',
-                'context': {'statement_line_ids': bank_stmt.ids,
-                            'company_ids': self.mapped('company_id').ids},
+                'context': {
+                    'statement_line_ids': bank_stmt.ids,
+                    'company_ids': self.mapped('company_id').ids
+                },
             }
         else:
             # Open reconciliation view for customers/suppliers
-            action_context = {'show_mode_selector': False,
-                              'company_ids': self.mapped('company_id').ids}
+            action_context = {'show_mode_selector': False, 'company_ids': self.mapped('company_id').ids}
             if self.type == 'sale':
                 action_context.update({'mode': 'customers'})
             elif self.type == 'purchase':
@@ -62,5 +62,7 @@ class AccountJournal(models.Model):
             'type': 'ir.actions.act_window',
             'res_model': 'account.bank.statement.line',
             'view_mode': 'list,form',
-            'context': {'default_journal_id': self.id},
+            'context': {
+                'default_journal_id': self.id
+            },
         }

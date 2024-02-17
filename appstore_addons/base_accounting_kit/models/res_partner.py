@@ -26,25 +26,16 @@ from odoo import fields, models
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
-    invoice_list = fields.One2many('account.move',
-                                   'partner_id',
-                                   string="Invoice Details",
-                                   readonly=True,
-                                   domain=(
-                                   [('payment_state', '=', 'not_paid'),
-                                    ('move_type', '=', 'out_invoice')]))
-    total_due = fields.Monetary(compute='_compute_for_followup', store=False,
-                                readonly=True)
-    next_reminder_date = fields.Date(compute='_compute_for_followup',
-                                     store=False, readonly=True)
-    total_overdue = fields.Monetary(compute='_compute_for_followup',
-                                    store=False, readonly=True)
+    invoice_list = fields.One2many('account.move', 'partner_id', string="Invoice Details", readonly=True,
+                                   domain=([('payment_state', '=', 'not_paid'), ('move_type', '=', 'out_invoice')]))
+    total_due = fields.Monetary(compute='_compute_for_followup', store=False, readonly=True)
+    next_reminder_date = fields.Date(compute='_compute_for_followup', store=False, readonly=True)
+    total_overdue = fields.Monetary(compute='_compute_for_followup', store=False, readonly=True)
     followup_status = fields.Selection(
-        [('in_need_of_action', 'In need of action'),
-         ('with_overdue_invoices', 'With overdue invoices'),
+        [('in_need_of_action', 'In need of action'), ('with_overdue_invoices', 'With overdue invoices'),
          ('no_action_needed', 'No action needed')],
         string='Followup status',
-        )
+    )
 
     def _compute_for_followup(self):
         """
@@ -102,10 +93,8 @@ class ResPartner(models.Model):
         record = self._cr.dictfetchall()
         return record
 
-
     def action_after(self):
-        lines = self.env['followup.line'].search([(
-            'followup_id.company_id', '=', self.env.company.id)])
+        lines = self.env['followup.line'].search([('followup_id.company_id', '=', self.env.company.id)])
         if lines:
             record = self.get_delay()
             for i in record:

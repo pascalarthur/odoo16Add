@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
 
-from odoo import fields, models,api, _
+from odoo import fields, models, api, _
 from odoo.exceptions import UserError, ValidationError
 
+
 class account_payment(models.TransientModel):
-    _inherit ='account.payment.register'
+    _inherit = 'account.payment.register'
 
     manual_currency_rate_active = fields.Boolean('Apply Manual Exchange')
     manual_currency_rate = fields.Float('Rate', digits=(12, 6))
@@ -20,7 +21,6 @@ class account_payment(models.TransientModel):
         if not active_ids or active_model != 'account.move':
             return rec
 
-
         invoices = self.env['account.move'].browse(active_ids).filtered(
             lambda move: move.is_invoice(include_receipts=True))
 
@@ -30,7 +30,6 @@ class account_payment(models.TransientModel):
                 'manual_currency_rate': invoices.manual_currency_rate
             })
         return rec
-
 
     @api.model
     def _create_payment_vals_from_batch(self, batch_result):
@@ -42,7 +41,7 @@ class account_payment(models.TransientModel):
         if not active_ids or active_model != 'account.move':
             return rec
 
-        account_move = self.env['account.move'].search([('name','=',rec.get('ref'))]).ids
+        account_move = self.env['account.move'].search([('name', '=', rec.get('ref'))]).ids
         for active_id in active_ids:
             if active_id in account_move:
                 invoices = self.env['account.move'].browse(active_id).filtered(
@@ -57,9 +56,8 @@ class account_payment(models.TransientModel):
                 return rec
         return rec
 
-
-
-    @api.depends('source_amount', 'source_amount_currency', 'source_currency_id', 'company_id', 'currency_id', 'payment_date', 'manual_currency_rate')
+    @api.depends('source_amount', 'source_amount_currency', 'source_currency_id', 'company_id', 'currency_id',
+                 'payment_date', 'manual_currency_rate')
     def _compute_amount(self):
 
         for wizard in self:
@@ -68,7 +66,9 @@ class account_payment(models.TransientModel):
                 wizard.amount = wizard.source_amount_currency
             else:
                 # Foreign currency on payment different than the one set on the journal entries.
-                amount_payment_currency = wizard.company_id.currency_id._convert(wizard.source_amount, wizard.currency_id, wizard.company_id, wizard.payment_date)
+                amount_payment_currency = wizard.company_id.currency_id._convert(wizard.source_amount,
+                                                                                 wizard.currency_id, wizard.company_id,
+                                                                                 wizard.payment_date)
                 wizard.amount = amount_payment_currency
         rec = super(account_payment, self)._compute_amount()
 
@@ -81,15 +81,19 @@ class account_payment(models.TransientModel):
                 wizard.payment_difference = wizard.source_amount_currency - wizard.amount
             else:
                 # Foreign currency on payment different than the one set on the journal entries.
-                amount_payment_currency = wizard.company_id.currency_id._convert(wizard.source_amount, wizard.currency_id, wizard.company_id, wizard.payment_date)
+                amount_payment_currency = wizard.company_id.currency_id._convert(wizard.source_amount,
+                                                                                 wizard.currency_id, wizard.company_id,
+                                                                                 wizard.payment_date)
                 wizard.payment_difference = amount_payment_currency - wizard.amount
         rec = super(account_payment, self)._compute_payment_difference()
 
-
-    def _create_payment_vals_from_wizard(self,batch_result):
+    def _create_payment_vals_from_wizard(self, batch_result):
         res = super(account_payment, self)._create_payment_vals_from_wizard(batch_result)
         if self.manual_currency_rate_active:
-            res.update({'manual_currency_rate_active': self.manual_currency_rate_active, 'manual_currency_rate': self.manual_currency_rate})
+            res.update({
+                'manual_currency_rate_active': self.manual_currency_rate_active,
+                'manual_currency_rate': self.manual_currency_rate
+            })
         else:
             res.update({'manual_currency_rate_active': False, 'manual_currency_rate': 0.0})
         return res

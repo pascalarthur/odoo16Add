@@ -1,5 +1,6 @@
 from odoo import fields, models
 
+
 class CustomPartner(models.Model):
     _inherit = 'res.partner'
 

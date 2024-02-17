@@ -20,23 +20,31 @@
 #
 #############################################################################
 {
-    'name': 'Odoo 17 Full Accounting Kit',
-    'version': '17.0.1.0.1',
-    'category': 'Accounting',
-    'summary': """Odoo 17 Accounting, Asset and Budget Management,
+    'name':
+    'Odoo 17 Full Accounting Kit',
+    'version':
+    '17.0.1.0.1',
+    'category':
+    'Accounting',
+    'summary':
+    """Odoo 17 Accounting, Asset and Budget Management,
     Accounting Reports, PDC, 
     Lock dates, Credit Limit, Follow Ups, Day-Bank-Cash book reports.""",
-    'description': """ Odoo 17 Accounting, The module used to manage the Full
+    'description':
+    """ Odoo 17 Accounting, The module used to manage the Full
      Account Features that can manage the Account Reports,Journals Asset and 
      Budget Management, Accounting Reports, PDC, Lock dates, Credit Limit, 
      Follow Ups,  Day-Bank-Cash book report, odoo17, odoo17 accounting,
       odoo accounting, v17 accounting,Odoo 17 Accounting, odoo apps""",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
-    'depends': ['account', 'sale', 'account_check_printing',
-                'base_account_budget', 'analytic'],
+    'author':
+    'Cybrosys Techno Solutions',
+    'company':
+    'Cybrosys Techno Solutions',
+    'maintainer':
+    'Cybrosys Techno Solutions',
+    'website':
+    "https://www.cybrosys.com",
+    'depends': ['account', 'sale', 'account_check_printing', 'base_account_budget', 'analytic'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -91,10 +99,13 @@
         'wizard/account_lock_date.xml',
         'views/account_payment_view.xml',
     ],
-    'license': 'LGPL-3',
+    'license':
+    'LGPL-3',
     'images': ['static/description/banner.gif'],
-    'installable': True,
-    'auto_install': False,
-    'application': True,
+    'installable':
+    True,
+    'auto_install':
+    False,
+    'application':
+    True,
 }
-

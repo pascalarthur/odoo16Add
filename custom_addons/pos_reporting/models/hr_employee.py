@@ -2,12 +2,15 @@ from odoo import api, models, fields
 from odoo.exceptions import UserError
 from dateutil.relativedelta import relativedelta
 
+
 class HrEmployee(models.Model):
     _inherit = "hr.employee"
 
     currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.company.currency_id)
-    turnover_last_month_pos = fields.Monetary(string="Turnover POS", compute="_compute_last_month_pos", currency_field='currency_id')
-    turnover_last_month_sales = fields.Monetary(string="Turnover Sales", compute="_compute_turnover_last_month_sales", currency_field='currency_id')
+    turnover_last_month_pos = fields.Monetary(string="Turnover POS", compute="_compute_last_month_pos",
+                                              currency_field='currency_id')
+    turnover_last_month_sales = fields.Monetary(string="Turnover Sales", compute="_compute_turnover_last_month_sales",
+                                                currency_field='currency_id')
 
     def _compute_last_month_pos(self):
         start_date = fields.Date.today().replace(day=1)
@@ -25,11 +28,9 @@ class HrEmployee(models.Model):
         start_date = fields.Date.today().replace(day=1)
         end_date = start_date + relativedelta(months=1, days=-1)
         for employee_id in self:
-            sales_orders = self.env['sale.order'].search([
-                ('date_order', '>=', start_date),
-                ('date_order', '<=', end_date),
-                ('user_id', '=', employee_id.user_id.id)
-            ])
+            sales_orders = self.env['sale.order'].search([('date_order', '>=', start_date),
+                                                          ('date_order', '<=', end_date),
+                                                          ('user_id', '=', employee_id.user_id.id)])
             employee_id.turnover_last_month_sales = sum(sales_orders.mapped("amount_total"))
 
     def action_get_employee_report(self):

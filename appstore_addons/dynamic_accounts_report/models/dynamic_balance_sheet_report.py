@@ -34,25 +34,17 @@ class ProfitLossReport(models.TransientModel):
     _name = 'dynamic.balance.sheet.report'
     _description = 'Profit Loss Report'
 
-    company_id = fields.Many2one('res.company', required=True,
-                                 default=lambda self: self.env.company,
+    company_id = fields.Many2one('res.company', required=True, default=lambda self: self.env.company,
                                  help='Select the company to which this'
-                                      'record belongs.')
-    journal_ids = fields.Many2many('account.journal',
-                                   string='Journals', required=True,
-                                   default=[],
+                                 'record belongs.')
+    journal_ids = fields.Many2many('account.journal', string='Journals', required=True, default=[],
                                    help='Select one or more journals.')
-    account_ids = fields.Many2many("account.account", string="Accounts",
-                                   help='Select one or more accounts.')
-    analytic_ids = fields.Many2many(
-        "account.analytic.account", string="Analytic Accounts",
-        help="Analytic accounts associated with the current record.")
-    target_move = fields.Selection([('posted', 'Posted'), ('draft', 'Draft')],
-                                   string='Target Move', required=True,
-                                   default='posted',
-                                   help='Select the target move status.')
-    date_from = fields.Date(string="Start date",
-                            help="Specify the start date.")
+    account_ids = fields.Many2many("account.account", string="Accounts", help='Select one or more accounts.')
+    analytic_ids = fields.Many2many("account.analytic.account", string="Analytic Accounts",
+                                    help="Analytic accounts associated with the current record.")
+    target_move = fields.Selection([('posted', 'Posted'), ('draft', 'Draft')], string='Target Move', required=True,
+                                   default='posted', help='Select the target move status.')
+    date_from = fields.Date(string="Start date", help="Specify the start date.")
     date_to = fields.Date(string="End date", help="Specify the end date.")
 
     @api.model_create_multi
@@ -94,170 +86,133 @@ class ProfitLossReport(models.TransientModel):
         if comparison:
             for count in range(0, int(comparison) + 1):
                 if comparison_type == "month":
-                    account_move_lines = self.env['account.move.line'].search(
-                        [(
-                            'parent_state', 'in', target_move),
-                            ('date', '>=', (current_date - datetime.timedelta(
-                                days=30 * count)).strftime('%Y-%m-01')),
-                            ('date', '<=', (current_date - datetime.timedelta(
-                                days=30 * count)).strftime('%Y-%m-12'))])
+                    account_move_lines = self.env['account.move.line'].search([
+                        ('parent_state', 'in', target_move),
+                        ('date', '>=', (current_date - datetime.timedelta(days=30 * count)).strftime('%Y-%m-01')),
+                        ('date', '<=', (current_date - datetime.timedelta(days=30 * count)).strftime('%Y-%m-12'))
+                    ])
                 elif comparison_type == "year":
-                    account_move_lines = self.env['account.move.line'].search(
-                        [(
-                            'parent_state', 'in', target_move),
-                            ('date', '>=', f'{current_year - count}-01-01'),
-                            ('date', '<=', f'{current_year - count}-12-31')])
-                lists = [{'id': rec.id, 'value': [eval(i) for i in
-                                                  rec.analytic_distribution.keys()]}
-                         for rec in account_move_lines if
-                         rec.analytic_distribution]
+                    account_move_lines = self.env['account.move.line'].search([
+                        ('parent_state', 'in', target_move), ('date', '>=', f'{current_year - count}-01-01'),
+                        ('date', '<=', f'{current_year - count}-12-31')
+                    ])
+                lists = [{
+                    'id': rec.id,
+                    'value': [eval(i) for i in rec.analytic_distribution.keys()]
+                } for rec in account_move_lines if rec.analytic_distribution]
                 if financial_report_id.analytic_ids:
-                    account_move_lines = account_move_lines.filtered(lambda
-                                                                         rec: rec.id in [
+                    account_move_lines = account_move_lines.filtered(lambda rec: rec.id in [
                         lst['id'] for lst in lists if lst['value'] and any(
-                            i in financial_report_id.analytic_ids.mapped('id')
-                            for i in lst['value'])])
-                account_move_lines = account_move_lines.filtered(lambda
-                                                                     a: not financial_report_id.journal_ids or a.journal_id in financial_report_id.journal_ids)
-                account_move_lines = account_move_lines.filtered(lambda
-                                                                     a: not financial_report_id.account_ids or a.account_id in financial_report_id.account_ids)
-                account_move_lines = account_move_lines.filtered(lambda
-                                                                     a: not financial_report_id.date_from or a.date >= financial_report_id.date_from)
-                account_move_lines = account_move_lines.filtered(lambda
-                                                                     a: not financial_report_id.date_to or a.date <= financial_report_id.date_to)
+                            i in financial_report_id.analytic_ids.mapped('id') for i in lst['value'])
+                    ])
+                account_move_lines = account_move_lines.filtered(
+                    lambda a: not financial_report_id.journal_ids or a.journal_id in financial_report_id.journal_ids)
+                account_move_lines = account_move_lines.filtered(
+                    lambda a: not financial_report_id.account_ids or a.account_id in financial_report_id.account_ids)
+                account_move_lines = account_move_lines.filtered(
+                    lambda a: not financial_report_id.date_from or a.date >= financial_report_id.date_from)
+                account_move_lines = account_move_lines.filtered(
+                    lambda a: not financial_report_id.date_to or a.date <= financial_report_id.date_to)
                 account_entries = {}
                 for account_type in account_types.values():
                     account_entries[account_type] = self._get_entries(
-                        account_move_lines, self.env['account.account'].search(
-                            [('account_type', '=', account_type)]),
+                        account_move_lines, self.env['account.account'].search([('account_type', '=', account_type)]),
                         account_type)
                 total_income = sum(
-                    float(entry['amount'].replace(',', '')) for account_type
-                    in
-                    ['income', 'income_other'] for entry in
-                    account_entries[account_type][0]) - sum(
-                    float(entry['amount'].replace(',', '')) for entry in
-                    account_entries['expense_direct_cost'][0])
+                    float(entry['amount'].replace(',', '')) for account_type in ['income', 'income_other']
+                    for entry in account_entries[account_type][0]) - sum(
+                        float(entry['amount'].replace(',', '')) for entry in account_entries['expense_direct_cost'][0])
                 total_expense = sum(
-                    float(entry['amount'].replace(',', '')) for account_type
-                    in
-                    ['expense', 'expense_depreciation'] for entry in
-                    account_entries[account_type][0])
+                    float(entry['amount'].replace(',', '')) for account_type in ['expense', 'expense_depreciation']
+                    for entry in account_entries[account_type][0])
                 total_current_asset = sum(
-                    float(entry['amount'].replace(',', '')) for account_type
-                    in
-                    ['asset_receivable', 'asset_current', 'asset_cash',
-                     'asset_prepayments'] for entry in
-                    account_entries[account_type][0])
+                    float(entry['amount'].replace(',', ''))
+                    for account_type in ['asset_receivable', 'asset_current', 'asset_cash', 'asset_prepayments']
+                    for entry in account_entries[account_type][0])
                 total_assets = total_current_asset + sum(
-                    float(entry['amount'].replace(',', '')) for account_type
-                    in
-                    ['asset_fixed', 'asset_non_current'] for entry in
-                    account_entries[account_type][0])
+                    float(entry['amount'].replace(',', '')) for account_type in ['asset_fixed', 'asset_non_current']
+                    for entry in account_entries[account_type][0])
                 total_current_liability = sum(
-                    float(entry['amount'].replace(',', '')) for account_type
-                    in
-                    ['liability_current', 'liability_payable'] for entry in
-                    account_entries[account_type][0])
+                    float(entry['amount'].replace(',', ''))
+                    for account_type in ['liability_current', 'liability_payable']
+                    for entry in account_entries[account_type][0])
                 total_liability = total_current_liability + sum(
-                    float(entry['amount'].replace(',', '')) for account_type
-                    in
-                    ['liability_non_current'] for entry in
-                    account_entries[account_type][0])
-                total_unallocated_earning = (
-                                                    total_income - total_expense) + sum(
-                    float(entry['amount'].replace(',', '')) for account_type
-                    in
-                    ['equity_unaffected'] for entry in
-                    account_entries[account_type][0])
+                    float(entry['amount'].replace(',', '')) for account_type in ['liability_non_current']
+                    for entry in account_entries[account_type][0])
+                total_unallocated_earning = (total_income - total_expense) + sum(
+                    float(entry['amount'].replace(',', '')) for account_type in ['equity_unaffected']
+                    for entry in account_entries[account_type][0])
                 total_equity = total_unallocated_earning + sum(
-                    float(entry['amount'].replace(',', '')) for account_type
-                    in
-                    ['equity'] for entry in
-                    account_entries[account_type][0])
+                    float(entry['amount'].replace(',', '')) for account_type in ['equity']
+                    for entry in account_entries[account_type][0])
                 total = total_liability + total_equity
                 data = {
                     'total': total_income - total_expense,
                     'total_expense': "{:,.2f}".format(total_expense),
                     'total_income': "{:,.2f}".format(total_income),
-                    'total_current_asset': "{:,.2f}".format(
-                        total_current_asset),
+                    'total_current_asset': "{:,.2f}".format(total_current_asset),
                     'total_assets': "{:,.2f}".format(total_assets),
-                    'total_current_liability': "{:,.2f}".format(
-                        total_current_liability),
+                    'total_current_liability': "{:,.2f}".format(total_current_liability),
                     'total_liability': "{:,.2f}".format(total_liability),
-                    'total_earnings': "{:,.2f}".format(
-                        total_income - total_expense),
-                    'total_unallocated_earning': "{:,.2f}".format(
-                        total_unallocated_earning),
+                    'total_earnings': "{:,.2f}".format(total_income - total_expense),
+                    'total_unallocated_earning': "{:,.2f}".format(total_unallocated_earning),
                     'total_equity': "{:,.2f}".format(total_equity),
                     'total_balance': "{:,.2f}".format(total),
-                    **account_entries}
+                    **account_entries
+                }
                 datas.append(data)
         else:
-            account_move_lines = self.env['account.move.line'].search(
-                [('parent_state', 'in', target_move),
-                 ('date', '>=', f'{current_year}-01-01'),
-                 ('date', '<=', f'{current_year}-12-31')])
-            lists = [{'id': rec.id,
-                      'value': [eval(i) for i in
-                                rec.analytic_distribution.keys()]}
-                     for rec in account_move_lines if
-                     rec.analytic_distribution]
+            account_move_lines = self.env['account.move.line'].search([('parent_state', 'in', target_move),
+                                                                       ('date', '>=', f'{current_year}-01-01'),
+                                                                       ('date', '<=', f'{current_year}-12-31')])
+            lists = [{
+                'id': rec.id,
+                'value': [eval(i) for i in rec.analytic_distribution.keys()]
+            } for rec in account_move_lines if rec.analytic_distribution]
             if financial_report_id.analytic_ids:
-                account_move_lines = account_move_lines.filtered(
-                    lambda rec: rec.id in [lst['id'] for lst in lists if
-                                           lst['value'] and any(
-                                               i in financial_report_id.analytic_ids.mapped(
-                                                   'id') for i in
-                                               lst['value'])])
-            account_move_lines = account_move_lines.filtered(lambda
-                                                                 a: not financial_report_id.journal_ids or a.journal_id in financial_report_id.journal_ids)
-            account_move_lines = account_move_lines.filtered(lambda
-                                                                 a: not financial_report_id.account_ids or a.account_id in financial_report_id.account_ids)
-            account_move_lines = account_move_lines.filtered(lambda
-                                                                 a: not financial_report_id.date_from or a.date >= financial_report_id.date_from)
-            account_move_lines = account_move_lines.filtered(lambda
-                                                                 a: not financial_report_id.date_to or a.date <= financial_report_id.date_to)
+                account_move_lines = account_move_lines.filtered(lambda rec: rec.id in [
+                    lst['id'] for lst in lists
+                    if lst['value'] and any(i in financial_report_id.analytic_ids.mapped('id') for i in lst['value'])
+                ])
+            account_move_lines = account_move_lines.filtered(
+                lambda a: not financial_report_id.journal_ids or a.journal_id in financial_report_id.journal_ids)
+            account_move_lines = account_move_lines.filtered(
+                lambda a: not financial_report_id.account_ids or a.account_id in financial_report_id.account_ids)
+            account_move_lines = account_move_lines.filtered(
+                lambda a: not financial_report_id.date_from or a.date >= financial_report_id.date_from)
+            account_move_lines = account_move_lines.filtered(
+                lambda a: not financial_report_id.date_to or a.date <= financial_report_id.date_to)
             account_entries = {}
             for account_type in account_types.values():
                 account_entries[account_type] = self._get_entries(
-                    account_move_lines, self.env['account.account'].search(
-                        [('account_type', '=', account_type)]), account_type)
+                    account_move_lines, self.env['account.account'].search([('account_type', '=', account_type)]),
+                    account_type)
             total_income = sum(
-                float(entry['amount'].replace(',', '')) for account_type in
-                ['income', 'income_other'] for entry in
-                account_entries[account_type][0]) - sum(
-                float(entry['amount'].replace(',', '')) for entry in
-                account_entries['expense_direct_cost'][0])
+                float(entry['amount'].replace(',', '')) for account_type in ['income', 'income_other']
+                for entry in account_entries[account_type][0]) - sum(
+                    float(entry['amount'].replace(',', '')) for entry in account_entries['expense_direct_cost'][0])
             total_expense = sum(
-                float(entry['amount'].replace(',', '')) for account_type in
-                ['expense', 'expense_depreciation'] for entry in
-                account_entries[account_type][0])
+                float(entry['amount'].replace(',', '')) for account_type in ['expense', 'expense_depreciation']
+                for entry in account_entries[account_type][0])
             total_current_asset = sum(
-                float(entry['amount'].replace(',', '')) for account_type in
-                ['asset_receivable', 'asset_current', 'asset_cash',
-                 'asset_prepayments'] for entry in
-                account_entries[account_type][0])
+                float(entry['amount'].replace(',', ''))
+                for account_type in ['asset_receivable', 'asset_current', 'asset_cash', 'asset_prepayments']
+                for entry in account_entries[account_type][0])
             total_assets = total_current_asset + sum(
-                float(entry['amount'].replace(',', '')) for account_type in
-                ['asset_fixed', 'asset_non_current'] for entry in
-                account_entries[account_type][0])
+                float(entry['amount'].replace(',', '')) for account_type in ['asset_fixed', 'asset_non_current']
+                for entry in account_entries[account_type][0])
             total_current_liability = sum(
-                float(entry['amount'].replace(',', '')) for account_type in
-                ['liability_current', 'liability_payable'] for entry in
-                account_entries[account_type][0])
+                float(entry['amount'].replace(',', '')) for account_type in ['liability_current', 'liability_payable']
+                for entry in account_entries[account_type][0])
             total_liability = total_current_liability + sum(
-                float(entry['amount'].replace(',', '')) for account_type in
-                ['liability_non_current'] for entry in
-                account_entries[account_type][0])
+                float(entry['amount'].replace(',', '')) for account_type in ['liability_non_current']
+                for entry in account_entries[account_type][0])
             total_unallocated_earning = (total_income - total_expense) + sum(
-                float(entry['amount'].replace(',', '')) for account_type in
-                ['equity_unaffected'] for entry in
-                account_entries[account_type][0])
+                float(entry['amount'].replace(',', '')) for account_type in ['equity_unaffected']
+                for entry in account_entries[account_type][0])
             total_equity = total_unallocated_earning + sum(
-                float(entry['amount'].replace(',', '')) for account_type in
-                ['equity'] for entry in account_entries[account_type][0])
+                float(entry['amount'].replace(',', '')) for account_type in ['equity']
+                for entry in account_entries[account_type][0])
             total = total_liability + total_equity
             data = {
                 'total': total_income - total_expense,
@@ -265,16 +220,14 @@ class ProfitLossReport(models.TransientModel):
                 'total_income': "{:,.2f}".format(total_income),
                 'total_current_asset': "{:,.2f}".format(total_current_asset),
                 'total_assets': "{:,.2f}".format(total_assets),
-                'total_current_liability': "{:,.2f}".format(
-                    total_current_liability),
+                'total_current_liability': "{:,.2f}".format(total_current_liability),
                 'total_liability': "{:,.2f}".format(total_liability),
-                'total_earnings': "{:,.2f}".format(
-                    total_income - total_expense),
-                'total_unallocated_earning': "{:,.2f}".format(
-                    total_unallocated_earning),
+                'total_earnings': "{:,.2f}".format(total_income - total_expense),
+                'total_unallocated_earning': "{:,.2f}".format(total_unallocated_earning),
                 'total_equity': "{:,.2f}".format(total_equity),
                 'total_balance': "{:,.2f}".format(total),
-                **account_entries}
+                **account_entries
+            }
             datas.append(data)
         filters = self._get_filter_data()
         return data, filters, datas
@@ -290,18 +243,15 @@ class ProfitLossReport(models.TransientModel):
         entries = []
         total = 0
         for account in account_ids:
-            filtered_lines = account_move_lines.filtered(
-                lambda line: line.account_id == account)
+            filtered_lines = account_move_lines.filtered(lambda line: line.account_id == account)
             if filtered_lines:
-                if account_type in ['income', 'income_other',
-                                    'liability_payable', 'liability_current',
-                                    'liability_non_current', 'equity',
-                                    'equity_unaffected']:
-                    amount = -(sum(filtered_lines.mapped('debit')) - sum(
-                        filtered_lines.mapped('credit')))
+                if account_type in [
+                        'income', 'income_other', 'liability_payable', 'liability_current', 'liability_non_current',
+                        'equity', 'equity_unaffected'
+                ]:
+                    amount = -(sum(filtered_lines.mapped('debit')) - sum(filtered_lines.mapped('credit')))
                 else:
-                    amount = sum(filtered_lines.mapped('debit')) - sum(
-                        filtered_lines.mapped('credit'))
+                    amount = sum(filtered_lines.mapped('debit')) - sum(filtered_lines.mapped('credit'))
                 entries.append({
                     'name': "{} - {}".format(account.root_id.id, account.name),
                     'amount': "{:,.2f}".format(amount),
@@ -340,25 +290,20 @@ class ProfitLossReport(models.TransientModel):
         elif vals == 'last-month':
             last_month_date = subtract(today, months=1)
             vals = {
-                'date_from': get_month(last_month_date)[0].strftime(
-                    "%Y-%m-%d"),
+                'date_from': get_month(last_month_date)[0].strftime("%Y-%m-%d"),
                 'date_to': get_month(last_month_date)[1].strftime("%Y-%m-%d"),
             }
         elif vals == 'last-quarter':
             last_quarter_date = subtract(today, months=3)
             vals = {
-                'date_from': get_quarter(last_quarter_date)[0].strftime(
-                    "%Y-%m-%d"),
-                'date_to': get_quarter(last_quarter_date)[1].strftime(
-                    "%Y-%m-%d"),
+                'date_from': get_quarter(last_quarter_date)[0].strftime("%Y-%m-%d"),
+                'date_to': get_quarter(last_quarter_date)[1].strftime("%Y-%m-%d"),
             }
         elif vals == 'last-year':
             last_year_date = subtract(today, years=1)
             vals = {
-                'date_from': get_fiscal_year(last_year_date)[0].strftime(
-                    "%Y-%m-%d"),
-                'date_to': get_fiscal_year(last_year_date)[1].strftime(
-                    "%Y-%m-%d"),
+                'date_from': get_fiscal_year(last_year_date)[0].strftime("%Y-%m-%d"),
+                'date_to': get_fiscal_year(last_year_date)[1].strftime("%Y-%m-%d"),
             }
         if 'date_from' in vals:
             self.write({'date_from': vals['date_from']})
@@ -372,15 +317,13 @@ class ProfitLossReport(models.TransientModel):
             filter.append({'journal_ids': self.journal_ids.mapped('code')})
         if 'account_ids' in vals:
             if int(vals['account_ids']) in self.account_ids.mapped('id'):
-                self.update(
-                    {'account_ids': [(3, int(vals['account_ids']))]})
+                self.update({'account_ids': [(3, int(vals['account_ids']))]})
             else:
                 self.write({'account_ids': [(4, int(vals['account_ids']))]})
             filter.append({'account_ids': self.account_ids.mapped('name')})
         if 'analytic_ids' in vals:
             if int(vals['analytic_ids']) in self.analytic_ids.mapped('id'):
-                self.update(
-                    {'analytic_ids': [(3, int(vals['analytic_ids']))]})
+                self.update({'analytic_ids': [(3, int(vals['analytic_ids']))]})
             else:
                 self.write({'analytic_ids': [(4, int(vals['analytic_ids']))]})
             filter.append({'analytic_ids': self.analytic_ids.mapped('name')})
@@ -396,22 +339,15 @@ class ProfitLossReport(models.TransientModel):
             :return: A dictionary containing the filter data.
             """
         journal_ids = self.env['account.journal'].search([])
-        journal = [{'id': journal.id, 'name': journal.name} for journal in
-                   journal_ids]
+        journal = [{'id': journal.id, 'name': journal.name} for journal in journal_ids]
 
         account_ids = self.env['account.account'].search([])
-        account = [{'id': account.id, 'name': account.name} for account in
-                   account_ids]
+        account = [{'id': account.id, 'name': account.name} for account in account_ids]
 
         analytic_ids = self.env['account.analytic.account'].search([])
-        analytic = [{'id': analytic.id, 'name': analytic.name} for analytic in
-                    analytic_ids]
+        analytic = [{'id': analytic.id, 'name': analytic.name} for analytic in analytic_ids]
 
-        filter = {
-            'journal': journal,
-            'account': account,
-            'analytic': analytic
-        }
+        filter = {'journal': journal, 'account': account, 'analytic': analytic}
         return filter
 
     @api.model
@@ -423,8 +359,7 @@ class ProfitLossReport(models.TransientModel):
         for i in range(1, int(count) + 1):
             last_month_date = subtract(today, months=i)
             vals = {
-                'date_from': get_month(last_month_date)[0].strftime(
-                    "%Y-%m-%d"),
+                'date_from': get_month(last_month_date)[0].strftime("%Y-%m-%d"),
                 'date_to': get_month(last_month_date)[1].strftime("%Y-%m-%d"),
             }
             last_month_date_list.append(vals)
@@ -439,10 +374,8 @@ class ProfitLossReport(models.TransientModel):
         for i in range(1, int(count) + 1):
             last_year_date = subtract(today, years=i)
             vals = {
-                'date_from': get_fiscal_year(last_year_date)[0].strftime(
-                    "%Y-%m-%d"),
-                'date_to': get_fiscal_year(last_year_date)[1].strftime(
-                    "%Y-%m-%d"),
+                'date_from': get_fiscal_year(last_year_date)[0].strftime("%Y-%m-%d"),
+                'date_to': get_fiscal_year(last_year_date)[1].strftime("%Y-%m-%d"),
             }
             last_year_date_list.append(vals)
         return last_year_date_list
@@ -458,18 +391,23 @@ class ProfitLossReport(models.TransientModel):
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
         sheet = workbook.add_worksheet()
-        sub_heading = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px',
-             'border': 1,
-             'border_color': 'black'})
-        side_heading_sub = workbook.add_format(
-            {'align': 'left', 'bold': True, 'font_size': '10px',
-             'border': 1,
-             'border_color': 'black'})
+        sub_heading = workbook.add_format({
+            'align': 'center',
+            'bold': True,
+            'font_size': '10px',
+            'border': 1,
+            'border_color': 'black'
+        })
+        side_heading_sub = workbook.add_format({
+            'align': 'left',
+            'bold': True,
+            'font_size': '10px',
+            'border': 1,
+            'border_color': 'black'
+        })
         side_heading_sub.set_indent(1)
         txt_name = workbook.add_format({'font_size': '10px', 'border': 1})
-        txt_name_left = workbook.add_format(
-            {'align': 'left', 'font_size': '10px', 'border': 1})
+        txt_name_left = workbook.add_format({'align': 'left', 'font_size': '10px', 'border': 1})
         txt_name.set_indent(2)
         sheet.set_column(0, 0, 30)
         sheet.set_column(1, 1, 20)
@@ -511,22 +449,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in datas['income'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Cost of Revenue', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['expense_direct_cost'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['expense_direct_cost'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -542,23 +476,19 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in \
                                             datas['expense_direct_cost'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Other Income', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['income_other'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['income_other'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -574,22 +504,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in datas['income_other'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Total Income', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_income'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_income'], side_heading_sub)
                     col += 1
                 row += 1
                 col = 0
@@ -615,22 +541,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in datas['expense'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Depreciation', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['expense_depreciation'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['expense_depreciation'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -639,32 +561,27 @@ class ProfitLossReport(models.TransientModel):
                             account_name = accounts['name']
                             account_value = 0
                             for datas in data['datas']:
-                                for account in datas['expense_depreciation'][
-                                    0]:
+                                for account in datas['expense_depreciation'][0]:
                                     if account_name == account['name'] and \
                                             account['amount'] != '0.00':
                                         account_value = 1
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in \
                                             datas['expense_depreciation'][
                                                 0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Total Expenses', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_expense'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_expense'], side_heading_sub)
                     col += 1
             else:
                 sheet.write(6, col, 'ASSETS', sub_heading)
@@ -690,22 +607,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in datas['asset_cash'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Receivables', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['asset_receivable'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['asset_receivable'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -721,23 +634,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
-                                    for account in datas['asset_receivable'][
-                                        0]:
+                                    for account in datas['asset_receivable'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Current Assets', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['asset_current'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['asset_current'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -753,22 +661,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in datas['asset_current'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Prepayments', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['asset_prepayments'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['asset_prepayments'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -784,30 +688,24 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
-                                    for account in datas['asset_prepayments'][
-                                        0]:
+                                    for account in datas['asset_prepayments'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Total Current Assets', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_current_asset'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_current_asset'], side_heading_sub)
                     col += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Plus Fixed Assets', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['asset_fixed'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['asset_fixed'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -823,23 +721,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
-                                    for account in datas['asset_fixed'][
-                                        0]:
+                                    for account in datas['asset_fixed'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Plus Non-current Assets', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['asset_non_current'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['asset_non_current'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -855,23 +748,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
-                                    for account in datas['asset_non_current'][
-                                        0]:
+                                    for account in datas['asset_non_current'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Total Assets', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_assets'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_assets'], side_heading_sub)
                     col += 1
                 col = 0
                 row += 1
@@ -883,8 +771,7 @@ class ProfitLossReport(models.TransientModel):
                 row += 1
                 sheet.write(row, col, 'Current Liabilities', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['liability_current'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['liability_current'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -900,23 +787,18 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
-                                    for account in datas['liability_current'][
-                                        0]:
+                                    for account in datas['liability_current'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Payables', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['liability_payable'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['liability_payable'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -932,33 +814,24 @@ class ProfitLossReport(models.TransientModel):
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
-                                    for account in datas['liability_payable'][
-                                        0]:
+                                    for account in datas['liability_payable'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
-                sheet.write(row, col, 'Total Current Liabilities',
-                            side_heading_sub)
+                sheet.write(row, col, 'Total Current Liabilities', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_current_liability'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_current_liability'], side_heading_sub)
                     col += 1
                 col = 0
                 row += 1
-                sheet.write(row, col, 'Plus Non-current Liabilities',
-                            txt_name_left)
+                sheet.write(row, col, 'Plus Non-current Liabilities', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1,
-                                datas['liability_non_current'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['liability_non_current'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -967,33 +840,27 @@ class ProfitLossReport(models.TransientModel):
                             account_name = accounts['name']
                             account_value = 0
                             for datas in data['datas']:
-                                for account in datas['liability_non_current'][
-                                    0]:
+                                for account in datas['liability_non_current'][0]:
                                     if account_name == account['name'] and \
                                             account['amount'] != '0.00':
                                         account_value = 1
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in \
                                             datas['liability_non_current'][
                                                 0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
-                sheet.write(row, col, 'Total Liabilities',
-                            side_heading_sub)
+                sheet.write(row, col, 'Total Liabilities', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_liability'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_liability'], side_heading_sub)
                     col += 1
                 col = 0
                 row += 1
@@ -1005,16 +872,13 @@ class ProfitLossReport(models.TransientModel):
                 row += 1
                 sheet.write(row, col, 'Current Earnings', txt_name)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_earnings'],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['total_earnings'], txt_name)
                     col += 1
                 col = 0
                 row += 1
-                sheet.write(row, col, 'Current Allocated Earnings',
-                            txt_name_left)
+                sheet.write(row, col, 'Current Allocated Earnings', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['equity_unaffected'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['equity_unaffected'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -1023,41 +887,33 @@ class ProfitLossReport(models.TransientModel):
                             account_name = accounts['name']
                             account_value = 0
                             for datas in data['datas']:
-                                for account in datas['equity_unaffected'][
-                                    0]:
+                                for account in datas['equity_unaffected'][0]:
                                     if account_name == account['name'] and \
                                             account['amount'] != '0.00':
                                         account_value = 1
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in \
                                             datas['equity_unaffected'][
                                                 0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
-                sheet.write(row, col, 'Total Unallocated Earnings',
-                            side_heading_sub)
+                sheet.write(row, col, 'Total Unallocated Earnings', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1,
-                                datas['total_unallocated_earning'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_unallocated_earning'], side_heading_sub)
                     col += 1
                 col = 0
                 row += 1
                 sheet.write(row, col, 'Retained Earnings', txt_name_left)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['equity'][1],
-                                txt_name)
+                    sheet.write(row, col + 1, datas['equity'][1], txt_name)
                     col += 1
                 index = 0
                 for datas in data['datas']:
@@ -1066,37 +922,31 @@ class ProfitLossReport(models.TransientModel):
                             account_name = accounts['name']
                             account_value = 0
                             for datas in data['datas']:
-                                for account in datas['equity'][
-                                    0]:
+                                for account in datas['equity'][0]:
                                     if account_name == account['name'] and \
                                             account['amount'] != '0.00':
                                         account_value = 1
                             if account_value == 1:
                                 row += 1
                                 col = 0
-                                sheet.write(row, col, accounts['name'],
-                                            txt_name)
+                                sheet.write(row, col, accounts['name'], txt_name)
                                 for datas in data['datas']:
                                     for account in datas['equity'][0]:
                                         if account_name == account['name']:
-                                            sheet.write(row, col + 1,
-                                                        account['amount'],
-                                                        txt_name)
+                                            sheet.write(row, col + 1, account['amount'], txt_name)
                                             col += 1
                     index += 1
                 row += 1
                 col = 0
                 sheet.write(row, col, 'Total EQUITY', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_equity'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_equity'], side_heading_sub)
                     col += 1
                 col = 0
                 row += 1
                 sheet.write(row, col, 'LIABILITIES + EQUITY', side_heading_sub)
                 for datas in data['datas']:
-                    sheet.write(row, col + 1, datas['total_balance'],
-                                side_heading_sub)
+                    sheet.write(row, col + 1, datas['total_balance'], side_heading_sub)
                     col += 1
         workbook.close()
         output.seek(0)

@@ -24,7 +24,7 @@
     "version": "17.0.1.0.0",
     "category": "Point of Sale",
     "summary": "Advanced POS Receipt with Customer Details and Invoice Details "
-               "will Allow You to Print The Customer Information in the pos receipt",
+    "will Allow You to Print The Customer Information in the pos receipt",
     "description": """Advanced POS Receipt with Customer Details and Invoice Details""",
     'author': 'Cybrosys Techno Solutions',
     'website': "https://www.cybrosys.com",

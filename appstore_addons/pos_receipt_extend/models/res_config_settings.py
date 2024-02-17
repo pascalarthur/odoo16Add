@@ -25,13 +25,16 @@ from odoo import fields, models
 class PosConfig(models.Model):
     _inherit = 'pos.config'
 
-    customer_details = fields.Boolean(String=" Customer Details", Help="By Enabling the customer details in pos receipt")
+    customer_details = fields.Boolean(String=" Customer Details",
+                                      Help="By Enabling the customer details in pos receipt")
     customer_name = fields.Boolean(String=" Customer Name", Help="By Enabling the customer name in pos receipt")
-    customer_address = fields.Boolean(String=" Customer Address", Help="By Enabling the customer Address in pos receipt")
+    customer_address = fields.Boolean(String=" Customer Address",
+                                      Help="By Enabling the customer Address in pos receipt")
     customer_mobile = fields.Boolean(String=" Customer Mobile", Help="By Enabling the customer mobile in pos receipt")
     customer_phone = fields.Boolean(String=" Customer Phone", Help="By Enabling the customer phone in pos receipt")
     customer_email = fields.Boolean(String=" Customer Email", Help="By Enabling the customer email in pos receipt")
     customer_vat = fields.Boolean(String=" Customer Vat", Help="By Enabling the customer vat details in pos receipt")
+
 
 class PosConfig(models.TransientModel):
     _inherit = 'res.config.settings'

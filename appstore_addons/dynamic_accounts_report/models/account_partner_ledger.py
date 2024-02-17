@@ -49,24 +49,20 @@ class AccountPartnerLedger(models.TransientModel):
         """
         partner_dict = {}
         partner_totals = {}
-        move_line_ids = self.env['account.move.line'].search(
-            [('account_type', 'in',
-              ['liability_payable', 'asset_receivable']),
-             ('parent_state', '=', 'posted')])
+        move_line_ids = self.env['account.move.line'].search([('account_type', 'in',
+                                                               ['liability_payable', 'asset_receivable']),
+                                                              ('parent_state', '=', 'posted')])
         partner_ids = move_line_ids.mapped('partner_id')
         for partner in partner_ids:
-            move_line_id = move_line_ids.filtered(
-                lambda x: x.partner_id == partner)
+            move_line_id = move_line_ids.filtered(lambda x: x.partner_id == partner)
             move_line_list = []
             for move_line in move_line_id:
-                move_line_data = move_line.read(
-                    ['date', 'move_name', 'account_type', 'debit', 'credit',
-                     'date_maturity', 'account_id', 'journal_id', 'move_id',
-                     'matching_number', 'amount_currency'])
-                account_code = self.env['account.account'].browse(
-                    move_line.account_id.id).code
-                journal_code = self.env['account.journal'].browse(
-                    move_line.journal_id.id).code
+                move_line_data = move_line.read([
+                    'date', 'move_name', 'account_type', 'debit', 'credit', 'date_maturity', 'account_id', 'journal_id',
+                    'move_id', 'matching_number', 'amount_currency'
+                ])
+                account_code = self.env['account.account'].browse(move_line.account_id.id).code
+                journal_code = self.env['account.journal'].browse(move_line.journal_id.id).code
                 if account_code:
                     move_line_data[0]['jrnl'] = journal_code
                     move_line_data[0]['code'] = account_code
@@ -77,7 +73,8 @@ class AccountPartnerLedger(models.TransientModel):
                 'total_debit': round(sum(move_line_id.mapped('debit')), 2),
                 'total_credit': round(sum(move_line_id.mapped('credit')), 2),
                 'currency_id': currency_id,
-                'partner_id': partner.id}
+                'partner_id': partner.id
+            }
             partner_dict['partner_totals'] = partner_totals
         return partner_dict
 
@@ -110,8 +107,7 @@ class AccountPartnerLedger(models.TransientModel):
             option_domain = ['posted']
         elif 'draft' in options:
             option_domain = ['posted', 'draft']
-        if account is None or (
-                'Receivable' in account and 'Payable' in account):
+        if account is None or ('Receivable' in account and 'Payable' in account):
             account_type_domain.append('liability_payable')
             account_type_domain.append('asset_receivable')
         elif 'Receivable' in account:
@@ -125,103 +121,76 @@ class AccountPartnerLedger(models.TransientModel):
         previous_quarter_start = quarter_start - relativedelta(months=3)
         previous_quarter_end = quarter_start - relativedelta(days=1)
         if not partner_id:
-            partner_id = self.env['account.move.line'].search([(
-                'account_type', 'in', account_type_domain),
-                ('parent_state', 'in', option_domain)]).mapped(
-                'partner_id').ids
+            partner_id = self.env['account.move.line'].search([('account_type', 'in', account_type_domain),
+                                                               ('parent_state', 'in', option_domain)
+                                                               ]).mapped('partner_id').ids
         for partners in partner_id:
             partner = self.env['res.partner'].browse(partners).name
             if data_range:
                 if data_range == 'month':
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('parent_state', 'in', option_domain)]).filtered(
-                        lambda x: x.date.month == fields.Date.today().month)
+                    move_line_ids = self.env['account.move.line'].search([
+                        ('partner_id', '=', partners), ('account_type', 'in', account_type_domain),
+                        ('parent_state', 'in', option_domain)
+                    ]).filtered(lambda x: x.date.month == fields.Date.today().month)
                 elif data_range == 'year':
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('parent_state', 'in', option_domain)]).filtered(
-                        lambda x: x.date.year == fields.Date.today().year)
+                    move_line_ids = self.env['account.move.line'].search([
+                        ('partner_id', '=', partners), ('account_type', 'in', account_type_domain),
+                        ('parent_state', 'in', option_domain)
+                    ]).filtered(lambda x: x.date.year == fields.Date.today().year)
                 elif data_range == 'quarter':
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('date', '>=', quarter_start),
-                         ('date', '<=', quarter_end),
-                         ('parent_state', 'in', option_domain)])
+                    move_line_ids = self.env['account.move.line'].search([('partner_id', '=', partners),
+                                                                          ('account_type', 'in', account_type_domain),
+                                                                          ('date', '>=', quarter_start),
+                                                                          ('date', '<=', quarter_end),
+                                                                          ('parent_state', 'in', option_domain)])
                 elif data_range == 'last-month':
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('parent_state', 'in', option_domain)]).filtered(
-                        lambda x: x.date.month == fields.Date.today().month - 1)
+                    move_line_ids = self.env['account.move.line'].search([
+                        ('partner_id', '=', partners), ('account_type', 'in', account_type_domain),
+                        ('parent_state', 'in', option_domain)
+                    ]).filtered(lambda x: x.date.month == fields.Date.today().month - 1)
                 elif data_range == 'last-year':
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('parent_state', 'in', option_domain)]).filtered(
-                        lambda x: x.date.year == fields.Date.today().year - 1)
+                    move_line_ids = self.env['account.move.line'].search([
+                        ('partner_id', '=', partners), ('account_type', 'in', account_type_domain),
+                        ('parent_state', 'in', option_domain)
+                    ]).filtered(lambda x: x.date.year == fields.Date.today().year - 1)
                 elif data_range == 'last-quarter':
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('date', '>=', previous_quarter_start),
-                         ('date', '<=', previous_quarter_end),
-                         ('parent_state', 'in', option_domain)])
+                    move_line_ids = self.env['account.move.line'].search([('partner_id', '=', partners),
+                                                                          ('account_type', 'in', account_type_domain),
+                                                                          ('date', '>=', previous_quarter_start),
+                                                                          ('date', '<=', previous_quarter_end),
+                                                                          ('parent_state', 'in', option_domain)])
                 elif 'start_date' in data_range and 'end_date' in data_range:
-                    start_date = datetime.strptime(data_range['start_date'],
-                                                   '%Y-%m-%d').date()
-                    end_date = datetime.strptime(data_range['end_date'],
-                                                 '%Y-%m-%d').date()
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('date', '>=', start_date),
-                         ('date', '<=', end_date),
-                         ('parent_state', 'in', option_domain)])
+                    start_date = datetime.strptime(data_range['start_date'], '%Y-%m-%d').date()
+                    end_date = datetime.strptime(data_range['end_date'], '%Y-%m-%d').date()
+                    move_line_ids = self.env['account.move.line'].search([('partner_id', '=', partners),
+                                                                          ('account_type', 'in', account_type_domain),
+                                                                          ('date', '>=', start_date),
+                                                                          ('date', '<=', end_date),
+                                                                          ('parent_state', 'in', option_domain)])
                 elif 'start_date' in data_range:
-                    start_date = datetime.strptime(data_range['start_date'],
-                                                   '%Y-%m-%d').date()
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('date', '>=', start_date),
-                         ('parent_state', 'in', option_domain)])
+                    start_date = datetime.strptime(data_range['start_date'], '%Y-%m-%d').date()
+                    move_line_ids = self.env['account.move.line'].search([('partner_id', '=', partners),
+                                                                          ('account_type', 'in', account_type_domain),
+                                                                          ('date', '>=', start_date),
+                                                                          ('parent_state', 'in', option_domain)])
                 elif 'end_date' in data_range:
-                    end_date = datetime.strptime(data_range['end_date'],
-                                                 '%Y-%m-%d').date()
-                    move_line_ids = self.env['account.move.line'].search(
-                        [('partner_id', '=', partners), (
-                            'account_type', 'in',
-                            account_type_domain),
-                         ('date', '<=', end_date),
-                         ('parent_state', 'in', option_domain)])
+                    end_date = datetime.strptime(data_range['end_date'], '%Y-%m-%d').date()
+                    move_line_ids = self.env['account.move.line'].search([('partner_id', '=', partners),
+                                                                          ('account_type', 'in', account_type_domain),
+                                                                          ('date', '<=', end_date),
+                                                                          ('parent_state', 'in', option_domain)])
             else:
-                move_line_ids = self.env['account.move.line'].search(
-                    [('partner_id', '=', partners), (
-                        'account_type', 'in',
-                        account_type_domain),
-                     ('parent_state', 'in', option_domain)])
+                move_line_ids = self.env['account.move.line'].search([('partner_id', '=', partners),
+                                                                      ('account_type', 'in', account_type_domain),
+                                                                      ('parent_state', 'in', option_domain)])
             move_line_list = []
             for move_line in move_line_ids:
-                move_line_data = move_line.read(
-                    ['date', 'move_name', 'account_type', 'debit', 'credit',
-                     'date_maturity', 'account_id', 'journal_id', 'move_id',
-                     'matching_number', 'amount_currency'])
-                account_code = self.env['account.account'].browse(
-                    move_line.account_id.id).code
-                journal_code = self.env['account.journal'].browse(
-                    move_line.journal_id.id).code
+                move_line_data = move_line.read([
+                    'date', 'move_name', 'account_type', 'debit', 'credit', 'date_maturity', 'account_id', 'journal_id',
+                    'move_id', 'matching_number', 'amount_currency'
+                ])
+                account_code = self.env['account.account'].browse(move_line.account_id.id).code
+                journal_code = self.env['account.journal'].browse(move_line.journal_id.id).code
                 if account_code:
                     move_line_data[0]['jrnl'] = journal_code
                     move_line_data[0]['code'] = account_code
@@ -232,7 +201,8 @@ class AccountPartnerLedger(models.TransientModel):
                 'total_debit': round(sum(move_line_ids.mapped('debit')), 2),
                 'total_credit': round(sum(move_line_ids.mapped('credit')), 2),
                 'currency_id': currency_id,
-                'partner_id': partners}
+                'partner_id': partners
+            }
             partner_dict['partner_totals'] = partner_totals
         return partner_dict
 
@@ -260,22 +230,31 @@ class AccountPartnerLedger(models.TransientModel):
         end_date = data['filters']['end_date'] if \
             data['filters']['end_date'] else ''
         sheet = workbook.add_worksheet()
-        head = workbook.add_format(
-            {'font_size': 15, 'align': 'center', 'bold': True})
-        sub_heading = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px',
-             'border': 1, 'bg_color': '#D3D3D3',
-             'border_color': 'black'})
-        filter_head = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px',
-             'border': 1, 'bg_color': '#D3D3D3',
-             'border_color': 'black'})
-        filter_body = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px'})
-        side_heading_sub = workbook.add_format(
-            {'align': 'left', 'bold': True, 'font_size': '10px',
-             'border': 1,
-             'border_color': 'black'})
+        head = workbook.add_format({'font_size': 15, 'align': 'center', 'bold': True})
+        sub_heading = workbook.add_format({
+            'align': 'center',
+            'bold': True,
+            'font_size': '10px',
+            'border': 1,
+            'bg_color': '#D3D3D3',
+            'border_color': 'black'
+        })
+        filter_head = workbook.add_format({
+            'align': 'center',
+            'bold': True,
+            'font_size': '10px',
+            'border': 1,
+            'bg_color': '#D3D3D3',
+            'border_color': 'black'
+        })
+        filter_body = workbook.add_format({'align': 'center', 'bold': True, 'font_size': '10px'})
+        side_heading_sub = workbook.add_format({
+            'align': 'left',
+            'bold': True,
+            'font_size': '10px',
+            'border': 1,
+            'border_color': 'black'
+        })
         side_heading_sub.set_indent(1)
         txt_name = workbook.add_format({'font_size': '10px', 'border': 1})
         txt_name.set_indent(2)
@@ -290,11 +269,9 @@ class AccountPartnerLedger(models.TransientModel):
         sheet.write('B5:b4', 'Accounts', filter_head)
         sheet.write('B6:b4', 'Options', filter_head)
         if start_date or end_date:
-            sheet.merge_range('C3:G3', f"{start_date} to {end_date}",
-                              filter_body)
+            sheet.merge_range('C3:G3', f"{start_date} to {end_date}", filter_body)
         if data['filters']['partner']:
-            display_names = [partner.get('display_name', 'undefined') for
-                             partner in data['filters']['partner']]
+            display_names = [partner.get('display_name', 'undefined') for partner in data['filters']['partner']]
             display_names_str = ', '.join(display_names)
             sheet.merge_range('C4:G4', display_names_str, filter_body)
         if data['filters']['account']:
@@ -321,49 +298,29 @@ class AccountPartnerLedger(models.TransientModel):
                     sheet.write(row, col, partner, txt_name)
                     sheet.write(row, col + 1, ' ', txt_name)
                     sheet.write(row, col + 2, ' ', txt_name)
-                    sheet.merge_range(row, col + 3, row, col + 4, ' ',
-                                      txt_name)
-                    sheet.merge_range(row, col + 5, row, col + 6, ' ',
-                                      txt_name)
-                    sheet.merge_range(row, col + 7, row, col + 8,
-                                      data['total'][partner]['total_debit'],
-                                      txt_name)
-                    sheet.merge_range(row, col + 9, row, col + 10,
-                                      data['total'][partner]['total_credit'],
-                                      txt_name)
+                    sheet.merge_range(row, col + 3, row, col + 4, ' ', txt_name)
+                    sheet.merge_range(row, col + 5, row, col + 6, ' ', txt_name)
+                    sheet.merge_range(row, col + 7, row, col + 8, data['total'][partner]['total_debit'], txt_name)
+                    sheet.merge_range(row, col + 9, row, col + 10, data['total'][partner]['total_credit'], txt_name)
                     sheet.merge_range(row, col + 11, row, col + 12,
-                                      data['total'][partner]['total_debit'] -
-                                      data['total'][partner]['total_credit'],
+                                      data['total'][partner]['total_debit'] - data['total'][partner]['total_credit'],
                                       txt_name)
                     for rec in data['data'][partner]:
                         row += 1
                         sheet.write(row, col, rec[0]['date'], txt_name)
                         sheet.write(row, col + 1, rec[0]['jrnl'], txt_name)
                         sheet.write(row, col + 2, rec[0]['code'], txt_name)
-                        sheet.merge_range(row, col + 3, row, col + 4,
-                                          rec[0]['move_name'],
-                                          txt_name)
-                        sheet.merge_range(row, col + 5, row, col + 6,
-                                          rec[0]['date_maturity'],
-                                          txt_name)
-                        sheet.merge_range(row, col + 7, row, col + 8,
-                                          rec[0]['debit'], txt_name)
-                        sheet.merge_range(row, col + 9, row, col + 10,
-                                          rec[0]['credit'], txt_name)
-                        sheet.merge_range(row, col + 11, row, col + 12, ' ',
-                                          txt_name)
+                        sheet.merge_range(row, col + 3, row, col + 4, rec[0]['move_name'], txt_name)
+                        sheet.merge_range(row, col + 5, row, col + 6, rec[0]['date_maturity'], txt_name)
+                        sheet.merge_range(row, col + 7, row, col + 8, rec[0]['debit'], txt_name)
+                        sheet.merge_range(row, col + 9, row, col + 10, rec[0]['credit'], txt_name)
+                        sheet.merge_range(row, col + 11, row, col + 12, ' ', txt_name)
                 row += 1
                 sheet.merge_range(row, col, row, col + 6, 'Total', filter_head)
-                sheet.merge_range(row, col + 7, row, col + 8,
-                                  data['grand_total']['total_debit'],
-                                  filter_head)
-                sheet.merge_range(row, col + 9, row, col + 10,
-                                  data['grand_total']['total_credit'],
-                                  filter_head)
+                sheet.merge_range(row, col + 7, row, col + 8, data['grand_total']['total_debit'], filter_head)
+                sheet.merge_range(row, col + 9, row, col + 10, data['grand_total']['total_credit'], filter_head)
                 sheet.merge_range(row, col + 11, row, col + 12,
-                                  data['grand_total']['total_debit'] -
-                                  data['grand_total']['total_credit'],
-                                  filter_head)
+                                  data['grand_total']['total_debit'] - data['grand_total']['total_credit'], filter_head)
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())

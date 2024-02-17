@@ -20,19 +20,28 @@
 #
 ################################################################################
 {
-    'name': 'Odoo17 Dynamic Accounts  Reports',
-    'version': '17.0.1.0.0',
-    'category': 'Accounting',
-    'summary': "Odoo17 Dynamic Accounts  Reports, Dynamic Financial Reports with drill down and filters–"
-               "Community Edition",
-    'description': "This module creates dynamic Accounting General Ledger, Trial"
-                   "Balance, Balance Sheet, Proft and Loss, Cash Book, Partner"
-                   "Ledger, Aged Payable, Aged Receivable, Bank book and Tax"
-                   "Reports in Odoo 17 community edition, Reporting, Odoo17 Accounting, odoo17 reporting, odoo17, odoo17 accounts reports",
-    'author': 'Cybrosys Techno Solutions',
-    'company': 'Cybrosys Techno Solutions',
-    'maintainer': 'Cybrosys Techno Solutions',
-    'website': "https://www.cybrosys.com",
+    'name':
+    'Odoo17 Dynamic Accounts  Reports',
+    'version':
+    '17.0.1.0.0',
+    'category':
+    'Accounting',
+    'summary':
+    "Odoo17 Dynamic Accounts  Reports, Dynamic Financial Reports with drill down and filters–"
+    "Community Edition",
+    'description':
+    "This module creates dynamic Accounting General Ledger, Trial"
+    "Balance, Balance Sheet, Proft and Loss, Cash Book, Partner"
+    "Ledger, Aged Payable, Aged Receivable, Bank book and Tax"
+    "Reports in Odoo 17 community edition, Reporting, Odoo17 Accounting, odoo17 reporting, odoo17, odoo17 accounts reports",
+    'author':
+    'Cybrosys Techno Solutions',
+    'company':
+    'Cybrosys Techno Solutions',
+    'maintainer':
+    'Cybrosys Techno Solutions',
+    'website':
+    "https://www.cybrosys.com",
     'depends': ['base_accounting_kit'],
     'data': [
         'security/ir.model.access.csv',
@@ -74,8 +83,12 @@
         ],
     },
     'images': ['static/description/banner.png'],
-    'license': 'LGPL-3',
-    'installable': True,
-    'auto_install': False,
-    'application': False,
+    'license':
+    'LGPL-3',
+    'installable':
+    True,
+    'auto_install':
+    False,
+    'application':
+    False,
 }

@@ -43,19 +43,18 @@ class AgePayableReport(models.TransientModel):
         """
         partner_total = {}
         move_line_list = {}
-        paid = self.env['account.move.line'].search(
-            [('parent_state', '=', 'posted'),
-             ('account_type', '=', 'liability_payable'),
-             ('reconciled', '=', False)])
+        paid = self.env['account.move.line'].search([('parent_state', '=', 'posted'),
+                                                     ('account_type', '=', 'liability_payable'),
+                                                     ('reconciled', '=', False)])
         currency_id = self.env.company.currency_id.symbol
         partner_ids = paid.mapped('partner_id')
         today = fields.Date.today()
         for partner_id in partner_ids:
-            move_line_ids = paid.filtered(
-                lambda rec: rec.partner_id in partner_id)
-            move_line_data = move_line_ids.read(
-                ['name', 'move_name', 'date', 'amount_currency', 'account_id',
-                 'date_maturity', 'currency_id', 'credit', 'move_id'])
+            move_line_ids = paid.filtered(lambda rec: rec.partner_id in partner_id)
+            move_line_data = move_line_ids.read([
+                'name', 'move_name', 'date', 'amount_currency', 'account_id', 'date_maturity', 'currency_id', 'credit',
+                'move_id'
+            ])
             for val in move_line_data:
                 diffrence = (today - val['date_maturity']).days
                 val['diff0'] = val['credit'] if diffrence <= 0 else 0.0
@@ -67,18 +66,12 @@ class AgePayableReport(models.TransientModel):
             move_line_list[partner_id.name] = move_line_data
             partner_total[partner_id.name] = {
                 'credit_sum': sum(val['credit'] for val in move_line_data),
-                'diff0_sum': round(sum(val['diff0'] for val in move_line_data),
-                                   2),
-                'diff1_sum': round(sum(val['diff1'] for val in move_line_data),
-                                   2),
-                'diff2_sum': round(sum(val['diff2'] for val in move_line_data),
-                                   2),
-                'diff3_sum': round(sum(val['diff3'] for val in move_line_data),
-                                   2),
-                'diff4_sum': round(sum(val['diff4'] for val in move_line_data),
-                                   2),
-                'diff5_sum': round(sum(val['diff5'] for val in move_line_data),
-                                   2),
+                'diff0_sum': round(sum(val['diff0'] for val in move_line_data), 2),
+                'diff1_sum': round(sum(val['diff1'] for val in move_line_data), 2),
+                'diff2_sum': round(sum(val['diff2'] for val in move_line_data), 2),
+                'diff3_sum': round(sum(val['diff3'] for val in move_line_data), 2),
+                'diff4_sum': round(sum(val['diff4'] for val in move_line_data), 2),
+                'diff5_sum': round(sum(val['diff5'] for val in move_line_data), 2),
                 'currency_id': currency_id,
                 'partner_id': partner_id.id
             }
@@ -101,28 +94,25 @@ class AgePayableReport(models.TransientModel):
         partner_total = {}
         move_line_list = {}
         if date:
-            paid = self.env['account.move.line'].search(
-                [('parent_state', '=', 'posted'),
-                 ('account_type', '=', 'liability_payable'),
-                 ('reconciled', '=', False), ('date', '<=', date)])
+            paid = self.env['account.move.line'].search([('parent_state', '=', 'posted'),
+                                                         ('account_type', '=', 'liability_payable'),
+                                                         ('reconciled', '=', False), ('date', '<=', date)])
         else:
-            paid = self.env['account.move.line'].search(
-                [('parent_state', '=', 'posted'),
-                 ('account_type', '=', 'liability_payable'),
-                 ('reconciled', '=', False)])
+            paid = self.env['account.move.line'].search([('parent_state', '=', 'posted'),
+                                                         ('account_type', '=', 'liability_payable'),
+                                                         ('reconciled', '=', False)])
         currency_id = self.env.company.currency_id.symbol
         if partner:
-            partner_ids = self.env['res.partner'].search(
-                [('id', 'in', partner)])
+            partner_ids = self.env['res.partner'].search([('id', 'in', partner)])
         else:
             partner_ids = paid.mapped('partner_id')
         today = fields.Date.today()
         for partner_id in partner_ids:
-            move_line_ids = paid.filtered(
-                lambda rec: rec.partner_id in partner_id)
-            move_line_data = move_line_ids.read(
-                ['name', 'move_name', 'date', 'amount_currency', 'account_id',
-                 'date_maturity', 'currency_id', 'credit', 'move_id'])
+            move_line_ids = paid.filtered(lambda rec: rec.partner_id in partner_id)
+            move_line_data = move_line_ids.read([
+                'name', 'move_name', 'date', 'amount_currency', 'account_id', 'date_maturity', 'currency_id', 'credit',
+                'move_id'
+            ])
             for val in move_line_data:
                 diffrence = (today - val['date_maturity']).days
                 val['diff0'] = val['credit'] if diffrence <= 0 else 0.0
@@ -134,18 +124,12 @@ class AgePayableReport(models.TransientModel):
             move_line_list[partner_id.name] = move_line_data
             partner_total[partner_id.name] = {
                 'credit_sum': sum(val['credit'] for val in move_line_data),
-                'diff0_sum': round(sum(val['diff0'] for val in move_line_data),
-                                   2),
-                'diff1_sum': round(sum(val['diff1'] for val in move_line_data),
-                                   2),
-                'diff2_sum': round(sum(val['diff2'] for val in move_line_data),
-                                   2),
-                'diff3_sum': round(sum(val['diff3'] for val in move_line_data),
-                                   2),
-                'diff4_sum': round(sum(val['diff4'] for val in move_line_data),
-                                   2),
-                'diff5_sum': round(sum(val['diff5'] for val in move_line_data),
-                                   2),
+                'diff0_sum': round(sum(val['diff0'] for val in move_line_data), 2),
+                'diff1_sum': round(sum(val['diff1'] for val in move_line_data), 2),
+                'diff2_sum': round(sum(val['diff2'] for val in move_line_data), 2),
+                'diff3_sum': round(sum(val['diff3'] for val in move_line_data), 2),
+                'diff4_sum': round(sum(val['diff4'] for val in move_line_data), 2),
+                'diff5_sum': round(sum(val['diff5'] for val in move_line_data), 2),
                 'currency_id': currency_id,
                 'partner_id': partner_id.id
             }
@@ -170,22 +154,31 @@ class AgePayableReport(models.TransientModel):
         end_date = data['filters']['end_date'] if \
             data['filters']['end_date'] else ''
         sheet = workbook.add_worksheet()
-        head = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '15px'})
-        sub_heading = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px',
-             'border': 1, 'bg_color': '#D3D3D3',
-             'border_color': 'black'})
-        filter_head = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px',
-             'border': 1, 'bg_color': '#D3D3D3',
-             'border_color': 'black'})
-        filter_body = workbook.add_format(
-            {'align': 'center', 'bold': True, 'font_size': '10px'})
-        side_heading_sub = workbook.add_format(
-            {'align': 'left', 'bold': True, 'font_size': '10px',
-             'border': 1,
-             'border_color': 'black'})
+        head = workbook.add_format({'align': 'center', 'bold': True, 'font_size': '15px'})
+        sub_heading = workbook.add_format({
+            'align': 'center',
+            'bold': True,
+            'font_size': '10px',
+            'border': 1,
+            'bg_color': '#D3D3D3',
+            'border_color': 'black'
+        })
+        filter_head = workbook.add_format({
+            'align': 'center',
+            'bold': True,
+            'font_size': '10px',
+            'border': 1,
+            'bg_color': '#D3D3D3',
+            'border_color': 'black'
+        })
+        filter_body = workbook.add_format({'align': 'center', 'bold': True, 'font_size': '10px'})
+        side_heading_sub = workbook.add_format({
+            'align': 'left',
+            'bold': True,
+            'font_size': '10px',
+            'border': 1,
+            'border_color': 'black'
+        })
         side_heading_sub.set_indent(1)
         txt_name = workbook.add_format({'font_size': '10px', 'border': 1})
         txt_name.set_indent(2)
@@ -200,8 +193,7 @@ class AgePayableReport(models.TransientModel):
         if end_date:
             sheet.merge_range('C3:G3', f"{end_date}", filter_body)
         if data['filters']['partner']:
-            display_names = [partner.get('display_name', 'undefined') for
-                             partner in data['filters']['partner']]
+            display_names = [partner.get('display_name', 'undefined') for partner in data['filters']['partner']]
             display_names_str = ', '.join(display_names)
             sheet.merge_range('C4:G4', display_names_str, filter_body)
         if data:
@@ -210,10 +202,8 @@ class AgePayableReport(models.TransientModel):
                 sheet.write(6, col + 1, 'Invoice Date', sub_heading)
                 sheet.write(6, col + 2, 'Amount Currency', sub_heading)
                 sheet.write(6, col + 3, 'Currency', sub_heading)
-                sheet.merge_range(6, col + 4, 6, col + 5, 'Account',
-                                  sub_heading)
-                sheet.merge_range(6, col + 6, 6, col + 7, 'Expected Date',
-                                  sub_heading)
+                sheet.merge_range(6, col + 4, 6, col + 5, 'Account', sub_heading)
+                sheet.merge_range(6, col + 6, 6, col + 7, 'Expected Date', sub_heading)
                 sheet.write(6, col + 8, 'At Date', sub_heading)
                 sheet.write(6, col + 9, '1-30', sub_heading)
                 sheet.write(6, col + 10, '31-60', sub_heading)
@@ -228,47 +218,23 @@ class AgePayableReport(models.TransientModel):
                     sheet.write(row, col + 1, ' ', txt_name)
                     sheet.write(row, col + 2, ' ', txt_name)
                     sheet.write(row, col + 3, ' ', txt_name)
-                    sheet.merge_range(row, col + 4, row, col + 5, ' ',
-                                      txt_name)
-                    sheet.merge_range(row, col + 6, row, col + 7, ' ',
-                                      txt_name)
-                    sheet.write(row, col + 8,
-                                data['total'][move_line]['diff0_sum'],
-                                txt_name)
-                    sheet.write(row, col + 9,
-                                data['total'][move_line]['diff1_sum'],
-                                txt_name)
-                    sheet.write(row, col + 10,
-                                data['total'][move_line]['diff2_sum'],
-                                txt_name)
-                    sheet.write(row, col + 11,
-                                data['total'][move_line]['diff3_sum'],
-                                txt_name)
-                    sheet.write(row, col + 12,
-                                data['total'][move_line]['diff4_sum'],
-                                txt_name)
-                    sheet.write(row, col + 13,
-                                data['total'][move_line]['diff5_sum'],
-                                txt_name)
-                    sheet.write(row, col + 14,
-                                data['total'][move_line]['credit_sum'],
-                                txt_name)
+                    sheet.merge_range(row, col + 4, row, col + 5, ' ', txt_name)
+                    sheet.merge_range(row, col + 6, row, col + 7, ' ', txt_name)
+                    sheet.write(row, col + 8, data['total'][move_line]['diff0_sum'], txt_name)
+                    sheet.write(row, col + 9, data['total'][move_line]['diff1_sum'], txt_name)
+                    sheet.write(row, col + 10, data['total'][move_line]['diff2_sum'], txt_name)
+                    sheet.write(row, col + 11, data['total'][move_line]['diff3_sum'], txt_name)
+                    sheet.write(row, col + 12, data['total'][move_line]['diff4_sum'], txt_name)
+                    sheet.write(row, col + 13, data['total'][move_line]['diff5_sum'], txt_name)
+                    sheet.write(row, col + 14, data['total'][move_line]['credit_sum'], txt_name)
                     for rec in data['data'][move_line]:
                         row += 1
-                        sheet.write(row, col, rec['move_name'] + rec['name'],
-                                    txt_name)
-                        sheet.write(row, col + 1, rec['date'],
-                                    txt_name)
-                        sheet.write(row, col + 2, rec['amount_currency'],
-                                    txt_name)
-                        sheet.write(row, col + 3, rec['currency_id'][1],
-                                    txt_name)
-                        sheet.merge_range(row, col + 4, row, col + 5,
-                                          rec['account_id'][1],
-                                          txt_name)
-                        sheet.merge_range(row, col + 6, row, col + 7,
-                                          rec['date_maturity'],
-                                          txt_name)
+                        sheet.write(row, col, rec['move_name'] + rec['name'], txt_name)
+                        sheet.write(row, col + 1, rec['date'], txt_name)
+                        sheet.write(row, col + 2, rec['amount_currency'], txt_name)
+                        sheet.write(row, col + 3, rec['currency_id'][1], txt_name)
+                        sheet.merge_range(row, col + 4, row, col + 5, rec['account_id'][1], txt_name)
+                        sheet.merge_range(row, col + 6, row, col + 7, rec['date_maturity'], txt_name)
                         sheet.write(row, col + 8, rec['diff0'], txt_name)
                         sheet.write(row, col + 9, rec['diff1'], txt_name)
                         sheet.write(row, col + 10, rec['diff2'], txt_name)
@@ -276,29 +242,14 @@ class AgePayableReport(models.TransientModel):
                         sheet.write(row, col + 12, rec['diff4'], txt_name)
                         sheet.write(row, col + 13, rec['diff5'], txt_name)
                         sheet.write(row, col + 14, ' ', txt_name)
-                sheet.merge_range(row + 1, col, row + 1, col + 7, 'Total',
-                                  filter_head)
-                sheet.write(row + 1, col + 8,
-                            data['grand_total']['diff0_sum'],
-                            filter_head)
-                sheet.write(row + 1, col + 9,
-                            data['grand_total']['diff1_sum'],
-                            filter_head)
-                sheet.write(row + 1, col + 10,
-                            data['grand_total']['diff2_sum'],
-                            filter_head)
-                sheet.write(row + 1, col + 11,
-                            data['grand_total']['diff3_sum'],
-                            filter_head)
-                sheet.write(row + 1, col + 12,
-                            data['grand_total']['diff4_sum'],
-                            filter_head)
-                sheet.write(row + 1, col + 13,
-                            data['grand_total']['diff5_sum'],
-                            filter_head)
-                sheet.write(row + 1, col + 14,
-                            data['grand_total']['total_credit'],
-                            filter_head)
+                sheet.merge_range(row + 1, col, row + 1, col + 7, 'Total', filter_head)
+                sheet.write(row + 1, col + 8, data['grand_total']['diff0_sum'], filter_head)
+                sheet.write(row + 1, col + 9, data['grand_total']['diff1_sum'], filter_head)
+                sheet.write(row + 1, col + 10, data['grand_total']['diff2_sum'], filter_head)
+                sheet.write(row + 1, col + 11, data['grand_total']['diff3_sum'], filter_head)
+                sheet.write(row + 1, col + 12, data['grand_total']['diff4_sum'], filter_head)
+                sheet.write(row + 1, col + 13, data['grand_total']['diff5_sum'], filter_head)
+                sheet.write(row + 1, col + 14, data['grand_total']['total_credit'], filter_head)
         workbook.close()
         output.seek(0)
         response.stream.write(output.read())

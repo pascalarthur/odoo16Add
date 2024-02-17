@@ -9,7 +9,8 @@
     "author": "BrowseInfo",
     "price": 29.00,
     'currency': "EUR",
-    'summary': 'point of sales multi currency payment POS Multiple Currency payment pos payment different currency allow multi currency payment on POS MultiCurrency payment in Point of Sale MultiCurrency payment pos pay order with different two currency pos Payment Multi Currency payment on pos',
+    'summary':
+    'point of sales multi currency payment POS Multiple Currency payment pos payment different currency allow multi currency payment on POS MultiCurrency payment in Point of Sale MultiCurrency payment pos pay order with different two currency pos Payment Multi Currency payment on pos',
     "description": """   
 	odoo point of sale multi currency payment pos multicurrency payment pos multi currency payment 
 	Odoo pos support multiple currency payment multiple currency in pos

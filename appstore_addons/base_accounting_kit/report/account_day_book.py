@@ -56,15 +56,13 @@ class DayBookPdfReport(models.AbstractModel):
                 LEFT JOIN res_partner p ON (l.partner_id=p.id)
                 JOIN account_journal j ON (l.journal_id=j.id)
                 JOIN account_account acc ON (l.account_id = acc.id) 
-                WHERE l.account_id IN %s AND l.journal_id IN %s '''
-               + target_move + ''' AND l.date = %s
+                WHERE l.account_id IN %s AND l.journal_id IN %s ''' + target_move + ''' AND l.date = %s
                 GROUP BY l.id, l.account_id, l.date,
                      j.code, l.currency_id, l.amount_currency, l.ref, 
                      l.name, m.name, c.symbol, p.name , acc.name
                      ORDER BY l.date DESC
         ''')
-        params = (
-        tuple(accounts.ids), tuple(form_data['journal_ids']), pass_date)
+        params = (tuple(accounts.ids), tuple(form_data['journal_ids']), pass_date)
         cr.execute(sql, params)
         data = cr.dictfetchall()
         res = {}
@@ -82,26 +80,23 @@ class DayBookPdfReport(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
-            raise UserError(
-                _("Form content is missing, this report cannot be printed."))
+            raise UserError(_("Form content is missing, this report cannot be printed."))
         model = self.env.context.get('active_model')
-        docs = self.env[model].browse(
-            self.env.context.get('active_ids', []))
+        docs = self.env[model].browse(self.env.context.get('active_ids', []))
         form_data = data['form']
         codes = []
         if data['form'].get('journal_ids', False):
-            codes = [journal.code for journal in
-                     self.env['account.journal'].search(
-                         [('id', 'in', data['form']['journal_ids'])])]
+            codes = [
+                journal.code
+                for journal in self.env['account.journal'].search([('id', 'in', data['form']['journal_ids'])])
+            ]
         active_acc = data['form']['account_ids']
         accounts = self.env['account.account'].search(
             [('id', 'in', active_acc)]) if data['form']['account_ids'] else \
             self.env['account.account'].search([])
 
-        date_start = datetime.strptime(form_data['date_from'],
-                                       '%Y-%m-%d').date()
-        date_end = datetime.strptime(form_data['date_to'],
-                                     '%Y-%m-%d').date()
+        date_start = datetime.strptime(form_data['date_from'], '%Y-%m-%d').date()
+        date_end = datetime.strptime(form_data['date_to'], '%Y-%m-%d').date()
         days = date_end - date_start
         dates = []
         record = []
@@ -109,8 +104,7 @@ class DayBookPdfReport(models.AbstractModel):
             dates.append(date_start + timedelta(days=i))
         for head in dates:
             pass_date = str(head)
-            accounts_res = self.with_context(
-                data['form'].get('used_context', {}))._get_account_move_entry(
+            accounts_res = self.with_context(data['form'].get('used_context', {}))._get_account_move_entry(
                 accounts, form_data, pass_date)
             if accounts_res['lines']:
                 record.append({

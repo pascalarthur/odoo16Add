@@ -2,7 +2,6 @@ from collections import defaultdict
 from ..utils.model_utils import default_name
 from odoo import models, fields, api, exceptions
 
-
 META_SALE_STATES = [
     ('draft', 'Draft'),
     ('transport', 'Transport'),
@@ -31,29 +30,31 @@ class MetaSaleOrder(models.Model):
     _name = 'meta.sale.order'
     _description = 'Meta Sale Order'
 
-    name = fields.Char(
-        string="Meta Sale Reference",
-        required=True, copy=False, readonly=False,
-        index='trigram',
-        default=lambda self: default_name(self, prefix='MS'))
+    name = fields.Char(string="Meta Sale Reference", required=True, copy=False, readonly=False, index='trigram',
+                       default=lambda self: default_name(self, prefix='MS'))
 
     state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft')
     partner_id = fields.Many2one('res.partner', string='Customer')
 
-    transport_product_id = fields.Many2one('product.template', string='Transport Route', domain=[('type', '=', 'transport')], required=True)
+    transport_product_id = fields.Many2one('product.template', string='Transport Route',
+                                           domain=[('type', '=', 'transport')], required=True)
     transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist', required=True)
-    transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id', string='Transport Bids with Backloads')
-    transport_pricelist_item_ids_no_backload = fields.One2many('product.pricelist.item', compute='_compute_transport_pricelist_item_ids_no_backload', string='Transport Bids')
+    transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id',
+                                                   string='Transport Bids with Backloads')
+    transport_pricelist_item_ids_no_backload = fields.One2many(
+        'product.pricelist.item', compute='_compute_transport_pricelist_item_ids_no_backload', string='Transport Bids')
     container_demand = fields.Integer(string='Container Demand', compute='_compute_container_demand')
 
     transport_pricelist_backloads_count = fields.Integer(compute='_compute_transport_pricelist_backloads_count')
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='All Trucks')
-    truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload', readonly=False)
+    truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload',
+                                            readonly=False)
 
     sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
-    invoice_ids = fields.Many2many('account.move', string='Invoices', related='sale_order_ids.invoice_ids', readonly=True)
+    invoice_ids = fields.Many2many('account.move', string='Invoices', related='sale_order_ids.invoice_ids',
+                                   readonly=True)
 
     start_date = fields.Date(string='Start Date', required=True)
     end_date = fields.Date(string='End Date', required=True)
@@ -70,12 +71,13 @@ class MetaSaleOrder(models.Model):
     def _compute_container_demand(self):
         for record in self:
             total_weight = sum(line.quantity * line.product_id.box_weight for line in record.order_line_ids)
-            record.container_demand = -(-total_weight // 35000) # ceil
+            record.container_demand = -(-total_weight // 35000)  # ceil
 
     @api.depends('transport_pricelist_item_ids')
     def _compute_transport_pricelist_item_ids_no_backload(self):
         for record in self:
-            record.transport_pricelist_item_ids_no_backload = record.transport_pricelist_item_ids.filtered(lambda t: not t.is_backload)
+            record.transport_pricelist_item_ids_no_backload = record.transport_pricelist_item_ids.filtered(
+                lambda t: not t.is_backload)
 
     @api.model
     def get_warehouse(self, warehouse_id):
@@ -105,17 +107,14 @@ class MetaSaleOrder(models.Model):
                 'default_meta_sale_order_id': self.id,
                 'default_partner_ids': logistic_partner_ids,
                 'default_container_demand': self.container_demand,
-
                 'default_start_date': self.start_date,
                 'default_end_date': self.end_date,
-
                 'default_route_start_street': start_warehouse_id.partner_id.street,
                 'default_route_start_street2': start_warehouse_id.partner_id.street2,
                 'default_route_start_zip': start_warehouse_id.partner_id.zip,
                 'default_route_start_city': start_warehouse_id.partner_id.city,
                 'default_route_start_state_id': start_warehouse_id.partner_id.state_id.id,
                 'default_route_start_country_id': start_warehouse_id.partner_id.country_id.id,
-
                 'default_route_end_street': destination_warehouse_id.partner_id.street,
                 'default_route_end_street2': destination_warehouse_id.partner_id.street2,
                 'default_route_end_zip': destination_warehouse_id.partner_id.zip,
@@ -140,7 +139,7 @@ class MetaSaleOrder(models.Model):
             if product.box_weight == 0.0:
                 raise exceptions.UserError(f"Please specify a box weight for product: {product.display_name}")
 
-            required_quantity = order_line.quantity # Assuming 'quantity' is the correct field
+            required_quantity = order_line.quantity  # Assuming 'quantity' is the correct field
             allocated_quantity = 0.0
             truck_ids = self.truck_ids_no_backload.sorted(key=lambda t: t.price_per_kg)
             for truck_id in truck_ids:
@@ -148,13 +147,15 @@ class MetaSaleOrder(models.Model):
                     break
 
                 # Assuming 'max_load' represents the capacity and there's a field to track allocated capacity
-                available_capacity = truck_id.max_load - sum(line.quantity * line.product_id.box_weight for line in truck_id.load_line_ids)
+                available_capacity = truck_id.max_load - sum(line.quantity * line.product_id.box_weight
+                                                             for line in truck_id.load_line_ids)
                 available_capacity = available_capacity // product.box_weight  # Convert to product quantity
 
                 # It is only worthwile to pick up 10 boxes or more
                 if available_capacity > 10:
                     quantity_to_allocate = min(required_quantity - allocated_quantity, available_capacity)
-                    truck_id.allocate_product(product, order_line.unit_price, order_line.location_id, quantity_to_allocate)
+                    truck_id.allocate_product(product, order_line.unit_price, order_line.location_id,
+                                              quantity_to_allocate)
                     allocated_quantity += quantity_to_allocate
 
         self.ensure_one()

@@ -6,11 +6,9 @@ from odoo import models, fields, api
 class ShProductTemplate(models.Model):
     _inherit = 'product.template'
 
-    sh_bundle_product_ids = fields.One2many(
-        'sh.product.bundle', 'sh_bundle_id', string="Bundle Line")
+    sh_bundle_product_ids = fields.One2many('sh.product.bundle', 'sh_bundle_id', string="Bundle Line")
     sh_is_bundle = fields.Boolean('Is Bundled ?')
-    sh_amount_total = fields.Monetary(
-        string='Total', store=True, readonly=True, compute='_amount_all')
+    sh_amount_total = fields.Monetary(string='Total', store=True, readonly=True, compute='_amount_all')
 
     @api.depends('sh_bundle_product_ids.sh_price_subtotal')
     def _amount_all(self):
@@ -32,8 +30,7 @@ class ShProductTemplate(models.Model):
         standard_price = 0.0
         if self.sh_bundle_product_ids:
             for bundle_product in self.sh_bundle_product_ids:
-                standard_price += (bundle_product.sh_cost_price *
-                                   bundle_product.sh_qty)
+                standard_price += (bundle_product.sh_cost_price * bundle_product.sh_qty)
         self.standard_price = standard_price
 
 
@@ -51,8 +48,7 @@ class Product(models.Model):
         standard_price = 0.0
         if self.sh_bundle_product_ids:
             for bundle_product in self.sh_bundle_product_ids:
-                standard_price += (bundle_product.sh_cost_price *
-                                   bundle_product.sh_qty)
+                standard_price += (bundle_product.sh_cost_price * bundle_product.sh_qty)
         self.standard_price = standard_price
 
 
@@ -67,8 +63,7 @@ class ShBundleProduct(models.Model):
     #     return [('id', '!=', self.sh_bundle_id.product_variant_id.id)]
 
     sh_bundle_id = fields.Many2one('product.template', 'Bundle ID')
-    sh_product_id = fields.Many2one(
-        'product.product', 'Product', required=True)
+    sh_product_id = fields.Many2one('product.product', 'Product', required=True)
     sh_qty = fields.Float("Quantity")
     sh_uom = fields.Many2one('uom.uom', 'Unit of Measure', required=True)
     sh_price_unit = fields.Float('Unit Price')

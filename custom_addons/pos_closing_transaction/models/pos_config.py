@@ -6,9 +6,8 @@ class PosConfig(models.Model):
     _inherit = 'pos.config'
 
     def deposit_money_in_safe(self):
-        session = self.env['pos.session'].search(
-            [('config_id', '=', self.id), ('state', '=', 'closed')],
-            order="stop_at desc", limit=1)
+        session = self.env['pos.session'].search([('config_id', '=', self.id), ('state', '=', 'closed')],
+                                                 order="stop_at desc", limit=1)
 
         return {
             'name': 'Deposit Money',

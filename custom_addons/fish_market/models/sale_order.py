@@ -15,7 +15,6 @@ class SaleOrder(models.Model):
     driver_name = fields.Char('Driver Name')
     telephone_number = fields.Char('Telephone Number')
 
-
     @api.model
     def check_and_delete_order(self, order_id, creation_date):
         order = self.browse(order_id)

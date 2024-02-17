@@ -1,6 +1,7 @@
 from odoo import models, fields
 import secrets
 
+
 class AccessToken(models.Model):
     _name = 'access.token'
     _description = 'Access Token'
@@ -15,8 +16,6 @@ class AccessToken(models.Model):
     token = fields.Char('Token', required=True, default=lambda self: secrets.token_urlsafe(16))
     is_used = fields.Boolean('Used', default=False)
 
-    detailed_type = fields.Selection([
-        ('consu', 'Consumable'),
-        ('service', 'Service'),
-        ('product', 'Storable Product'),
-        ('transport', 'Transport')], string='Product Type', default='product', required=True)
+    detailed_type = fields.Selection([('consu', 'Consumable'), ('service', 'Service'), ('product', 'Storable Product'),
+                                      ('transport', 'Transport')], string='Product Type', default='product',
+                                     required=True)

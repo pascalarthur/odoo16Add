@@ -5,7 +5,7 @@ from odoo.addons.payment import utils as payment_utils
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
-    
+
     @api.model
     def _get_invoice_in_payment_state(self):
         ''' Hook to give the state when the invoice becomes fully paid. This is necessary because the users working

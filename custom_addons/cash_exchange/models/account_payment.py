@@ -1,13 +1,17 @@
 from odoo import api, models, fields
 from odoo.exceptions import UserError
 
+
 class AccountPayment(models.Model):
     _inherit = "account.payment"
 
     available_destination_journal_ids = fields.Many2many('account.journal')
-    foreign_currency_id = fields.Many2one('res.currency', string="Foreign Currency", compute='_compute_foreign_currency_id', store=True, readonly=False, precompute=True)
+    foreign_currency_id = fields.Many2one('res.currency', string="Foreign Currency",
+                                          compute='_compute_foreign_currency_id', store=True, readonly=False,
+                                          precompute=True)
 
-    amount_converted = fields.Monetary(string='Amount Converted', currency_field="foreign_currency_id", store=True, readonly=True, compute='_compute_amount_converted')
+    amount_converted = fields.Monetary(string='Amount Converted', currency_field="foreign_currency_id", store=True,
+                                       readonly=True, compute='_compute_amount_converted')
 
     manual_currency_rate_active = fields.Boolean('Apply Manual Exchange')
     manual_currency_rate = fields.Float('Rate', digits=(12, 6), default=1.0)
@@ -63,7 +67,9 @@ class AccountPayment(models.Model):
         self.ensure_one()
         if self.is_internal_transfer:
             if self.journal_id.currency_id.id != self.destination_journal_id.currency_id.id:
-                if self.company_id.currency_id.id not in [self.journal_id.currency_id.id, self.destination_journal_id.currency_id.id]:
+                if self.company_id.currency_id.id not in [
+                        self.journal_id.currency_id.id, self.destination_journal_id.currency_id.id
+                ]:
                     raise UserError("One of the currencies must be in the company currency.")
                 if self.currency_id.id == self.company_id.currency_id.id:
                     raise UserError("The currency of the payment must be different from the currency of the company.")
@@ -86,9 +92,10 @@ class AccountPayment(models.Model):
         write_off_line_vals = write_off_line_vals or {}
 
         if not self.outstanding_account_id:
-            raise UserError(_(
-                "You can't create a new payment without an outstanding payments/receipts account set either on the company or the %s payment method in the %s journal.",
-                self.payment_method_line_id.name, self.journal_id.display_name))
+            raise UserError(
+                _(
+                    "You can't create a new payment without an outstanding payments/receipts account set either on the company or the %s payment method in the %s journal.",
+                    self.payment_method_line_id.name, self.journal_id.display_name))
 
         # Compute amounts.
         write_off_line_vals_list = write_off_line_vals or []

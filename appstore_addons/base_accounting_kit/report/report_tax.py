@@ -31,8 +31,7 @@ class ReportTax(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
         if not data.get('form'):
-            raise UserError(
-                _("Form content is missing, this report cannot be printed."))
+            raise UserError(_("Form content is missing, this report cannot be printed."))
         return {
             'data': data['form'],
             'lines': self.get_lines(data.get('form')),
@@ -58,8 +57,7 @@ class ReportTax(models.AbstractModel):
     def _compute_from_amls(self, options, taxes):
         # compute the tax amount
         sql = self._sql_from_amls_one()
-        tables, where_clause, where_params = self.env[
-            'account.move.line']._query_get()
+        tables, where_clause, where_params = self.env['account.move.line']._query_get()
         query = sql % (tables, where_clause)
         self.env.cr.execute(query, where_params)
         results = self.env.cr.fetchall()
@@ -78,35 +76,24 @@ class ReportTax(models.AbstractModel):
     @api.model
     def get_lines(self, options):
         taxes = {}
-        for tax in self.env['account.tax'].search(
-                [('type_tax_use', '!=', 'none')]):
+        for tax in self.env['account.tax'].search([('type_tax_use', '!=', 'none')]):
             if tax.children_tax_ids:
                 for child in tax.children_tax_ids:
                     if child.type_tax_use != 'none':
                         continue
-                    taxes[child.id] = {'tax': 0, 'net': 0, 'name': child.name,
-                                       'type': tax.type_tax_use}
+                    taxes[child.id] = {'tax': 0, 'net': 0, 'name': child.name, 'type': tax.type_tax_use}
             else:
-                taxes[tax.id] = {'tax': 0, 'net': 0, 'name': tax.name,
-                                 'type': tax.type_tax_use}
+                taxes[tax.id] = {'tax': 0, 'net': 0, 'name': tax.name, 'type': tax.type_tax_use}
         if options['date_from'] and not options['date_to']:
-            self.with_context(date_from=options['date_from'],
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
+            self.with_context(date_from=options['date_from'], strict_range=True)._compute_from_amls(options, taxes)
         elif options['date_to'] and not options['date_from']:
-            self.with_context(date_to=options['date_to'],
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
+            self.with_context(date_to=options['date_to'], strict_range=True)._compute_from_amls(options, taxes)
         elif options['date_from'] and options['date_to']:
-            self.with_context(date_from=options['date_from'],
-                              date_to=options['date_to'],
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
+            self.with_context(date_from=options['date_from'], date_to=options['date_to'],
+                              strict_range=True)._compute_from_amls(options, taxes)
         else:
             date_to = str(datetime.today().date())
-            self.with_context(date_to=date_to,
-                              strict_range=True)._compute_from_amls(options,
-                                                                    taxes)
+            self.with_context(date_to=date_to, strict_range=True)._compute_from_amls(options, taxes)
         groups = dict((tp, []) for tp in ['sale', 'purchase'])
         for tax in taxes.values():
             if tax['tax']:

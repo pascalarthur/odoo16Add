@@ -46,24 +46,29 @@ class RedistributionWizard(models.TransientModel):
     meta_sale_order_id = fields.Many2one('meta.sale.order', string="Meta Sale Order", readonly=True)
     load_line_ids = fields.One2many(related='truck_id.load_line_ids')
 
-    truck_redistribution_lines = fields.One2many(
-        'truck.redistribution.wizard.line', 'wizard_id', string='Redistribution Trucks'
-    )
+    truck_redistribution_lines = fields.One2many('truck.redistribution.wizard.line', 'wizard_id',
+                                                 string='Redistribution Trucks')
 
-    location_redistribution_lines = fields.One2many(
-        'location.redistribution.wizard.line', 'wizard_id', string='Redistribution Locations'
-    )
+    location_redistribution_lines = fields.One2many('location.redistribution.wizard.line', 'wizard_id',
+                                                    string='Redistribution Locations')
 
     def confirm_action(self):
         self.ensure_one()
 
         for load_line in self.truck_id.load_line_ids:
-            loaded_quantity = sum(self.truck_id.load_line_ids.filtered(lambda l: l.product_id == load_line.product_id).mapped('quantity'))
-            desired_unload_quantity = sum(self.location_redistribution_lines.filtered(lambda l: l.product_id == load_line.product_id).mapped('quantity'))
-            desired_unload_quantity += sum(self.truck_redistribution_lines.filtered(lambda l: l.product_id == load_line.product_id).mapped('quantity'))
+            loaded_quantity = sum(
+                self.truck_id.load_line_ids.filtered(lambda l: l.product_id == load_line.product_id).mapped('quantity'))
+            desired_unload_quantity = sum(
+                self.location_redistribution_lines.filtered(lambda l: l.product_id == load_line.product_id).mapped(
+                    'quantity'))
+            desired_unload_quantity += sum(
+                self.truck_redistribution_lines.filtered(lambda l: l.product_id == load_line.product_id).mapped(
+                    'quantity'))
 
             if desired_unload_quantity > loaded_quantity:
-                raise exceptions.UserError(f"The quantity of product {load_line.product_id.name} to be unloaded is greater than the quantity loaded")
+                raise exceptions.UserError(
+                    f"The quantity of product {load_line.product_id.name} to be unloaded is greater than the quantity loaded"
+                )
 
         StockPicking = self.env['stock.picking']
         StockMove = self.env['stock.move']
@@ -78,7 +83,8 @@ class RedistributionWizard(models.TransientModel):
                         source_load_line.unlink()
 
                 # Increase quantity in target truck
-                target_load_line = truck_line.target_truck_id.load_line_ids.filtered(lambda l: l.product_id == truck_line.product_id)
+                target_load_line = truck_line.target_truck_id.load_line_ids.filtered(
+                    lambda l: l.product_id == truck_line.product_id)
                 if target_load_line:
                     target_load_line.quantity += truck_line.quantity
                 else:

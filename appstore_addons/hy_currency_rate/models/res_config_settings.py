@@ -27,12 +27,8 @@ class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
     module_hy_currency_rate = fields.Boolean(string="Automatic Currency Rates")
-    currency_interval_period = fields.Selection(
-        related="company_id.currency_interval_period", readonly=False
-    )
-    curr_next_execution_date = fields.Date(
-        related="company_id.curr_next_execution_date", readonly=False
-    )
+    currency_interval_period = fields.Selection(related="company_id.currency_interval_period", readonly=False)
+    curr_next_execution_date = fields.Date(related="company_id.curr_next_execution_date", readonly=False)
 
     @api.onchange("currency_interval_period")
     def onchange_currency_interval_period(self):

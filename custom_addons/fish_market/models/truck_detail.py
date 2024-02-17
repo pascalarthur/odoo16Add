@@ -1,8 +1,7 @@
 from odoo import models, fields, api, _
 from ..utils.model_utils import default_name
 
-
-TRUCK_STATES =[
+TRUCK_STATES = [
     ('offer', 'Offer'),
     ('confirmed', 'Confirmed'),
 ]
@@ -19,22 +18,15 @@ class TruckLoadLine(models.Model):
     quantity = fields.Float(string='Quantity', default=1.0)
 
 
-
 class TruckDetail(models.Model):
     _name = 'truck.detail'
     _description = 'Truck Detail'
 
-    name = fields.Char(
-        string="Truck Ref",
-        required=True, copy=False, readonly=False,
-        index='trigram',
-        default=lambda self: default_name(self, prefix='TR'))
+    name = fields.Char(string="Truck Ref", required=True, copy=False, readonly=False, index='trigram',
+                       default=lambda self: default_name(self, prefix='TR'))
 
-    state = fields.Selection(
-        selection=TRUCK_STATES,
-        string="Status",
-        readonly=True, copy=False, index=True,
-        default='offer')
+    state = fields.Selection(selection=TRUCK_STATES, string="Status", readonly=True, copy=False, index=True,
+                             default='offer')
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     partner_id = fields.Many2one('res.partner', string="Transporter")
@@ -112,9 +104,11 @@ class TruckDetail(models.Model):
 
     def action_handle_overload(self):
         truck_redistribution = self.env['redistribution.wizard'].create({
-                'truck_id': self.id,
-                'meta_sale_order_id': self.meta_sale_order_id.id,
-            })
+            'truck_id':
+            self.id,
+            'meta_sale_order_id':
+            self.meta_sale_order_id.id,
+        })
 
         return {
             'type': 'ir.actions.act_window',
@@ -125,4 +119,3 @@ class TruckDetail(models.Model):
             'target': 'new',
             'context': {},
         }
-

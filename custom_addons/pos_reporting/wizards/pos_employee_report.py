@@ -3,6 +3,7 @@ import base64
 from io import BytesIO
 import xlsxwriter
 
+
 class POSEmployeeReportWizard(models.TransientModel):
     _name = 'pos.employee.report.wizard'
     _description = 'POS Employee Report Wizard'
@@ -49,11 +50,9 @@ class POSEmployeeReportWizard(models.TransientModel):
             row += 1
 
         # Fetch Sales orders
-        sales_orders = self.env['sale.order'].search([
-            ('date_order', '>=', self.start_date),
-            ('date_order', '<=', self.end_date),
-            ('user_id', '=', self.employee_id.user_id.id)
-        ])
+        sales_orders = self.env['sale.order'].search([('date_order', '>=', self.start_date),
+                                                      ('date_order', '<=', self.end_date),
+                                                      ('user_id', '=', self.employee_id.user_id.id)])
 
         # Write Sales orders to Excel
         for order in sales_orders:
@@ -70,7 +69,11 @@ class POSEmployeeReportWizard(models.TransientModel):
         self.file_name = f'Sales_Report_{self.start_date}_{self.end_date}_{self.employee_id.user_id.name}.xlsx'
 
         return {
-            'type': 'ir.actions.act_url',
-            'url': '/web/content/?model=pos.employee.report.wizard&id=%s&field=excel_file&filename_field=file_name&download=true' % self.id,
-            'target': 'self',
+            'type':
+            'ir.actions.act_url',
+            'url':
+            '/web/content/?model=pos.employee.report.wizard&id=%s&field=excel_file&filename_field=file_name&download=true'
+            % self.id,
+            'target':
+            'self',
         }

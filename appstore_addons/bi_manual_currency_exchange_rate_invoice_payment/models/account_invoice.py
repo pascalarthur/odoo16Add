@@ -5,6 +5,7 @@ from functools import lru_cache
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 
+
 class account_invoice_line(models.Model):
     _inherit = 'account.move.line'
 
@@ -22,17 +23,19 @@ class account_invoice_line(models.Model):
             else:
                 document_type = 'other'
 
-            line.price_unit = line.product_id.with_context(manual_currency_rate_active=manual_currency_rate_active,manual_currency_rate=manual_currency_rate)._get_tax_included_unit_price(
-                line.move_id.company_id,
-                line.move_id.currency_id,
-                line.move_id.date,
-                document_type,
-                fiscal_position=line.move_id.fiscal_position_id,
-                product_uom=line.product_uom_id,
-            )
+            line.price_unit = line.product_id.with_context(
+                manual_currency_rate_active=manual_currency_rate_active,
+                manual_currency_rate=manual_currency_rate)._get_tax_included_unit_price(
+                    line.move_id.company_id,
+                    line.move_id.currency_id,
+                    line.move_id.date,
+                    document_type,
+                    fiscal_position=line.move_id.fiscal_position_id,
+                    product_uom=line.product_uom_id,
+                )
 
-    @api.depends('currency_id', 'company_id', 'move_id.date', 
-        'move_id.manual_currency_rate_active', 'move_id.manual_currency_rate')
+    @api.depends('currency_id', 'company_id', 'move_id.date', 'move_id.manual_currency_rate_active',
+                 'move_id.manual_currency_rate')
     def _compute_currency_rate(self):
         @lru_cache()
         def get_rate(from_currency, to_currency, company, date):
@@ -42,6 +45,7 @@ class account_invoice_line(models.Model):
                 company=company,
                 date=date,
             )
+
         for line in self:
             if line.move_id.manual_currency_rate_active:
                 line.currency_rate = line.move_id.manual_currency_rate or 1.0
@@ -53,7 +57,6 @@ class account_invoice_line(models.Model):
                     date=line.move_id.date or fields.Date.context_today(line),
                 )
 
-    
     @api.model
     def _prepare_reconciliation_single_partial(self, debit_values, credit_values, shadowed_aml_values=None):
         """ Prepare the values to create an account.partial.reconcile later when reconciling the dictionaries passed
@@ -69,6 +72,7 @@ class account_invoice_line(models.Model):
             * partial_values:   The newly computed values for the partial.
             * exchange_values:  The values to create an exchange difference linked to this partial.
         """
+
         # ==== Determine the currency in which the reconciliation will be done ====
         # In this part, we retrieve the residual amounts, check if they are zero or not and determine in which
         # currency and at which rate the reconciliation will be done.
@@ -82,12 +86,13 @@ class account_invoice_line(models.Model):
             'debit_values': debit_values,
             'credit_values': credit_values,
         }
-        
-        if debit_values.get('record') and debit_values['record'].move_id.manual_currency_rate_active and debit_values['record'].move_id.manual_currency_rate:
+
+        if debit_values.get('record') and debit_values['record'].move_id.manual_currency_rate_active and debit_values[
+                'record'].move_id.manual_currency_rate:
             debit_values['manual_currency_rate'] = debit_values['record'].move_id.manual_currency_rate
-        if credit_values.get('record') and credit_values['record'].move_id.manual_currency_rate_active and credit_values['record'].move_id.manual_currency_rate:
+        if credit_values.get('record') and credit_values[
+                'record'].move_id.manual_currency_rate_active and credit_values['record'].move_id.manual_currency_rate:
             credit_values['manual_currency_rate'] = credit_values['record'].move_id.manual_currency_rate
-        
 
         debit_aml = debit_values['aml']
         credit_aml = credit_values['aml']
@@ -318,8 +323,6 @@ class account_invoice_line(models.Model):
         return res
 
 
-
-   
 class account_invoice(models.Model):
     _inherit = 'account.move'
 
@@ -331,8 +334,7 @@ class account_invoice(models.Model):
         for record in self:
             if record.manual_currency_rate_active:
                 if record.manual_currency_rate == 0:
-                    raise UserError(
-                        _('Exchange Rate Field is required , Please fill that.'))
+                    raise UserError(_('Exchange Rate Field is required , Please fill that.'))
 
     @api.onchange('manual_currency_rate_active', 'currency_id')
     def check_currency_id(self):
@@ -340,9 +342,9 @@ class account_invoice(models.Model):
             if self.currency_id == self.company_id.currency_id:
                 self.manual_currency_rate_active = False
                 raise UserError(
-                    _('Company currency and invoice currency same, You can not add manual Exchange rate for same currency.'))
+                    _('Company currency and invoice currency same, You can not add manual Exchange rate for same currency.'
+                      ))
 
-    
     def _compute_payments_widget_to_reconcile_info(self):
         for move in self:
             move.invoice_outstanding_credits_debits_widget = False
@@ -361,7 +363,9 @@ class account_invoice(models.Model):
                 ('parent_state', '=', 'posted'),
                 ('partner_id', '=', move.commercial_partner_id.id),
                 ('reconciled', '=', False),
-                '|', ('amount_residual', '!=', 0.0), ('amount_residual_currency', '!=', 0.0),
+                '|',
+                ('amount_residual', '!=', 0.0),
+                ('amount_residual_currency', '!=', 0.0),
             ]
 
             payments_widget_vals = {'outstanding': True, 'content': [], 'move_id': move.id}
@@ -409,14 +413,14 @@ class account_invoice(models.Model):
             move.invoice_outstanding_credits_debits_widget = payments_widget_vals
             move.invoice_has_outstanding = True
 
+
 class ProductProduct(models.Model):
     _inherit = "product.product"
 
     @api.model
-    def _get_tax_included_unit_price(self, company, currency, document_date, document_type,
-            is_refund_document=False, product_uom=None, product_currency=None,
-            product_price_unit=None, product_taxes=None, fiscal_position=None
-        ):
+    def _get_tax_included_unit_price(self, company, currency, document_date, document_type, is_refund_document=False,
+                                     product_uom=None, product_currency=None, product_price_unit=None,
+                                     product_taxes=None, fiscal_position=None):
         """ Helper to get the price unit from different models.
             This is needed to compute the same unit price in different models (sale order, account move, etc.) with same parameters.
         """

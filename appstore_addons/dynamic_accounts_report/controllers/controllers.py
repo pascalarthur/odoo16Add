@@ -26,8 +26,7 @@ from odoo.tools import html_escape
 
 
 class XLSXReportController(http.Controller):
-    @http.route('/xlsx_report', type='http', auth='user', methods=['POST'],
-                csrf=False)
+    @http.route('/xlsx_report', type='http', auth='user', methods=['POST'], csrf=False)
     def get_report_xlsx(self, model, data, output_format, report_name):
         """Generate an XLSX report based on the provided data and return it as
         a response.
@@ -49,21 +48,12 @@ class XLSXReportController(http.Controller):
         try:
             if output_format == 'xlsx':
                 response = request.make_response(
-                    None,
-                    headers=[
-                        ('Content-Type', 'application/vnd.ms-excel'),
-                        ('Content-Disposition',
-                         content_disposition(report_name + '.xlsx'))
-                    ]
-                )
+                    None, headers=[('Content-Type', 'application/vnd.ms-excel'),
+                                   ('Content-Disposition', content_disposition(report_name + '.xlsx'))])
                 report_obj.get_xlsx_report(data, response, report_name)
             response.set_cookie('fileToken', token)
             return response
         except Exception as e:
             se = http.serialize_exception(e)
-            error = {
-                'code': 200,
-                'message': 'Odoo Server Error',
-                'data': se
-            }
+            error = {'code': 200, 'message': 'Odoo Server Error', 'data': se}
             return request.make_response(html_escape(json.dumps(error)))

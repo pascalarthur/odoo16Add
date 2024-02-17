@@ -30,18 +30,14 @@ class AccountRegisterPayments(models.TransientModel):
 
     bank_reference = fields.Char(string="Bank Reference", copy=False)
     cheque_reference = fields.Char(string="Cheque Reference", copy=False)
-    effective_date = fields.Date('Effective Date',
-                                 help='Effective date of PDC', copy=False,
-                                 default=False)
+    effective_date = fields.Date('Effective Date', help='Effective date of PDC', copy=False, default=False)
 
     def _prepare_payment_vals(self, invoices):
         """Its prepare the payment values for the invoice and update
          the MultiPayment"""
-        res = super(AccountRegisterPayments, self)._prepare_payment_vals(
-            invoices)
+        res = super(AccountRegisterPayments, self)._prepare_payment_vals(invoices)
         # Check payment method is Check or PDC
-        check_pdc_ids = self.env['account.payment.method'].search(
-            [('code', 'in', ['pdc', 'check_printing'])])
+        check_pdc_ids = self.env['account.payment.method'].search([('code', 'in', ['pdc', 'check_printing'])])
         if self.payment_method_id.id in check_pdc_ids.ids:
             currency_id = self.env['res.currency'].browse(res['currency_id'])
             journal_id = self.env['account.journal'].browse(res['journal_id'])
@@ -51,17 +47,14 @@ class AccountRegisterPayments(models.TransientModel):
                 'cheque_reference': self.cheque_reference,
                 'check_manual_sequencing': journal_id.check_manual_sequencing,
                 'effective_date': self.effective_date,
-                'check_amount_in_words': currency_id.amount_to_text(
-                    res['amount']),
+                'check_amount_in_words': currency_id.amount_to_text(res['amount']),
             })
         return res
 
     def _create_payment_vals_from_wizard(self, batch_result):
         """It super the wizard action of the create payment values and update
          the bank and cheque values"""
-        res = super(AccountRegisterPayments,
-                    self)._create_payment_vals_from_wizard(
-            batch_result)
+        res = super(AccountRegisterPayments, self)._create_payment_vals_from_wizard(batch_result)
         if self.effective_date:
             res.update({
                 'bank_reference': self.bank_reference,
@@ -73,9 +66,7 @@ class AccountRegisterPayments(models.TransientModel):
     def _create_payment_vals_from_batch(self, batch_result):
         """It super the batch action of the create payment values and update
          the bank and cheque values"""
-        res = super(AccountRegisterPayments,
-                    self)._create_payment_vals_from_batch(
-            batch_result)
+        res = super(AccountRegisterPayments, self)._create_payment_vals_from_batch(batch_result)
         if self.effective_date:
             res.update({
                 'bank_reference': self.bank_reference,
@@ -90,10 +81,7 @@ class AccountRegisterPayments(models.TransientModel):
         payments = super(AccountRegisterPayments, self)._create_payments()
 
         for payment in payments:
-            payment.write({
-                'bank_reference': self.bank_reference,
-                'cheque_reference': self.cheque_reference
-            })
+            payment.write({'bank_reference': self.bank_reference, 'cheque_reference': self.cheque_reference})
         return payments
 
 
@@ -103,10 +91,8 @@ class AccountPayment(models.Model):
     _inherit = "account.payment"
 
     bank_reference = fields.Char(string="Bank Reference", copy=False)
-    cheque_reference = fields.Char(string="Cheque Reference",copy=False)
-    effective_date = fields.Date('Effective Date',
-                                 help='Effective date of PDC', copy=False,
-                                 default=False)
+    cheque_reference = fields.Char(string="Cheque Reference", copy=False)
+    effective_date = fields.Date('Effective Date', help='Effective date of PDC', copy=False, default=False)
 
     def open_payment_matching_screen(self):
         """Open reconciliation view for customers/suppliers"""
@@ -117,8 +103,10 @@ class AccountPayment(models.Model):
                 break
         if not self.partner_id:
             raise UserError(_("Payments without a customer can't be matched"))
-        action_context = {'company_ids': [self.company_id.id], 'partner_ids': [
-            self.partner_id.commercial_partner_id.id]}
+        action_context = {
+            'company_ids': [self.company_id.id],
+            'partner_ids': [self.partner_id.commercial_partner_id.id]
+        }
         if self.partner_type == 'customer':
             action_context.update({'mode': 'customers'})
         elif self.partner_type == 'supplier':
@@ -136,30 +124,25 @@ class AccountPayment(models.Model):
         sent and call print_checks() """
         # Since this method can be called via a client_action_multi, we
         # need to make sure the received records are what we expect
-        selfs = self.filtered(lambda r:
-                              r.payment_method_id.code
-                              in ['check_printing', 'pdc']
-                              and r.state != 'reconciled')
+        selfs = self.filtered(
+            lambda r: r.payment_method_id.code in ['check_printing', 'pdc'] and r.state != 'reconciled')
         if len(selfs) == 0:
-            raise UserError(_(
-                "Payments to print as a checks must have 'Check' "
-                "or 'PDC' selected as payment method and "
-                "not have already been reconciled"))
+            raise UserError(
+                _("Payments to print as a checks must have 'Check' "
+                  "or 'PDC' selected as payment method and "
+                  "not have already been reconciled"))
         if any(payment.journal_id != selfs[0].journal_id for payment in selfs):
-            raise UserError(_(
-                "In order to print multiple checks at once, they "
-                "must belong to the same bank journal."))
+            raise UserError(
+                _("In order to print multiple checks at once, they "
+                  "must belong to the same bank journal."))
 
         if not selfs[0].journal_id.check_manual_sequencing:
             # The wizard asks for the number printed on the first
             # pre-printed check so payments are attributed the
             # number of the check the'll be printed on.
-            last_printed_check = selfs.search([
-                ('journal_id', '=', selfs[0].journal_id.id),
-                ('check_number', '!=', "0")], order="check_number desc",
-                limit=1)
-            next_check_number = last_printed_check and int(
-                last_printed_check.check_number) + 1 or 1
+            last_printed_check = selfs.search([('journal_id', '=', selfs[0].journal_id.id),
+                                               ('check_number', '!=', "0")], order="check_number desc", limit=1)
+            next_check_number = last_printed_check and int(last_printed_check.check_number) + 1 or 1
             return {
                 'name': _('Print Pre-numbered Checks'),
                 'type': 'ir.actions.act_window',
@@ -179,10 +162,8 @@ class AccountPayment(models.Model):
     def _prepare_payment_moves(self):
         """ supered function to set effective date """
         res = super(AccountPayment, self)._prepare_payment_moves()
-        inbound_pdc_id = self.env.ref(
-            'base_accounting_kit.account_payment_method_pdc_in').id
-        outbound_pdc_id = self.env.ref(
-            'base_accounting_kit.account_payment_method_pdc_out').id
+        inbound_pdc_id = self.env.ref('base_accounting_kit.account_payment_method_pdc_in').id
+        outbound_pdc_id = self.env.ref('base_accounting_kit.account_payment_method_pdc_out').id
         if self.payment_method_id.id == inbound_pdc_id or \
                 self.payment_method_id.id == outbound_pdc_id \
                 and self.effective_date:

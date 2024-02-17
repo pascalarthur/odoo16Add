@@ -27,20 +27,19 @@ class AccountUpdateLockDate(models.TransientModel):
     _name = 'account.lock.date'
     _description = 'Lock date for accounting'
 
-    company_id = fields.Many2one(comodel_name='res.company', string="Company",
-                                 required=True)
-    period_lock_date = fields.Date(string="Lock Date for Non-Advisers",
-                                   help="Only users with the 'Adviser' role "
-                                        "can edit accounts prior to "
-                                        "and inclusive of this date. Use it for"
-                                        " period locking inside an "
-                                        "open fiscal year, for example.")
-    fiscalyear_lock_date = fields.Date(string="Lock Date",
-                                       help="No users, including Advisers, can "
-                                            "edit accounts prior to and "
-                                            "inclusive of this date. Use it for "
-                                            "fiscal year locking for "
-                                            "example.")
+    company_id = fields.Many2one(comodel_name='res.company', string="Company", required=True)
+    period_lock_date = fields.Date(
+        string="Lock Date for Non-Advisers", help="Only users with the 'Adviser' role "
+        "can edit accounts prior to "
+        "and inclusive of this date. Use it for"
+        " period locking inside an "
+        "open fiscal year, for example.")
+    fiscalyear_lock_date = fields.Date(
+        string="Lock Date", help="No users, including Advisers, can "
+        "edit accounts prior to and "
+        "inclusive of this date. Use it for "
+        "fiscal year locking for "
+        "example.")
 
     @api.model
     def default_get(self, field_list):
@@ -55,8 +54,7 @@ class AccountUpdateLockDate(models.TransientModel):
 
     def _check_execute_allowed(self):
         self.ensure_one()
-        has_adviser_group = self.env.user.has_group(
-            'account.group_account_manager')
+        has_adviser_group = self.env.user.has_group('account.group_account_manager')
         if not (has_adviser_group or self.env.uid == SUPERUSER_ID):
             raise UserError(_("You are not allowed to execute this action."))
 

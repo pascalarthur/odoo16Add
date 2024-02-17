@@ -29,22 +29,20 @@ class ResPartner(models.Model):
     fields and functions"""
     _inherit = 'res.partner'
 
-    warning_stage = fields.Float(string='Warning Amount',
-                                 help="A warning message will appear once the "
-                                      "selected customer is crossed warning "
-                                      "amount. Set its value to 0.00 to"
-                                      " disable this feature")
-    blocking_stage = fields.Float(string='Blocking Amount',
-                                  help="Cannot make sales once the selected "
-                                       "customer is crossed blocking amount."
-                                       "Set its value to 0.00 to disable "
-                                       "this feature")
-    due_amount = fields.Float(string="Total Sale",
-                              compute="compute_due_amount")
+    warning_stage = fields.Float(
+        string='Warning Amount', help="A warning message will appear once the "
+        "selected customer is crossed warning "
+        "amount. Set its value to 0.00 to"
+        " disable this feature")
+    blocking_stage = fields.Float(
+        string='Blocking Amount', help="Cannot make sales once the selected "
+        "customer is crossed blocking amount."
+        "Set its value to 0.00 to disable "
+        "this feature")
+    due_amount = fields.Float(string="Total Sale", compute="compute_due_amount")
     active_limit = fields.Boolean("Active Credit Limit", default=False)
 
-    enable_credit_limit = fields.Boolean(string="Credit Limit Enabled",
-                                         compute="_compute_enable_credit_limit")
+    enable_credit_limit = fields.Boolean(string="Credit Limit Enabled", compute="_compute_enable_credit_limit")
 
     def compute_due_amount(self):
         """Compute function to compute the due amount with the
@@ -57,8 +55,7 @@ class ResPartner(models.Model):
     def _compute_enable_credit_limit(self):
         """ Check credit limit is enabled in account settings """
         params = self.env['ir.config_parameter'].sudo()
-        customer_credit_limit = params.get_param('customer_credit_limit',
-                                                 default=False)
+        customer_credit_limit = params.get_param('customer_credit_limit', default=False)
         for rec in self:
             rec.enable_credit_limit = True if customer_credit_limit else False
 
@@ -69,8 +66,7 @@ class ResPartner(models.Model):
         if self.active_limit and self.enable_credit_limit:
             if self.warning_stage >= self.blocking_stage:
                 if self.blocking_stage > 0:
-                    raise UserError(_(
-                        "Warning amount should be less than Blocking amount"))
+                    raise UserError(_("Warning amount should be less than Blocking amount"))
 
 
 class SaleOrder(models.Model):
@@ -80,8 +76,7 @@ class SaleOrder(models.Model):
 
     has_due = fields.Boolean(string='Has due')
     is_warning = fields.Boolean(string='Is warning')
-    due_amount = fields.Float(string='Due Amount',
-                              related='partner_id.due_amount')
+    due_amount = fields.Float(string='Due Amount', related='partner_id.due_amount')
 
     def _action_confirm(self):
         """To check the selected customers due amount is exceed than
@@ -90,11 +85,10 @@ class SaleOrder(models.Model):
                 and self.partner_id.enable_credit_limit:
             if self.due_amount >= self.partner_id.blocking_stage:
                 if self.partner_id.blocking_stage != 0:
-                    raise UserError(_(
-                        "%s is in  Blocking Stage and "
-                        "has a due amount of %s %s to pay") % (
-                                        self.partner_id.name, self.due_amount,
-                                        self.currency_id.symbol))
+                    raise UserError(
+                        _("%s is in  Blocking Stage and "
+                          "has a due amount of %s %s to pay") %
+                        (self.partner_id.name, self.due_amount, self.currency_id.symbol))
         return super(SaleOrder, self)._action_confirm()
 
     @api.onchange('partner_id')
@@ -122,8 +116,7 @@ class AccountMove(models.Model):
 
     has_due = fields.Boolean(string='Has due')
     is_warning = fields.Boolean(string='Is warning')
-    due_amount = fields.Float(string="Due Amount",
-                              related='partner_id.due_amount')
+    due_amount = fields.Float(string="Due Amount", related='partner_id.due_amount')
 
     def action_post(self):
         """To check the selected customers due amount is exceed than
@@ -134,11 +127,10 @@ class AccountMove(models.Model):
                     and rec.partner_id.enable_credit_limit:
                 if rec.due_amount >= rec.partner_id.blocking_stage:
                     if rec.partner_id.blocking_stage != 0:
-                        raise UserError(_(
-                            "%s is in  Blocking Stage and "
-                            "has a due amount of %s %s to pay") % (
-                                            rec.partner_id.name, rec.due_amount,
-                                            rec.currency_id.symbol))
+                        raise UserError(
+                            _("%s is in  Blocking Stage and "
+                              "has a due amount of %s %s to pay") %
+                            (rec.partner_id.name, rec.due_amount, rec.currency_id.symbol))
         return super(AccountMove, self).action_post()
 
     @api.onchange('partner_id')
