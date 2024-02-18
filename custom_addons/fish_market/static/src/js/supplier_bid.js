@@ -147,9 +147,11 @@ function add_product_offers() {
 
         pricelist_item_element.innerHTML = `
             <input hidden type="number" name="product_pricelist_item_id[]"/>
-            <input hidden type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price in USD"/>
+            <input hidden type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price [USD]"/>
             <p style="margin-bottom: 5">${date_start} (Start Date) - ${date_end} (End Date): ${product_product_description}: </p>
-            <input type="number" onchange=synch_price_product_offer(this) placeholder="Price in USD"/>
+            <input type="number" onchange=synch_price_product_offer(this) placeholder="Price [USD]"/>
+            <input type="number" name="approx_loading_time[]" placeholder="Approx. Loading Time [hours]"/>
+            <input type="number" name="approx_offloading_time[]" placeholder="Approx. Offloading Time [hours]"/>
         `;
         pricelist_item_element.querySelector('input[name="product_pricelist_item_id[]"]').value = item['id'];
         pricelist_item_element.querySelector('input[name="price_in_usd[]"]').value = NaN;

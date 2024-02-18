@@ -24,8 +24,8 @@ class RouteDemand(models.Model):
     container_demand = fields.Integer(string='Container demand')
     additional_details = fields.Text(string='Additional Details')
 
-    start_date = fields.Date(string='Start Date', required=True)
-    end_date = fields.Date(string='End Date', required=True)
+    date_start = fields.Date(string='Start Date', required=True)
+    date_end = fields.Date(string='End Date', required=True)
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
     partner_ids = fields.Many2many('res.partner')

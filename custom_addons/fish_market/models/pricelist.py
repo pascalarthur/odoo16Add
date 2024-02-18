@@ -95,3 +95,13 @@ class PriceCollectionItem(models.Model):
                 record.backload_fixed_price = record.backload_id.fixed_price
             else:
                 record.backload_fixed_price = False
+
+    def action_view_truck_id(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'truck.detail',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'new',
+            'res_id': self.truck_id.id,
+        }

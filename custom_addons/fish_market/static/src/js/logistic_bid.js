@@ -68,7 +68,7 @@ function addTruck() {
         <h3 class="bid-h3">Backload</h3>
         <input class="priceNad" type="number" placeholder="Price in NAD"/>
         <span class="currency-label">NAD</span><br/>
-        <input readonly type="number" name="backload_price[]" class="priceUsd" placeholder="Price in USD"/>
+        <input readonly type="number" name="backload_price[]" class="priceUsd input-no-border" placeholder="Price in USD"/>
         <span class="currency-label">USD</span>
         <table>
             <tr>

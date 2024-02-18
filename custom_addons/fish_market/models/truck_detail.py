@@ -47,8 +47,11 @@ class TruckDetail(models.Model):
 
     load_line_ids = fields.One2many('truck.detail.line', 'truck_detail_id', string='Load')
 
-    start_date = fields.Date(string='Start Date')
-    end_date = fields.Date(string='End Date')
+    date_start = fields.Date(string='Start Date')
+    date_end = fields.Date(string='End Date')
+
+    approx_loading_time = fields.Float(string='Approx. Loading Time [hours]')
+    approx_offloading_time = fields.Float(string='Approx. Offloading Time [hours]')
 
     route_start_street = fields.Char()
     route_start_street2 = fields.Char()

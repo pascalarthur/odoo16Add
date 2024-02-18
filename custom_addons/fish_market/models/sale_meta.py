@@ -56,8 +56,8 @@ class MetaSaleOrder(models.Model):
     invoice_ids = fields.Many2many('account.move', string='Invoices', related='sale_order_ids.invoice_ids',
                                    readonly=True)
 
-    start_date = fields.Date(string='Start Date', required=True)
-    end_date = fields.Date(string='End Date', required=True)
+    date_start = fields.Date(string='Start Date', required=True)
+    date_end = fields.Date(string='End Date', required=True)
 
     def _compute_truck_ids_no_backload(self):
         for record in self:
@@ -107,8 +107,8 @@ class MetaSaleOrder(models.Model):
                 'default_meta_sale_order_id': self.id,
                 'default_partner_ids': logistic_partner_ids,
                 'default_container_demand': self.container_demand,
-                'default_start_date': self.start_date,
-                'default_end_date': self.end_date,
+                'default_date_start': self.date_start,
+                'default_date_end': self.date_end,
                 'default_route_start_street': start_warehouse_id.partner_id.street,
                 'default_route_start_street2': start_warehouse_id.partner_id.street2,
                 'default_route_start_zip': start_warehouse_id.partner_id.zip,

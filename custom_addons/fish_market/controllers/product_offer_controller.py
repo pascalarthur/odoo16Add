@@ -52,6 +52,52 @@ class ProductOfferController(http.Controller):
         else:
             return "Token is invalid or has expired"
 
+    def create_truck_and_pricelist_item(self, token_record, product_pricelist_item_id: list,
+                                        price_in_usd: float, approx_loading_time: float,
+                                        approx_offloading_time: float) -> None:
+        truck_details = {
+            'partner_id': token_record.partner_id.id,
+            'truck_number': product_pricelist_item_id.truck_id.truck_number,
+            'horse_number': product_pricelist_item_id.truck_id.horse_number,
+            'container_number': product_pricelist_item_id.truck_id.container_number,
+            'driver_name': product_pricelist_item_id.truck_id.driver_name,
+            'telephone_number': product_pricelist_item_id.truck_id.telephone_number,
+            'route_start_street': product_pricelist_item_id.truck_id.route_end_street,
+            'route_start_street2': product_pricelist_item_id.truck_id.route_end_street2,
+            'route_start_city': product_pricelist_item_id.truck_id.route_end_city,
+            'route_start_zip': product_pricelist_item_id.truck_id.route_end_zip,
+            'route_start_state_id': product_pricelist_item_id.truck_id.route_end_state_id.id,
+            'route_start_country_id': product_pricelist_item_id.truck_id.route_end_country_id.id,
+            'route_end_street': product_pricelist_item_id.truck_id.route_start_street,
+            'route_end_street2': product_pricelist_item_id.truck_id.route_start_street2,
+            'route_end_city': product_pricelist_item_id.truck_id.route_start_city,
+            'route_end_zip': product_pricelist_item_id.truck_id.route_start_zip,
+            'route_end_state_id': product_pricelist_item_id.truck_id.route_start_state_id.id,
+            'route_end_country_id': product_pricelist_item_id.truck_id.route_start_country_id.id,
+            'price': price_in_usd,
+            'max_load': product_pricelist_item_id.truck_id.max_load,
+            'is_backload': True,
+            'date_start': product_pricelist_item_id.date_start,
+            'date_end': product_pricelist_item_id.date_end,
+            'approx_loading_time': approx_loading_time,
+            'approx_offloading_time': approx_offloading_time,
+        }
+        truck_id = request.env['truck.detail'].sudo().create(truck_details)
+
+        product_pricelist_item_details = {
+            'truck_id': truck_id.id,
+            'pricelist_id': token_record.pricelist_id.id,
+            'partner_id': token_record.partner_id.id,
+            'product_tmpl_id': product_pricelist_item_id.product_tmpl_id.id,
+            'product_id': product_pricelist_item_id.product_id.id,
+            'compute_price': 'fixed',
+            'applied_on': '0_product_variant',
+            'fixed_price': price_in_usd,
+            'date_start': product_pricelist_item_id.date_start,
+            'date_end': product_pricelist_item_id.date_end,
+        }
+        request.env['product.pricelist.item'].sudo().create(product_pricelist_item_details)
+
     @http.route('/product_offer', type='http', auth='public', methods=['POST'], csrf=False)
     def submit_form(self, **post):
         token = post.get('token')
@@ -61,24 +107,18 @@ class ProductOfferController(http.Controller):
             # Process product details
             product_pricelist_item_ids = request.httprequest.form.getlist('product_pricelist_item_id[]')
             prices_in_usd = request.httprequest.form.getlist('price_in_usd[]')
+            approx_loading_times = request.httprequest.form.getlist('approx_loading_time[]')
+            approx_offloading_times = request.httprequest.form.getlist('approx_offloading_time[]')
 
-            product_pricelist_item_ids = http.request.env['product.pricelist.item'].sudo().search(
-                [('id', 'in', token_record.product_pricelist_item_ids.ids)], )
+            product_pricelist_item_ids = http.request.env['product.pricelist.item'].sudo().search([
+                ('id', 'in', token_record.product_pricelist_item_ids.ids)
+            ])
 
-            for i, product_pricelist_item_id in enumerate(product_pricelist_item_ids):
-                if prices_in_usd[i] != '':
-                    product_detail = {
-                        'pricelist_id': token_record.pricelist_id.id,
-                        'partner_id': token_record.partner_id.id,
-                        'product_tmpl_id': product_pricelist_item_id.product_tmpl_id.id,
-                        'product_id': product_pricelist_item_id.product_id.id,
-                        'compute_price': 'fixed',
-                        'applied_on': '0_product_variant',
-                        'fixed_price': float(prices_in_usd[i]),
-                        'date_start': fields.Datetime.now(),
-                    }
-                    request.env['product.pricelist.item'].sudo().create(product_detail)
-
+            for ii, product_pricelist_item_id in enumerate(product_pricelist_item_ids):
+                if prices_in_usd[ii] != '':
+                    self.create_truck_and_pricelist_item(token_record, product_pricelist_item_id, float(prices_in_usd[ii]),
+                                                         float(approx_loading_times[ii]),
+                                                         float(approx_offloading_times[ii]))
             # token_record.is_used = True
 
             return "Thank you for submitting your prices to Afromerge. The team will come back to you soon!"

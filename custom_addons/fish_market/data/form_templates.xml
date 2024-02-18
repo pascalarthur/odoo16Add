@@ -48,11 +48,11 @@
                     </tr>
                     <tr>
                         <td><label class="my-label">Start Date:</label></td>
-                        <td t-esc="route_demand_id.start_date"/>
+                        <td t-esc="route_demand_id.date_start"/>
                     </tr>
                     <tr>
                         <td><label class="my-label">End Date:</label></td>
-                        <td t-esc="route_demand_id.end_date"/>
+                        <td t-esc="route_demand_id.date_end"/>
                     </tr>
                 </table>
 
@@ -82,8 +82,8 @@
         <xpath expr="//div[@id='form_content']/form" position="inside">
             <!-- Needed to block out the other templates -->
             <div t-if="product_temp_vars_dict">
-                <input type="hidden" name="start_date" t-att-value="start_date"/>
-                <input type="hidden" name="end_date" t-att-value="end_date"/>
+                <input type="hidden" name="date_start" t-att-value="date_start"/>
+                <input type="hidden" name="date_end" t-att-value="date_end"/>
 
                 <h2 class="bid-h2">Product Details</h2>
                 <div id="product_details_section">

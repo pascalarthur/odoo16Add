@@ -41,8 +41,8 @@
                                 <field name="transport_pricelist_id" readonly="state not in ['draft', 'transport']"/>
                             </group>
                             <group col="1">
-                                <field name="start_date" widget="date" readonly="state not in ['draft', 'transport']"/>
-                                <field name="end_date" widget="date" readonly="state not in ['draft', 'transport']"/>
+                                <field name="date_start" widget="date" readonly="state not in ['draft', 'transport']"/>
+                                <field name="date_end" widget="date" readonly="state not in ['draft', 'transport']"/>
                             </group>
                         </group>
                         <field name="order_line_ids">
