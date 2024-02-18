@@ -309,17 +309,11 @@ class SaleOrderInherit(models.Model):
         }
 
     def get_po_values(self, company_partner_id, current_company_id):
-        warehouse_id = self.env['stock.warehouse'].search([('company_id', '=', company_partner_id.id)], limit=1)
-        current_cmp_warehouse = self.env['stock.warehouse'].search([('company_id', '=', current_company_id.id)],
-                                                                   limit=1)
         po_name = self.env['ir.sequence'].sudo().with_company(company_partner_id).next_by_code('purchase.order')
         if company_partner_id:
             if not company_partner_id.intercompany_warehouse_id:
                 raise ValidationError(_('Please Select Intercompany Warehouse On  %s.') % company_partner_id.name)
-        other_cmp_warehouse = company_partner_id.intercompany_warehouse_id
-        picking_type_id = self.env['stock.picking.type'].search([('code', '=', 'incoming'),
-                                                                 ('warehouse_id', '=', other_cmp_warehouse.id)],
-                                                                limit=1)
+
         if self.internal_id.id:
             if self.internal_id.currency_id.id:
                 currency_id = self.internal_id.currency_id.id
@@ -330,14 +324,12 @@ class SaleOrderInherit(models.Model):
         res = {
             'name': po_name,
             'origin': self.name,
-            'fiscal_position_id':
-            current_company_id.intercompany_warehouse_id.partner_id.property_account_position_id.id,
-            'payment_term_id':
-            current_company_id.intercompany_warehouse_id.partner_id.property_supplier_payment_term_id.id,
+            'fiscal_position_id': current_company_id.partner_id.property_account_position_id.id,
+            'payment_term_id': current_company_id.partner_id.property_supplier_payment_term_id.id,
             'partner_ref': self.name,
             'currency_id': currency_id,
             'user_id': self.env.uid,
-            'partner_id': current_company_id.intercompany_warehouse_id.partner_id.id,
+            'partner_id': current_company_id.partner_id.id,
             'internal_id': self.internal_id.id,
             'date_order': self.date_order,
             'company_id': company_partner_id.id,

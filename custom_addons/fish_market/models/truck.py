@@ -149,6 +149,12 @@ class TruckDetail(models.Model):
         for record in self:
             record.available_location_ids = record.meta_sale_order_id.order_line_ids.mapped('location_id')
 
+    @api.onchange('load_line_ids')
+    def _update_state(self):
+        for record in self:
+            if record.load_line_ids:
+                record.state = 'loaded'
+
 
 class Truck(models.Model):
     _name = "truck"
