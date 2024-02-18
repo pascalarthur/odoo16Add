@@ -20,15 +20,15 @@ class ProductOfferController(http.Controller):
 
             product_pricelist_items = http.request.env['product.pricelist.item'].sudo().search_read(
                 [('id', 'in', token_record.product_pricelist_item_ids.ids)],
-                ['product_tmpl_id', 'product_id', 'fixed_price', 'date_start', 'date_end', 'truck_id'])
+                ['product_tmpl_id', 'product_id', 'fixed_price', 'date_start', 'date_end', 'truck_route_id'])
             for product_pricelist_item in product_pricelist_items:
                 if product_pricelist_item['date_start']:
                     product_pricelist_item['date_start'] = product_pricelist_item['date_start'].strftime('%d-%m-%Y')
                 if product_pricelist_item['date_end']:
                     product_pricelist_item['date_end'] = product_pricelist_item['date_end'].strftime('%d-%m-%Y')
 
-            obj_start_end_dict = http.request.env['truck.detail'].sudo().search_read(
-                [('id', '=', product_pricelist_items[0]['truck_id'][0])], [
+            obj_start_end_dict = http.request.env['truck.route'].sudo().search_read(
+                [('id', '=', product_pricelist_items[0]['truck_route_id'][0])], [
                     'route_start_street', 'route_start_street2', 'route_start_city', 'route_start_zip',
                     'route_start_state_id', 'route_start_country_id', 'route_end_street', 'route_end_street2',
                     'route_end_city', 'route_end_zip', 'route_end_state_id', 'route_end_country_id'
@@ -52,40 +52,38 @@ class ProductOfferController(http.Controller):
         else:
             return "Token is invalid or has expired"
 
-    def create_truck_and_pricelist_item(self, token_record, product_pricelist_item_id: list,
-                                        price_in_usd: float, approx_loading_time: float,
-                                        approx_offloading_time: float) -> None:
-        truck_details = {
+    def create_truck_and_pricelist_item(self, token_record, product_pricelist_item_id: list, price_in_usd: float,
+                                        approx_loading_time: float, approx_offloading_time: float) -> None:
+        truck_routes = {
+            'truck_id': product_pricelist_item_id.truck_route_id.truck_id.id,
             'partner_id': token_record.partner_id.id,
-            'truck_number': product_pricelist_item_id.truck_id.truck_number,
-            'horse_number': product_pricelist_item_id.truck_id.horse_number,
-            'container_number': product_pricelist_item_id.truck_id.container_number,
-            'driver_name': product_pricelist_item_id.truck_id.driver_name,
-            'telephone_number': product_pricelist_item_id.truck_id.telephone_number,
-            'route_start_street': product_pricelist_item_id.truck_id.route_end_street,
-            'route_start_street2': product_pricelist_item_id.truck_id.route_end_street2,
-            'route_start_city': product_pricelist_item_id.truck_id.route_end_city,
-            'route_start_zip': product_pricelist_item_id.truck_id.route_end_zip,
-            'route_start_state_id': product_pricelist_item_id.truck_id.route_end_state_id.id,
-            'route_start_country_id': product_pricelist_item_id.truck_id.route_end_country_id.id,
-            'route_end_street': product_pricelist_item_id.truck_id.route_start_street,
-            'route_end_street2': product_pricelist_item_id.truck_id.route_start_street2,
-            'route_end_city': product_pricelist_item_id.truck_id.route_start_city,
-            'route_end_zip': product_pricelist_item_id.truck_id.route_start_zip,
-            'route_end_state_id': product_pricelist_item_id.truck_id.route_start_state_id.id,
-            'route_end_country_id': product_pricelist_item_id.truck_id.route_start_country_id.id,
+            'container_number': product_pricelist_item_id.truck_route_id.container_number,
+            'driver_name': product_pricelist_item_id.truck_route_id.driver_name,
+            'telephone_number': product_pricelist_item_id.truck_route_id.telephone_number,
+            'route_start_street': product_pricelist_item_id.truck_route_id.route_end_street,
+            'route_start_street2': product_pricelist_item_id.truck_route_id.route_end_street2,
+            'route_start_city': product_pricelist_item_id.truck_route_id.route_end_city,
+            'route_start_zip': product_pricelist_item_id.truck_route_id.route_end_zip,
+            'route_start_state_id': product_pricelist_item_id.truck_route_id.route_end_state_id.id,
+            'route_start_country_id': product_pricelist_item_id.truck_route_id.route_end_country_id.id,
+            'route_end_street': product_pricelist_item_id.truck_route_id.route_start_street,
+            'route_end_street2': product_pricelist_item_id.truck_route_id.route_start_street2,
+            'route_end_city': product_pricelist_item_id.truck_route_id.route_start_city,
+            'route_end_zip': product_pricelist_item_id.truck_route_id.route_start_zip,
+            'route_end_state_id': product_pricelist_item_id.truck_route_id.route_start_state_id.id,
+            'route_end_country_id': product_pricelist_item_id.truck_route_id.route_start_country_id.id,
             'price': price_in_usd,
-            'max_load': product_pricelist_item_id.truck_id.max_load,
+            'max_load': product_pricelist_item_id.truck_route_id.max_load,
             'is_backload': True,
             'date_start': product_pricelist_item_id.date_start,
             'date_end': product_pricelist_item_id.date_end,
             'approx_loading_time': approx_loading_time,
             'approx_offloading_time': approx_offloading_time,
         }
-        truck_id = request.env['truck.detail'].sudo().create(truck_details)
+        truck_route_id = request.env['truck.route'].sudo().create(truck_routes)
 
         product_pricelist_item_details = {
-            'truck_id': truck_id.id,
+            'truck_route_id': truck_route_id.id,
             'pricelist_id': token_record.pricelist_id.id,
             'partner_id': token_record.partner_id.id,
             'product_tmpl_id': product_pricelist_item_id.product_tmpl_id.id,
@@ -116,8 +114,8 @@ class ProductOfferController(http.Controller):
 
             for ii, product_pricelist_item_id in enumerate(product_pricelist_item_ids):
                 if prices_in_usd[ii] != '':
-                    self.create_truck_and_pricelist_item(token_record, product_pricelist_item_id, float(prices_in_usd[ii]),
-                                                         float(approx_loading_times[ii]),
+                    self.create_truck_and_pricelist_item(token_record, product_pricelist_item_id,
+                                                         float(prices_in_usd[ii]), float(approx_loading_times[ii]),
                                                          float(approx_offloading_times[ii]))
             # token_record.is_used = True
 

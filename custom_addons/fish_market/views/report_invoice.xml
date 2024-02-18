@@ -4,9 +4,9 @@
         <template id="invoice_cop" inherit_id="account.report_invoice_document">
             <xpath expr="//div[hasclass('page')]" position="after">
                 <table>
-                    <tr t-if="o.truck_number">
+                    <tr t-if="o.trailer_number">
                         <td style="padding-right: 10px;"><strong>Trailer Number:</strong></td>
-                        <td><span t-field="o.truck_number"/></td>
+                        <td><span t-field="o.trailer_number"/></td>
                     </tr>
                     <tr t-if="o.horse_number">
                         <td style="padding-right: 10px;"><strong>Horse Number:</strong></td>

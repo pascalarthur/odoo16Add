@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="product.product_pricelist_item_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//sheet" position="inside">
-                <div class="oe_button_box" name="button_box">
+                <div invisible="not truck_id" class="oe_button_box" name="button_box">
                     <button type="object" name="action_view_truck_id" class="oe_stat_button" icon="fa-truck">
                         <div class="o_stat_info">
                             <span class="o_stat_value">
@@ -14,6 +14,16 @@
                             </span>
                             <span class="o_stat_text">
                                 Truck
+                            </span>
+                        </div>
+                    </button>
+                    <button type="object" name="action_view_truck_route_id" class="oe_stat_button" icon="fa-exchange">
+                        <div class="o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="truck_route_id" readonly="1"/>
+                            </span>
+                            <span class="o_stat_text">
+                                Truck Route
                             </span>
                         </div>
                     </button>

@@ -4,8 +4,9 @@ access_route_demand,access_route_demand,model_route_demand,base.group_user,1,1,1
 access_access_token,access_access_token,model_access_token,base.group_user,1,1,1,1
 access_meta_sale_order,access_meta_sale_order,model_meta_sale_order,base.group_user,1,1,1,1
 access_meta_sale_order_line,access_meta_sale_order_line,model_meta_sale_order_line,base.group_user,1,1,1,1
-access_truck_detail,access_truck_detail,model_truck_detail,base.group_user,1,1,1,1
-access_truck_detail_line,access_truck_detail_line,model_truck_detail_line,base.group_user,1,1,1,1
+access_truck,access_truck,model_truck,base.group_user,1,1,1,1
+access_truck_route,access_truck_route,model_truck_route,base.group_user,1,1,1,1
+access_truck_route_line,access_truck_route_line,model_truck_route_line,base.group_user,1,1,1,1
 access_redistribution_wizard,access_redistribution_wizard,model_redistribution_wizard,base.group_user,1,1,1,1
 access_redistribution_wizard_line_base,access_redistribution_wizard_line_base,model_redistribution_wizard_line_base,base.group_user,1,1,1,1
 access_truck_redistribution_wizard_line,access_truck_redistribution_wizard_line,model_truck_redistribution_wizard_line,base.group_user,1,1,1,1

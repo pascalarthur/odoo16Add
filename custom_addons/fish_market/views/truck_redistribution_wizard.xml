@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <form>
                 <group>
-                    <field name="truck_id"/>
+                    <field name="truck_route_id"/>
                     <field name="load_line_ids">
                         <tree>
                             <field name="product_id"/>
@@ -22,7 +22,7 @@
                         <field name="location_redistribution_lines" invisible="not move_to_stock">
                             <tree editable="top">
                                 <field name="meta_sale_order_id" column_invisible="1"/>
-                                <field name="truck_id" column_invisible="1"/>
+                                <field name="truck_route_id" column_invisible="1"/>
                                 <field name="product_ids_from_load_lines" column_invisible="1"/>
                                 <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
                                 <field name="location_dest_id"/>
@@ -35,10 +35,10 @@
                         <field name="truck_redistribution_lines" invisible="not redistribute">
                             <tree editable="top">
                                 <field name="meta_sale_order_id" column_invisible="1"/>
-                                <field name="truck_id" column_invisible="1"/>
+                                <field name="truck_route_id" column_invisible="1"/>
                                 <field name="product_ids_from_load_lines" column_invisible="1"/>
                                 <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
-                                <field name="target_truck_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_id), ('is_backload', '=', False)]"/>
+                                <field name="target_truck_route_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_route_id), ('is_backload', '=', False)]"/>
                                 <field name="quantity"/>
                             </tree>
                         </field>

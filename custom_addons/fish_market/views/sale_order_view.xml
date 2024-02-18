@@ -9,7 +9,7 @@
                 <page string="Trucking Details">
                     <group>
                         <field name="horse_number" string="Horse Number"/>
-                        <field name="truck_number" string="Trailer Number"/>
+                        <field name="trailer_number" string="Trailer Number"/>
                         <field name="container_number" string="Container Number"/>
                         <field name="seal_number" string="Seal Number"/>
                         <field name="driver_name" string="Driver Name"/>

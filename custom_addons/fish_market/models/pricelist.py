@@ -6,15 +6,21 @@ class PriceCollectionItem(models.Model):
     _description = 'Collect fish prices here to make better purchase decisions.'
 
     partner_id = fields.Many2one('res.partner', string='Supplier')
-    truck_id = fields.Many2one('truck.detail', string='Truck')
+    truck_route_id = fields.Many2one('truck.route', string='Truck Route')
+    truck_id = fields.Many2one('truck', string='Truck', related='truck_route_id.truck_id', store=True)
+    max_load = fields.Float(string='Max. Load [kg]', related='truck_route_id.max_load', store=True)
+    truck_route_state = fields.Selection(related='truck_route_id.state', string='Truck Route State', store=True)
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
     backload_id = fields.Many2one('product.pricelist.item', string='Backload')
     is_backload = fields.Boolean(string='Is Backload', compute='_is_backload')
+    truck_route_state_backorder = fields.Selection(related='backload_id.truck_route_id.state', string='Backload State',
+                                                   store=True)
 
     notes = fields.Text(string='Notes')
 
     backload_fixed_price = fields.Monetary(string='Backload Fixed Price', compute='_get_backload_fixed_price')
+    backload_fixed_price_char = fields.Char(string='Backload Price', compute='_get_backload_fixed_price')
 
     def action_buy(self):
         if not self:
@@ -93,15 +99,36 @@ class PriceCollectionItem(models.Model):
         for record in self:
             if not record.is_backload and record.backload_id:
                 record.backload_fixed_price = record.backload_id.fixed_price
+                record.backload_fixed_price_char = f"{str(record.backload_id.fixed_price)}{record.backload_id.currency_id.symbol}"
             else:
                 record.backload_fixed_price = False
+                record.backload_fixed_price_char = None
+
+    def action_view_truck_route_id(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'truck.route',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'new',
+            'res_id': self.truck_route_id.id,
+        }
 
     def action_view_truck_id(self):
         return {
             'type': 'ir.actions.act_window',
-            'res_model': 'truck.detail',
+            'res_model': 'truck',
             'view_mode': 'form',
             'views': [(False, 'form')],
             'target': 'new',
-            'res_id': self.truck_id.id,
+            'res_id': self.truck_route_id.truck_id.id,
         }
+
+    def action_toggle_confirm_truck_route(self):
+        self.truck_route_id.state = 'confirmed' if self.truck_route_id.state != 'confirmed' else 'draft'
+        self.truck_route_id.load_line_ids = False
+
+
+    def action_toggle_confirm_truck_route_with_backload(self):
+        self.backload_id.truck_route_id.state = 'confirmed' if self.backload_id.truck_route_id.state != 'confirmed' else 'draft'
+        self.backload_id.truck_route_id.load_line_ids = False

@@ -58,7 +58,7 @@
 
 
                 <!-- Truck Details Section -->
-                <div id="truck_details_section">
+                <div id="truck_routes_section">
                     <label class="my-label">Truck Details:</label><br/>
                     <p>
                         Please add the truck details as well as the prices for your trucks. You can submit multiple prices for multiple trucks.

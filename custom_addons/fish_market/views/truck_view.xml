@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Create a new form view for truck.detail -->
-    <record id="view_truck_detail_form" model="ir.ui.view">
-        <field name="name">truck.detail.form</field>
-        <field name="model">truck.detail</field>
+    <record id="view_truck_route_form" model="ir.ui.view">
+        <field name="name">truck.route.form</field>
+        <field name="model">truck.route</field>
         <field name="arch" type="xml">
             <form>
-                <!-- Define the fields you want to display -->
                 <header>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <group>
                     <field name="meta_sale_order_id" invisible="1"/>
+                    <field name="truck_id"/>
                     <field name="partner_id"/>
-                    <field name="truck_number"/>
+                    <field name="trailer_number"/>
                     <field name="horse_number"/>
                     <field name="container_number"/>
                     <field name="driver_name"/>
@@ -29,14 +28,64 @@
                     <field name="approx_offloading_time"/>
                 </group>
 
-                <field name="load_line_ids">
-                    <tree>
-                        <field name="product_id"/>
-                        <field name="location_id"/>
+                <field name="load_line_ids" readonly="state in ['draft']">
+                    <tree editable="bottom">
+                        <field name="available_product_ids" column_invisible="1"/>
+                        <field name="available_location_ids" column_invisible="1"/>
+
+                        <field name="product_id" domain="[('id', 'in', available_product_ids)]"/>
+                        <field name="location_id" domain="[('id', 'in', available_location_ids)]"/>
                         <field name="quantity"/>
                     </tree>
                 </field>
             </form>
         </field>
+    </record>
+
+    <record id="view_truck_form" model="ir.ui.view">
+        <field name="name">truck.form</field>
+        <field name="model">truck</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="partner_id"/>
+                    <field name="horse_number"/>
+                    <field name="trailer_number"/>
+                </group>
+
+                <notebook>
+                    <page string="Optional Truck Routes">
+                        <field name="truck_route_ids">
+                            <tree>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                                <field name="is_backload"/>
+                                <field name="state" widget="statusbar"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_truck_tree" model="ir.ui.view">
+        <field name="name">truck.tree</field>
+        <field name="model">truck</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="partner_id"/>
+                <field name="horse_number"/>
+                <field name="trailer_number"/>
+            </tree>
+        </field>
+    </record>
+
+
+    <record id="action_view_truck_tree" model="ir.actions.act_window">
+        <field name="name">Trucks</field>
+        <field name="res_model">truck</field>
+        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_id" ref="view_truck_tree"/>
     </record>
 </odoo>

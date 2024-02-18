@@ -48,9 +48,9 @@ class MetaSaleOrder(models.Model):
     transport_pricelist_backloads_count = fields.Integer(compute='_compute_transport_pricelist_backloads_count')
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
-    truck_ids = fields.One2many('truck.detail', 'meta_sale_order_id', string='All Trucks')
-    truck_ids_no_backload = fields.One2many('truck.detail', string='Trucks', compute='_compute_truck_ids_no_backload',
-                                            readonly=False)
+    truck_route_ids = fields.One2many('truck.route', 'meta_sale_order_id', string='All Trucks')
+    truck_route_ids_no_backload = fields.One2many('truck.route', string='Trucks',
+                                                  compute='_compute_truck_route_ids_no_backload', readonly=False)
 
     sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
     invoice_ids = fields.Many2many('account.move', string='Invoices', related='sale_order_ids.invoice_ids',
@@ -59,9 +59,9 @@ class MetaSaleOrder(models.Model):
     date_start = fields.Date(string='Start Date', required=True)
     date_end = fields.Date(string='End Date', required=True)
 
-    def _compute_truck_ids_no_backload(self):
+    def _compute_truck_route_ids_no_backload(self):
         for record in self:
-            record.truck_ids_no_backload = record.truck_ids.filtered(lambda t: not t.is_backload)
+            record.truck_route_ids_no_backload = record.truck_route_ids.filtered(lambda t: not t.is_backload)
 
     def _compute_transport_pricelist_backloads_count(self):
         for record in self:
@@ -126,12 +126,18 @@ class MetaSaleOrder(models.Model):
 
     def action_allocate_transporters(self):
         # Step 1: Raise a warning if no transporter replied yet
-        if not self.truck_ids_no_backload:
+        if not self.truck_route_ids_no_backload:
             raise exceptions.UserError("No transport offers have been received yet.")
 
+        # Step 2: Raise a warning if no transport offers have been accepted yet
+        if not self.truck_route_ids_no_backload.filtered(lambda t: t.state != 'draft'):
+            raise exceptions.UserError(
+                "No transport offers have been accepted yet. Please confirm bids/add trucks manually.")
+
         # Step 2: Clear existing allocations
-        for truck_id in self.truck_ids:
-            truck_id.load_line_ids.unlink()  # This will delete the TruckLoadLine records
+        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: t.state != 'draft'):
+            truck_route_id.load_line_ids.unlink()  # This will delete the TruckLoadLine records
+            truck_route_id.state = 'confirmed'
 
         # Step 3: Proceed with new allocations
         for order_line in self.order_line_ids:
@@ -141,21 +147,21 @@ class MetaSaleOrder(models.Model):
 
             required_quantity = order_line.quantity  # Assuming 'quantity' is the correct field
             allocated_quantity = 0.0
-            truck_ids = self.truck_ids_no_backload.sorted(key=lambda t: t.price_per_kg)
-            for truck_id in truck_ids:
+            truck_route_ids = self.truck_route_ids_no_backload.sorted(key=lambda t: t.price_per_kg)
+            for truck_route_id in truck_route_ids.filtered(lambda t: t.state == 'confirmed'):
                 if allocated_quantity >= required_quantity:
                     break
 
                 # Assuming 'max_load' represents the capacity and there's a field to track allocated capacity
-                available_capacity = truck_id.max_load - sum(line.quantity * line.product_id.box_weight
-                                                             for line in truck_id.load_line_ids)
+                available_capacity = truck_route_id.max_load - sum(line.quantity * line.product_id.box_weight
+                                                                   for line in truck_route_id.load_line_ids)
                 available_capacity = available_capacity // product.box_weight  # Convert to product quantity
 
                 # It is only worthwile to pick up 10 boxes or more
                 if available_capacity > 10:
                     quantity_to_allocate = min(required_quantity - allocated_quantity, available_capacity)
-                    truck_id.allocate_product(product, order_line.unit_price, order_line.location_id,
-                                              quantity_to_allocate)
+                    truck_route_id.allocate_product(product, order_line.unit_price, order_line.location_id,
+                                                    quantity_to_allocate)
                     allocated_quantity += quantity_to_allocate
 
         self.ensure_one()
@@ -168,20 +174,20 @@ class MetaSaleOrder(models.Model):
         my_company_email = self.env.user.company_id.email
 
         # Send confirmation to transporters
-        for truck_id in self.truck_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
-            transporter_email = truck_id.partner_id.email
+        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+            transporter_email = truck_route_id.partner_id.email
             if transporter_email:
                 email_values = {
                     'email_to': transporter_email,
                     'email_from': my_company_email,
                     'subject': 'Transport Order Confirmation',
-                    'body_html': self._prepare_email_content_for_transporter(truck_id),
+                    'body_html': self._prepare_email_content_for_transporter(truck_route_id),
                 }
                 template.send_mail(self.id, email_values=email_values, force_send=True)
 
         location_load_map = defaultdict(list)
-        for truck_id in self.truck_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
-            for load_line in truck_id.load_line_ids:
+        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+            for load_line in truck_route_id.load_line_ids:
                 location_load_map[load_line.location_id].append(load_line)
 
         for location_id, lines in location_load_map.items():
@@ -211,29 +217,29 @@ class MetaSaleOrder(models.Model):
         content = f"Dear {warehouse_id.partner_id.name},<br/>"
         content += f"The following products are scheduled to be picked up from your location ({location.name}):<br/>"
         for line in lines:
-            truck = line.truck_detail_id
-            content += f"Truck {truck.truck_number} will pick up: Product {line.product_id.name}, Quantity: {line.quantity}<br/>"
+            truck = line.truck_route_id
+            content += f"Truck {truck.trailer_number} will pick up: Product {line.product_id.name}, Quantity: {line.quantity}<br/>"
         return content
 
     def action_send_order_confirmation(self):
         SaleOrder = self.env['sale.order']
         SaleOrderLine = self.env['sale.order.line']
 
-        for truck_id in self.truck_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
             # Create a sale order for each truck
             sale_order = SaleOrder.create({
                 'meta_sale_order_id': self.id,
                 'partner_id': self.partner_id.id,
-                'truck_detail_id': truck_id.id,
-                'truck_number': truck_id.truck_number,
-                'horse_number': truck_id.horse_number,
-                'container_number': truck_id.container_number,
-                'seal_number': truck_id.seal_number,
-                'driver_name': truck_id.driver_name,
-                'telephone_number': truck_id.telephone_number,
+                'truck_route_id': truck_route_id.id,
+                'trailer_number': truck_route_id.trailer_number,
+                'horse_number': truck_route_id.horse_number,
+                'container_number': truck_route_id.container_number,
+                'seal_number': truck_route_id.seal_number,
+                'driver_name': truck_route_id.driver_name,
+                'telephone_number': truck_route_id.telephone_number,
             })
 
-            for load_line in truck_id.load_line_ids:
+            for load_line in truck_route_id.load_line_ids:
                 SaleOrderLine.create({
                     'order_id': sale_order.id,
                     'product_id': load_line.product_id.id,
@@ -247,9 +253,9 @@ class MetaSaleOrder(models.Model):
 
     def action_confirm_seals(self):
         self.ensure_one()
-        for truck_id in self.truck_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
-            if not truck_id.seal_number:
-                raise exceptions.UserError(f"Please enter a seal number for truck {truck_id.name}")
+        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+            if not truck_route_id.seal_number:
+                raise exceptions.UserError(f"Please enter a seal number for truck {truck_route_id.name}")
         self.state = 'send_invoice'
 
     def action_send_invoice(self):
@@ -266,16 +272,17 @@ class MetaSaleOrder(models.Model):
         self.ensure_one()
         self.state = 'done'
 
-    def action_add_truck(self):
+    def action_add_truck_route(self):
         self.ensure_one()
         return {
             'type': 'ir.actions.act_window',
             'name': 'Add Truck',
             'view_mode': 'form',
-            'res_model': 'truck.detail',
+            'res_model': 'truck.route',
             'target': 'new',
             'context': {
                 'default_meta_sale_order_id': self.id,
+                'default_state': 'confirmed',
             },
         }
 

@@ -66,7 +66,7 @@ class TransportOrderController(http.Controller):
         if self.check_token(token_record) is True:
 
             # Process each truck detail
-            truck_numbers = request.httprequest.form.getlist('truck_number[]')
+            trailer_numbers = request.httprequest.form.getlist('trailer_number[]')
             horse_numbers = request.httprequest.form.getlist('horse_number[]')
             container_numbers = request.httprequest.form.getlist('container_number[]')
             driver_names = request.httprequest.form.getlist('driver_name[]')
@@ -78,12 +78,24 @@ class TransportOrderController(http.Controller):
             dates_end = request.httprequest.form.getlist('date_end[]')
             dates_end_backload = request.httprequest.form.getlist('date_end_backload[]')
 
-            for ii in range(len(truck_numbers)):
-                truck_detail = {
+            for ii in range(len(trailer_numbers)):
+                truck_id = request.env['truck'].sudo().search(
+                    [('partner_id', '=', token_record.partner_id.id), ('trailer_number', '=', trailer_numbers[ii]),
+                     ('horse_number', '=', horse_numbers[ii])],
+                    limit=1,
+                )
+                if not truck_id:
+                    truck_detail = {
+                        'partner_id': token_record.partner_id.id,
+                        'horse_number': horse_numbers[ii],
+                        'trailer_number': trailer_numbers[ii],
+                    }
+                    truck_id = request.env['truck'].sudo().create(truck_detail)
+
+                truck_route_detail = {
+                    'truck_id': truck_id.id,
                     'partner_id': token_record.partner_id.id,
                     'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
-                    'truck_number': truck_numbers[ii],
-                    'horse_number': horse_numbers[ii],
                     'container_number': container_numbers[ii],
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
@@ -105,10 +117,10 @@ class TransportOrderController(http.Controller):
                     'max_load': float(max_loads[ii]),
                     'is_backload': False,
                 }
-                truck_id = request.env['truck.detail'].sudo().create(truck_detail)
+                truck_route_id = request.env['truck.route'].sudo().create(truck_route_detail)
 
                 product_detail = {
-                    'truck_id': truck_id.id,
+                    'truck_route_id': truck_route_id.id,
                     'pricelist_id': int(route_demand_id.meta_sale_order_id.transport_pricelist_id.id),
                     'partner_id': token_record.partner_id.id,
                     'product_tmpl_id': int(route_demand_id.meta_sale_order_id.transport_product_id.id),
@@ -124,11 +136,10 @@ class TransportOrderController(http.Controller):
 
                 # Every backload item has a corresponding product.pricelist.item
                 if backload_prices[ii] != '':
-                    truck_detail = {
+                    truck_route_detail = {
+                        'truck_id': truck_id.id,
                         'partner_id': token_record.partner_id.id,
                         'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
-                        'truck_number': truck_numbers[ii],
-                        'horse_number': horse_numbers[ii],
                         'container_number': container_numbers[ii],
                         'driver_name': driver_names[ii],
                         'telephone_number': telephone_numbers[ii],
@@ -150,10 +161,10 @@ class TransportOrderController(http.Controller):
                         'max_load': float(max_loads[ii]),
                         'is_backload': True,
                     }
-                    truck_id = request.env['truck.detail'].sudo().create(truck_detail)
+                    truck_route_id = request.env['truck.route'].sudo().create(truck_route_detail)
 
                     product_detail = {
-                        'truck_id': truck_id.id,
+                        'truck_route_id': truck_route_id.id,
                         'pricelist_id': int(route_demand_id.meta_sale_order_id.transport_pricelist_id.id),
                         'partner_id': token_record.partner_id.id,
                         'product_tmpl_id': int(route_demand_id.meta_sale_order_id.transport_product_id.id),

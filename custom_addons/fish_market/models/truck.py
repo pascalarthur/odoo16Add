@@ -2,38 +2,53 @@ from odoo import models, fields, api, _
 from ..utils.model_utils import default_name
 
 TRUCK_STATES = [
-    ('offer', 'Offer'),
+    ('draft', 'Draft'),
     ('confirmed', 'Confirmed'),
+    ('loaded', 'Loaded'),
+    ('completed', 'Completed'),
 ]
 
 
 class TruckLoadLine(models.Model):
-    _name = 'truck.detail.line'
-    _description = 'Truck Detail Line'
+    _name = "truck.detail.line"
 
-    truck_detail_id = fields.Many2one('truck.detail', string='Truck Detail', ondelete='cascade')
+
+class TruckRouteLoadLine(models.Model):
+    _name = "truck.route.line"
+    _description = 'Truck Route Line'
+
+    truck_route_id = fields.Many2one('truck.route', string='Truck Route', ondelete='cascade')
+    available_product_ids = fields.One2many('product.product', related='truck_route_id.available_product_ids', store=False)
+    location_id = fields.Many2one('stock.location', string='Origin Location')
+    available_location_ids = fields.One2many('stock.location', related='truck_route_id.available_location_ids', store=False)
     product_id = fields.Many2one('product.product', string='Product', required=True, ondelete='cascade')
     unit_price = fields.Float('Unit Price', default=0.0)
-    location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
 
 
 class TruckDetail(models.Model):
-    _name = 'truck.detail'
-    _description = 'Truck Detail'
+    _name = "truck.detail"
+
+
+class TruckDetail(models.Model):
+    _name = "truck.route"
+    _description = 'Truck Route'
 
     name = fields.Char(string="Truck Ref", required=True, copy=False, readonly=False, index='trigram',
                        default=lambda self: default_name(self, prefix='TR'))
 
     state = fields.Selection(selection=TRUCK_STATES, string="Status", readonly=True, copy=False, index=True,
-                             default='offer')
+                             default='draft')
+
+    truck_id = fields.Many2one('truck', string='Truck', ondelete='cascade')
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
-    partner_id = fields.Many2one('res.partner', string="Transporter")
     is_backload = fields.Boolean(string='Is Backload', default=False)
 
-    truck_number = fields.Char(string='Trailer Number')
-    horse_number = fields.Char(string='Horse Number')
+    partner_id = fields.Many2one('res.partner', string="Transporter", related='truck_id.partner_id')
+    horse_number = fields.Char(string='Horse Number', related='truck_id.horse_number')
+    trailer_number = fields.Char(string='Trailer Number', related='truck_id.trailer_number')
+
     container_number = fields.Char(string='Container Number')
     driver_name = fields.Char(string='Driver Name')
     telephone_number = fields.Char(string='Telephone Number')
@@ -43,9 +58,12 @@ class TruckDetail(models.Model):
     price = fields.Float(string='Price')
     max_load = fields.Float(string='Max. Load [kg]')
     price_per_kg = fields.Float(string='Price per Kg', compute='_compute_price_per_kg', digits=(4, 4))
+
+    load_line_ids = fields.One2many('truck.route.line', 'truck_route_id', string='Load')
     truck_utilization = fields.Float(string='Truck Utilization (%)', compute='_compute_truck_utilization', store=True)
 
-    load_line_ids = fields.One2many('truck.detail.line', 'truck_detail_id', string='Load')
+    available_product_ids = fields.One2many('product.product', string='Product', compute="_compute_available_products", store=False)
+    available_location_ids = fields.One2many('stock.location', string='Locations', compute="_compute_available_locations", store=False)
 
     date_start = fields.Date(string='Start Date')
     date_end = fields.Date(string='End Date')
@@ -87,8 +105,8 @@ class TruckDetail(models.Model):
     def allocate_product(self, product, unit_price, location_id, quantity):
         self.ensure_one()
         self.state = 'confirmed'
-        self.env['truck.detail.line'].create({
-            'truck_detail_id': self.id,
+        self.env['truck.route.line'].create({
+            'truck_route_id': self.id,
             'product_id': product.id,
             'unit_price': unit_price,
             'location_id': location_id.id,
@@ -98,7 +116,7 @@ class TruckDetail(models.Model):
     def action_load_truck(self):
         return {
             'type': 'ir.actions.act_window',
-            'res_model': 'truck.detail',
+            'res_model': 'truck.route',
             'view_mode': 'form',
             'views': [(False, 'form')],
             'target': 'new',
@@ -107,7 +125,7 @@ class TruckDetail(models.Model):
 
     def action_handle_overload(self):
         truck_redistribution = self.env['redistribution.wizard'].create({
-            'truck_id':
+            'truck_route_id':
             self.id,
             'meta_sale_order_id':
             self.meta_sale_order_id.id,
@@ -122,3 +140,25 @@ class TruckDetail(models.Model):
             'target': 'new',
             'context': {},
         }
+
+    def _compute_available_products(self):
+        for record in self:
+            record.available_product_ids = record.meta_sale_order_id.order_line_ids.mapped('product_id')
+
+    def _compute_available_locations(self):
+        for record in self:
+            record.available_location_ids = record.meta_sale_order_id.order_line_ids.mapped('location_id')
+
+
+class Truck(models.Model):
+    _name = "truck"
+    _description = "Truck"
+
+    name = fields.Char(string="Truck", required=True, copy=False, readonly=False, index='trigram',
+                       default=lambda self: default_name(self, prefix='T'))
+
+    partner_id = fields.Many2one('res.partner', string="Transporter")
+    horse_number = fields.Char(string='Horse Number')
+    trailer_number = fields.Char(string='Trailer Number')
+
+    truck_route_ids = fields.One2many('truck.route', 'truck_id', string='Truck Details')

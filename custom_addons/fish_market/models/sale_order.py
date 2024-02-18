@@ -7,8 +7,8 @@ class SaleOrder(models.Model):
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
 
     location_id = fields.Many2one('stock.location', string='Origin Location')
-    truck_detail_id = fields.Many2one('truck.detail', string='Truck Detail')
-    truck_number = fields.Char('Trailer Number')
+    truck_route_id = fields.Many2one('truck.route', string='Truck Detail')
+    trailer_number = fields.Char('Trailer Number')
     horse_number = fields.Char('Horse Number')
     container_number = fields.Char('Container Number')
     seal_number = fields.Char('Seal Number')
@@ -47,7 +47,7 @@ class SaleOrder(models.Model):
         for invoice in invoices:
             # Set custom fields on each invoice
             invoice.write({
-                'truck_number': self.truck_number,
+                'trailer_number': self.trailer_number,
                 'horse_number': self.horse_number,
                 'container_number': self.container_number,
                 'seal_number': self.seal_number,

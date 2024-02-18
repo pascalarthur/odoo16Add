@@ -7,8 +7,8 @@ class RedistributionWizardLineBase(models.TransientModel):
 
     wizard_id = fields.Many2one('redistribution.wizard', string='Wizard', readonly=True)
     meta_sale_order_id = fields.Many2one(related='wizard_id.meta_sale_order_id')
-    truck_id = fields.Many2one(related='wizard_id.truck_id')
-    load_line_ids = fields.One2many(related='wizard_id.truck_id.load_line_ids')
+    truck_route_id = fields.Many2one(related='wizard_id.truck_route_id')
+    load_line_ids = fields.One2many(related='wizard_id.truck_route_id.load_line_ids')
     product_ids_from_load_lines = fields.Many2many('product.product', compute='_compute_product_ids_from_load_lines')
 
     @api.depends('load_line_ids')
@@ -32,7 +32,7 @@ class TruckRedistributionWizardLine(RedistributionWizardLineBase):
     _name = 'truck.redistribution.wizard.line'
     _description = 'Truck Redistribution Wizard Line'
 
-    target_truck_id = fields.Many2one('truck.detail', string='Target Truck')
+    target_truck_route_id = fields.Many2one('truck.route', string='Target Truck')
 
 
 class RedistributionWizard(models.TransientModel):
@@ -42,9 +42,9 @@ class RedistributionWizard(models.TransientModel):
     move_to_stock = fields.Boolean(default=False)
     redistribute = fields.Boolean(default=False)
 
-    truck_id = fields.Many2one('truck.detail', string='Truck', readonly=True)
+    truck_route_id = fields.Many2one('truck.route', string='Truck Route', readonly=True)
     meta_sale_order_id = fields.Many2one('meta.sale.order', string="Meta Sale Order", readonly=True)
-    load_line_ids = fields.One2many(related='truck_id.load_line_ids')
+    load_line_ids = fields.One2many(related='truck_route_id.load_line_ids')
 
     truck_redistribution_lines = fields.One2many('truck.redistribution.wizard.line', 'wizard_id',
                                                  string='Redistribution Trucks')
@@ -55,9 +55,10 @@ class RedistributionWizard(models.TransientModel):
     def confirm_action(self):
         self.ensure_one()
 
-        for load_line in self.truck_id.load_line_ids:
+        for load_line in self.truck_route_id.load_line_ids:
             loaded_quantity = sum(
-                self.truck_id.load_line_ids.filtered(lambda l: l.product_id == load_line.product_id).mapped('quantity'))
+                self.truck_route_id.load_line_ids.filtered(lambda l: l.product_id == load_line.product_id).mapped(
+                    'quantity'))
             desired_unload_quantity = sum(
                 self.location_redistribution_lines.filtered(lambda l: l.product_id == load_line.product_id).mapped(
                     'quantity'))
@@ -76,21 +77,22 @@ class RedistributionWizard(models.TransientModel):
         if self.redistribute:
             for truck_line in self.truck_redistribution_lines:
                 # Decrease quantity in source truck
-                source_load_line = self.truck_id.load_line_ids.filtered(lambda l: l.product_id == truck_line.product_id)
+                source_load_line = self.truck_route_id.load_line_ids.filtered(
+                    lambda l: l.product_id == truck_line.product_id)
                 if source_load_line:
                     source_load_line.quantity -= truck_line.quantity
                     if source_load_line.quantity == 0:
                         source_load_line.unlink()
 
                 # Increase quantity in target truck
-                target_load_line = truck_line.target_truck_id.load_line_ids.filtered(
+                target_load_line = truck_line.target_truck_route_id.load_line_ids.filtered(
                     lambda l: l.product_id == truck_line.product_id)
                 if target_load_line:
                     target_load_line.quantity += truck_line.quantity
                 else:
-                    # Create a new truck.detail.line if it doesn't exist
-                    self.env['truck.detail.line'].create({
-                        'truck_detail_id': truck_line.target_truck_id.id,
+                    # Create a new truck.route.line if it doesn't exist
+                    self.env['truck.route.line'].create({
+                        'truck_route_id': truck_line.target_truck_route_id.id,
                         'product_id': truck_line.product_id.id,
                         'quantity': truck_line.quantity,
                     })
@@ -98,7 +100,7 @@ class RedistributionWizard(models.TransientModel):
         if self.move_to_stock:
             for location_line in self.location_redistribution_lines:
                 load_lines_to_unlink = []
-                for load_line in self.truck_id.load_line_ids:
+                for load_line in self.truck_route_id.load_line_ids:
                     if load_line.product_id == location_line.product_id:
                         load_line.quantity -= location_line.quantity
                         if load_line.quantity == 0:

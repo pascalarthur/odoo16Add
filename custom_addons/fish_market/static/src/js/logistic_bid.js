@@ -24,7 +24,7 @@ function getTruckDiv() {
     truckDetail.classList.add('truck-detail');
     truckDetail.innerHTML = `
         <input required type="text" name="horse_number[]" placeholder="Horse Number"/>
-        <input required type="text" name="truck_number[]" placeholder="Trailer Number"/>
+        <input required type="text" name="trailer_number[]" placeholder="Trailer Number"/>
         <input required type="text" name="container_number[]" placeholder="Container Number"/>
         <input required type="text" name="driver_name[]" placeholder="Driver Name"/>
         <input required type="text" name="telephone_number[]" placeholder="Telephone Number"/>
@@ -51,15 +51,15 @@ function getTruckDiv() {
 
 
 function addTruck() {
-    var truck_details_container = document.createElement('div');
-    truck_details_container.classList.add('truck-details-container');
+    var truck_routes_container = document.createElement('div');
+    truck_routes_container.classList.add('truck-details-container');
 
     var truckDetail = getTruckDiv()
     var heading = document.createElement('h3');
     heading.innerText = 'One-Way';
     heading.classList.add('bid-h3')
-    truck_details_container.appendChild(heading);
-    truck_details_container.appendChild(truckDetail);
+    truck_routes_container.appendChild(heading);
+    truck_routes_container.appendChild(truckDetail);
 
     // Backload information
     var backloadDetail = document.createElement('div');
@@ -73,17 +73,17 @@ function addTruck() {
         <table>
             <tr>
                 <td><label>End Date:</label></td>
-                <td><input required type="date" name="date_end_backload[]"/></td>
+                <td><input type="date" name="date_end_backload[]"/></td>
             </tr>
         </table>
     `;
     backloadDetail.addEventListener('change', function() { update_usd_price(backloadDetail) });
 
     backloadDetail.style.display = 'none';
-    truck_details_container.appendChild(backloadDetail);
+    truck_routes_container.appendChild(backloadDetail);
 
-    var container = document.getElementById('truck_details_section');
-    container.appendChild(truck_details_container);
+    var container = document.getElementById('truck_routes_section');
+    container.appendChild(truck_routes_container);
 }
 
 
@@ -93,10 +93,14 @@ function toggle_backload(button_element) {
     if (backload_detail.style.display == 'none') {
         backload_detail.style.display = '';
         button_element.innerText = 'Remove Backload';
+        backload_detail.querySelector('.priceNad').setAttribute('required', 'required');
+        backload_detail.querySelector('input[name="date_end_backload[]"]').setAttribute('required', 'required');
     } else {
         backload_detail.style.display = 'none';
         backload_detail.querySelector('.priceNad').value = NaN;
         backload_detail.querySelector('.priceUsd').value = NaN;
+        backload_detail.querySelector('.priceNad').removeAttribute('required');
+        backload_detail.querySelector('input[name="date_end_backload[]"]').removeAttribute('required');
         button_element.innerText = 'Add Backload';
     }
 };
