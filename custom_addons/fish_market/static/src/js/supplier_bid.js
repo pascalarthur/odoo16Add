@@ -160,7 +160,7 @@ function add_product_offers() {
             <input type="number" onchange='synch_price_product_offer(this); update_price_per_ton(this);' placeholder="Price [USD]"/>
             <input type="number" name="approx_loading_time[]" placeholder="Approx. Loading Time [hours]"/>
             <input type="number" name="approx_offloading_time[]" placeholder="Approx. Offloading Time [hours]"/>
-            <div style="margin-bottom: 5">Price per ton: <span class="pricePerTon">0.0</span></div>
+            <div style="margin-bottom: 5">Price per ton: <span class="pricePerTon">0.0</span> [USD/Ton]</div>
         `;
         pricelist_item_element.querySelector('input[name="product_pricelist_item_id[]"]').value = item['id'];
         pricelist_item_element.querySelector('input[name="price_in_usd[]"]').value = NaN;
