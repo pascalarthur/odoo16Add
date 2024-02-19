@@ -19,7 +19,7 @@
                         <button type="object" name="action_view_optional_backloads" class="oe_stat_button" icon="fa-exchange">
                             <div class="o_stat_info">
                                 <span class="o_stat_value">
-                                    <field name="transport_pricelist_backloads_count"/>
+                                    <field name="transport_backloads_count"/>
                                 </span>
                                 <span class="o_stat_text">
                                     Optional Backloads
@@ -33,14 +33,15 @@
                         </div>
                         <group col="2">
                             <group col="1">
+                                <field name="company_id" invisible="1"/>
                                 <field name="partner_id" readonly="state not in ['draft', 'transport']"/>
+                                <field name="pricelist_id" readonly="state not in ['draft', 'transport']"/>
+                                <field name="partner_bank_id" readonly="state not in ['draft', 'transport']"/>
                                 <field name="container_demand" readonly="1"/>
                             </group>
                             <group col="1">
                                 <field name="transport_product_id" readonly="state not in ['draft', 'transport']"/>
                                 <field name="transport_pricelist_id" readonly="state not in ['draft', 'transport']"/>
-                            </group>
-                            <group col="1">
                                 <field name="date_start" widget="date" readonly="state not in ['draft', 'transport']"/>
                                 <field name="date_end" widget="date" readonly="state not in ['draft', 'transport']"/>
                             </group>
@@ -61,7 +62,7 @@
                         <notebook>
                             <page string="Transport Bids" name="transport_bids_page">
                                 <field name="transport_pricelist_item_ids_no_backload" string="">
-                                    <tree class="text-right">
+                                    <tree>
                                         <field name="currency_id" column_invisible="1"/>
                                         <field name="backload_id" column_invisible="1"/>
                                         <field name="truck_route_state" column_invisible="1"/>

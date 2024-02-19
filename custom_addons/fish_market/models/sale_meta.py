@@ -20,8 +20,8 @@ class MetaSaleOrderLine(models.Model):
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order', ondelete='cascade')
     product_id = fields.Many2one('product.product', string='Product', required=True)
-    box_weight = fields.Float('Box Weight [kg]', related='product_id.box_weight', store=True)
-    unit_price = fields.Float('Unit Price', default=0.0)
+    box_weight = fields.Float('Box Weight [kg]', related='product_id.box_weight', store=True, readonly=True)
+    unit_price = fields.Float('Unit Price', required=True)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
 
@@ -33,8 +33,30 @@ class MetaSaleOrder(models.Model):
     name = fields.Char(string="Meta Sale Reference", required=True, copy=False, readonly=False, index='trigram',
                        default=lambda self: default_name(self, prefix='MS'))
 
+    company_id = fields.Many2one(
+        comodel_name='res.company',
+        string='Company',
+        compute='_compute_company_id',
+        inverse='_inverse_company_id',
+        store=True,
+        readonly=True,
+        precompute=True,
+        index=True,
+    )
+
     state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft')
     partner_id = fields.Many2one('res.partner', string='Customer')
+    pricelist_id = fields.Many2one('product.pricelist', string='Pricelist', required=True)
+    partner_bank_id = fields.Many2one(
+        'res.partner.bank',
+        string='Recipient Bank',
+        store=True,
+        readonly=False,
+        help="Bank Account Number to which the invoice will be paid. "
+        "A Company bank account if this is a Customer Invoice or Vendor Credit Note, "
+        "otherwise a Partner bank account number.",
+        check_company=True,
+    )
 
     transport_product_id = fields.Many2one('product.template', string='Transport Route',
                                            domain=[('type', '=', 'transport')], required=True)
@@ -45,7 +67,7 @@ class MetaSaleOrder(models.Model):
         'product.pricelist.item', compute='_compute_transport_pricelist_item_ids_no_backload', string='Transport Bids')
     container_demand = fields.Integer(string='Container Demand', compute='_compute_container_demand')
 
-    transport_pricelist_backloads_count = fields.Integer(compute='_compute_transport_pricelist_backloads_count')
+    transport_backloads_count = fields.Integer(compute='_compute_transport_backloads_count')
 
     order_line_ids = fields.One2many('meta.sale.order.line', 'meta_sale_order_id', string='Order Lines')
     truck_route_ids = fields.One2many('truck.route', 'meta_sale_order_id', string='All Trucks')
@@ -59,13 +81,17 @@ class MetaSaleOrder(models.Model):
     date_start = fields.Date(string='Start Date', required=True)
     date_end = fields.Date(string='End Date', required=True)
 
+    def _compute_company_id(self):
+        for meta_sale in self:
+            meta_sale.company_id = meta_sale.partner_id.company_id
+
     def _compute_truck_route_ids_no_backload(self):
         for record in self:
             record.truck_route_ids_no_backload = record.truck_route_ids.filtered(lambda t: not t.is_backload)
 
-    def _compute_transport_pricelist_backloads_count(self):
+    def _compute_transport_backloads_count(self):
         for record in self:
-            record.transport_pricelist_backloads_count = len(record.transport_pricelist_item_ids.mapped('backload_id'))
+            record.transport_backloads_count = len(record.transport_pricelist_item_ids.mapped('backload_id'))
 
     @api.depends('order_line_ids')
     def _compute_container_demand(self):
@@ -234,9 +260,10 @@ class MetaSaleOrder(models.Model):
                 'trailer_number': truck_route_id.trailer_number,
                 'horse_number': truck_route_id.horse_number,
                 'container_number': truck_route_id.container_number,
-                'seal_number': truck_route_id.seal_number,
+                # 'seal_number': truck_route_id.seal_number,
                 'driver_name': truck_route_id.driver_name,
                 'telephone_number': truck_route_id.telephone_number,
+                'pricelist_id': self.pricelist_id.id,
             })
 
             for load_line in truck_route_id.load_line_ids:
@@ -264,8 +291,13 @@ class MetaSaleOrder(models.Model):
             if sale_id.state in ['draft', 'sent']:
                 sale_id.action_confirm()
                 if sale_id.invoice_status != 'invoiced':
-                    invoice = sale_id._create_invoices()
-                    invoice.action_post()
+                    invoice_id = sale_id._create_invoices()
+                    invoice_id.action_post()
+                for invoice_id in sale_id.invoice_ids:
+                    invoice_id.write({
+                        'partner_bank_id': self.partner_bank_id.id,
+                        'seal_number': sale_id.truck_route_id.seal_number
+                    })
         self.state = 'handle_overload'
 
     def action_set_done(self):

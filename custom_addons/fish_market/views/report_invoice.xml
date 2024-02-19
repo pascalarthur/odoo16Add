@@ -4,20 +4,23 @@
         <template id="invoice_cop" inherit_id="account.report_invoice_document">
             <xpath expr="//div[hasclass('page')]" position="after">
                 <table>
+                    <tr t-if="o.partner_bank_id" class="no-border-table">
+                        <td style="padding-right: 10px;"><strong>Trucking Details:</strong></td>
+                    </tr>
                     <tr t-if="o.trailer_number">
-                        <td style="padding-right: 10px;"><strong>Trailer Number:</strong></td>
+                        <td style="padding-right: 10px;">Trailer Number:</td>
                         <td><span t-field="o.trailer_number"/></td>
                     </tr>
                     <tr t-if="o.horse_number">
-                        <td style="padding-right: 10px;"><strong>Horse Number:</strong></td>
+                        <td style="padding-right: 10px;">Horse Number:</td>
                         <td><span t-field="o.horse_number"/></td>
                     </tr>
                     <tr t-if="o.container_number">
-                        <td style="padding-right: 10px;"><strong>Container Number:</strong></td>
+                        <td style="padding-right: 10px;">Container Number:</td>
                         <td><span t-field="o.container_number"/></td>
                     </tr>
                     <tr t-if="o.seal_number">
-                        <td style="padding-right: 10px;"><strong>Seal Number:</strong></td>
+                        <td style="padding-right: 10px;">Seal Number:</td>
                         <td><span t-field="o.seal_number"/></td>
                     </tr>
                 </table>
@@ -27,19 +30,24 @@
                         <td style="padding-right: 10px;"><strong>Banking Details:</strong></td>
                     </tr>
                     <tr t-if="o.partner_bank_id.acc_holder_name">
+                        <td>Name:</td>
                         <td><span t-field="o.partner_bank_id.acc_holder_name"/></td>
                     </tr>
                     <tr t-if="o.partner_bank_id.bank_name">
+                        <td>Bank Name:</td>
                         <td><span t-field="o.partner_bank_id.bank_name"/></td>
                     </tr>
                     <tr t-if="o.partner_bank_id.branch_code">
-                        <td>Branch Code: <span t-field="o.partner_bank_id.branch_code"/></td>
+                        <td>Branch Code:</td>
+                        <td><span t-field="o.partner_bank_id.branch_code"/></td>
                     </tr>
                     <tr t-if="o.partner_bank_id.acc_number">
-                        <td>Acc No: <span t-field="o.partner_bank_id.acc_number"/></td>
+                        <td>Acc No:</td>
+                        <td><span t-field="o.partner_bank_id.acc_number"/></td>
                     </tr>
                     <tr t-if="o.partner_bank_id.bank_bic">
-                        <td>Swift Code: <span t-field="o.partner_bank_id.bank_bic"/></td>
+                        <td>Swift Code:</td>
+                        <td><span t-field="o.partner_bank_id.bank_bic"/></td>
                     </tr>
                 </table>
             </xpath>
