@@ -231,12 +231,31 @@ class MetaSaleOrder(models.Model):
         self.ensure_one()
         self.action_send_order_confirmation()
 
+    def _get_warehouse_address(self, warehouse_id) -> str:
+        address = []
+        for attr in ['street', 'street2', 'zip', 'city', 'state_id', 'country_id']:
+            if warehouse_id.partner_id[attr]:
+                if attr.endswith('_id'):
+                    address.append(warehouse_id.partner_id[attr].name)
+                else:
+                    address.append(warehouse_id.partner_id[attr])
+        return ', '.join(address)
+
     def _prepare_email_content_for_transporter(self, truck):
         # Prepare the email content for the transporter
+        warehouse_id = self.transport_product_id.start_warehouse_id
+        address = self._get_warehouse_address(warehouse_id)
+
         content = f"Dear {truck.partner_id.name},<br/>"
         content += f"You are selected to pick up the following products:<br/>"
+        content += "<table style='border-collapse: collapse; text-align: left'>"
+        header = "".join(["<th style='border: 1px solid black;'>" + x + "</th>" for x in ["Product", "Quantity", "Address", "Address - Ref"]])
+        content += f"<strong><tr style='border: 1px solid black;'>{header}</tr></strong>"
         for line in truck.load_line_ids:
-            content += f"Product: {line.product_id.name}, Quantity: {line.quantity}, Location: {line.location_id.name}<br/>"
+            address_ref = f"{line.location_id.location_id.name}/{line.location_id.name} ({warehouse_id.name})"
+            content_line = "".join([f"<td style='border: 1px solid black;'>{x}</td>" for x in [line.product_id.name, line.quantity, address, address_ref]])
+            content += f"<tr style='border: 1px solid black;'>{content_line}</tr>"
+        content += "</table>"
         return content
 
     def _prepare_email_content_for_supplier_at_location(self, warehouse_id, location, lines):
@@ -260,7 +279,6 @@ class MetaSaleOrder(models.Model):
                 'trailer_number': truck_route_id.trailer_number,
                 'horse_number': truck_route_id.horse_number,
                 'container_number': truck_route_id.container_number,
-                # 'seal_number': truck_route_id.seal_number,
                 'driver_name': truck_route_id.driver_name,
                 'telephone_number': truck_route_id.telephone_number,
                 'pricelist_id': self.pricelist_id.id,
@@ -276,7 +294,7 @@ class MetaSaleOrder(models.Model):
             sale_order.action_quotation_send_programmatically()
             sale_order.state = 'sent'
 
-        self.state = 'seal_trucks'
+        # self.state = 'seal_trucks'
 
     def action_confirm_seals(self):
         self.ensure_one()
