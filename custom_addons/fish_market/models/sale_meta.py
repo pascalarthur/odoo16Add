@@ -75,11 +75,16 @@ class MetaSaleOrder(models.Model):
                                                   compute='_compute_truck_route_ids_no_backload', readonly=False)
 
     sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
+    sale_order_count = fields.Integer(string='Sale Orders', compute='_compute_sale_order_count', store=True)
     invoice_ids = fields.Many2many('account.move', string='Invoices', related='sale_order_ids.invoice_ids',
                                    readonly=True)
 
     date_start = fields.Date(string='Start Date', required=True)
     date_end = fields.Date(string='End Date', required=True)
+
+    def _compute_sale_order_count(self):
+        for record in self:
+            record.sale_order_count = len(record.sale_order_ids)
 
     def _compute_company_id(self):
         for meta_sale in self:
@@ -161,7 +166,7 @@ class MetaSaleOrder(models.Model):
                 "No transport offers have been accepted yet. Please confirm bids/add trucks manually.")
 
         # Step 2: Clear existing allocations
-        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: t.state != 'draft'):
+        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: t.state not in ['draft', 'done']):
             truck_route_id.load_line_ids.unlink()  # This will delete the TruckLoadLine records
             truck_route_id.state = 'confirmed'
 
@@ -249,11 +254,17 @@ class MetaSaleOrder(models.Model):
         content = f"Dear {truck.partner_id.name},<br/>"
         content += f"You are selected to pick up the following products:<br/>"
         content += "<table style='border-collapse: collapse; text-align: left'>"
-        header = "".join(["<th style='border: 1px solid black;'>" + x + "</th>" for x in ["Product", "Quantity", "Address", "Address - Ref"]])
+        header = "".join([
+            "<th style='border: 1px solid black;'>" + x + "</th>"
+            for x in ["Product", "Quantity", "Address", "Address - Ref"]
+        ])
         content += f"<strong><tr style='border: 1px solid black;'>{header}</tr></strong>"
         for line in truck.load_line_ids:
             address_ref = f"{line.location_id.location_id.name}/{line.location_id.name} ({warehouse_id.name})"
-            content_line = "".join([f"<td style='border: 1px solid black;'>{x}</td>" for x in [line.product_id.name, line.quantity, address, address_ref]])
+            content_line = "".join([
+                f"<td style='border: 1px solid black;'>{x}</td>"
+                for x in [line.product_id.name, line.quantity, address, address_ref]
+            ])
             content += f"<tr style='border: 1px solid black;'>{content_line}</tr>"
         content += "</table>"
         return content
@@ -266,35 +277,39 @@ class MetaSaleOrder(models.Model):
             content += f"Truck {truck.trailer_number} will pick up: Product {line.product_id.name}, Quantity: {line.quantity}<br/>"
         return content
 
-    def action_send_order_confirmation(self):
+    def create_sale_order_for_truck(self, truck_route_id):
         SaleOrder = self.env['sale.order']
         SaleOrderLine = self.env['sale.order.line']
 
-        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
-            # Create a sale order for each truck
-            sale_order = SaleOrder.create({
-                'meta_sale_order_id': self.id,
-                'partner_id': self.partner_id.id,
-                'truck_route_id': truck_route_id.id,
-                'trailer_number': truck_route_id.trailer_number,
-                'horse_number': truck_route_id.horse_number,
-                'container_number': truck_route_id.container_number,
-                'driver_name': truck_route_id.driver_name,
-                'telephone_number': truck_route_id.telephone_number,
-                'pricelist_id': self.pricelist_id.id,
+        sale_order_id = SaleOrder.create({
+            'meta_sale_order_id': self.id,
+            'partner_id': self.partner_id.id,
+            'truck_route_id': truck_route_id.id,
+            'trailer_number': truck_route_id.trailer_number,
+            'horse_number': truck_route_id.horse_number,
+            'container_number': truck_route_id.container_number,
+            'driver_name': truck_route_id.driver_name,
+            'telephone_number': truck_route_id.telephone_number,
+            'pricelist_id': self.pricelist_id.id,
+        })
+
+        for load_line in truck_route_id.load_line_ids:
+            SaleOrderLine.create({
+                'order_id': sale_order_id.id,
+                'product_id': load_line.product_id.id,
+                'product_uom_qty': load_line.quantity,
+                'price_unit': load_line.unit_price,
             })
+        sale_order_id.action_quotation_send_programmatically()
+        sale_order_id.state = 'sent'
+        return sale_order_id
 
-            for load_line in truck_route_id.load_line_ids:
-                SaleOrderLine.create({
-                    'order_id': sale_order.id,
-                    'product_id': load_line.product_id.id,
-                    'product_uom_qty': load_line.quantity,
-                    'price_unit': load_line.unit_price,
-                })
-            sale_order.action_quotation_send_programmatically()
-            sale_order.state = 'sent'
-
-        # self.state = 'seal_trucks'
+    def action_send_order_confirmation(self):
+        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+            # Check that we do not have created the invoice yet
+            if truck_route_id.id not in self.sale_order_ids.mapped('truck_route_id').ids:
+                self.create_sale_order_for_truck(truck_route_id)
+        self.state = 'seal_trucks'
 
     def action_confirm_seals(self):
         self.ensure_one()
@@ -303,19 +318,22 @@ class MetaSaleOrder(models.Model):
                 raise exceptions.UserError(f"Please enter a seal number for truck {truck_route_id.name}")
         self.state = 'send_invoice'
 
+    def create_invoice(self, sale_id) -> None:
+        if sale_id.state in ['draft', 'sent']:
+            sale_id.action_confirm()
+            if sale_id.invoice_status != 'invoiced':
+                invoice_id = sale_id._create_invoices()
+                invoice_id.action_post()
+            for invoice_id in sale_id.invoice_ids:
+                invoice_id.write({
+                    'partner_bank_id': self.partner_bank_id.id,
+                    'seal_number': sale_id.truck_route_id.seal_number
+                })
+
     def action_send_invoice(self):
         self.ensure_one()
         for sale_id in self.sale_order_ids:
-            if sale_id.state in ['draft', 'sent']:
-                sale_id.action_confirm()
-                if sale_id.invoice_status != 'invoiced':
-                    invoice_id = sale_id._create_invoices()
-                    invoice_id.action_post()
-                for invoice_id in sale_id.invoice_ids:
-                    invoice_id.write({
-                        'partner_bank_id': self.partner_bank_id.id,
-                        'seal_number': sale_id.truck_route_id.seal_number
-                    })
+            self.create_invoice(sale_id)
         self.state = 'handle_overload'
 
     def action_set_done(self):

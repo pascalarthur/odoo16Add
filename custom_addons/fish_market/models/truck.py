@@ -1,11 +1,11 @@
-from odoo import models, fields, api, _
+from odoo import models, fields, api, _, exceptions
 from ..utils.model_utils import default_name
 
 TRUCK_STATES = [
     ('draft', 'Draft'),
     ('confirmed', 'Confirmed'),
     ('loaded', 'Loaded'),
-    ('completed', 'Completed'),
+    ('done', 'Done'),
 ]
 
 
@@ -62,8 +62,10 @@ class TruckDetail(models.Model):
     load_line_ids = fields.One2many('truck.route.line', 'truck_route_id', string='Load')
     truck_utilization = fields.Float(string='Truck Utilization (%)', compute='_compute_truck_utilization', store=True)
 
-    available_product_ids = fields.One2many('product.product', string='Product', compute="_compute_available_products", store=False)
-    available_location_ids = fields.One2many('stock.location', string='Locations', compute="_compute_available_locations", store=False)
+    available_product_ids = fields.One2many('product.product', string='Product', compute="_compute_available_products",
+                                            store=False)
+    available_location_ids = fields.One2many('stock.location', string='Locations',
+                                             compute="_compute_available_locations", store=False)
 
     date_start = fields.Date(string='Start Date')
     date_end = fields.Date(string='End Date')
@@ -104,7 +106,7 @@ class TruckDetail(models.Model):
 
     def allocate_product(self, product, unit_price, location_id, quantity):
         self.ensure_one()
-        self.state = 'confirmed'
+        self.state = 'loaded'
         self.env['truck.route.line'].create({
             'truck_route_id': self.id,
             'product_id': product.id,
@@ -123,6 +125,16 @@ class TruckDetail(models.Model):
             'res_id': self.id
         }
 
+    def action_create_invoice(self):
+        if len(self.load_line_ids) == 0:
+            raise exceptions.UserError(_("Please allocate products before creating an invoice."))
+        if not self.seal_number:
+            raise exceptions.UserError(_("Please enter the seal number before creating an invoice."))
+
+        sale_order_id = self.meta_sale_order_id.create_sale_order_for_truck(self)
+        self.meta_sale_order_id.create_invoice(sale_order_id)
+        self.state = 'done'
+
     def action_handle_overload(self):
         truck_redistribution = self.env['redistribution.wizard'].create({
             'truck_route_id':
@@ -130,7 +142,6 @@ class TruckDetail(models.Model):
             'meta_sale_order_id':
             self.meta_sale_order_id.id,
         })
-
         return {
             'type': 'ir.actions.act_window',
             'res_model': 'redistribution.wizard',
@@ -152,7 +163,7 @@ class TruckDetail(models.Model):
     @api.onchange('load_line_ids')
     def _update_state(self):
         for record in self:
-            if record.load_line_ids:
+            if len(record.load_line_ids) > 0:
                 record.state = 'loaded'
 
 

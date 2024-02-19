@@ -102,17 +102,19 @@
                                         <field name="truck_utilization" string="Truck Utilization [%]"/>
                                         <field name="seal_number"/>
 
-                                        <field name="state" widget="badge" decoration-info="state == 'confirmed'" decoration-success="state == 'loaded'"/>
+                                        <field name="state" widget="badge" decoration-info="state == 'loaded'" decoration-success="state == 'done'"/>
 
                                         <button name="action_load_truck" string="Load" type="object" class="oe_highlight" invisible="state not in ['confirmed']"/>
-                                        <button name="action_handle_overload" string="Handle Overload" type="object" class="oe_highlight" invisible="state not in ['loaded']"/>
+                                        <button name="action_create_invoice" string="Invoice" type="object" class="oe_highlight" invisible="state not in ['loaded']"/>
+                                        <button name="action_handle_overload" string="Handle Overload" type="object" class="oe_highlight" invisible="state not in ['done']"/>
                                     </tree>
                                 </field>
                             </page>
                         </notebook>
                     </div>
 
-                    <div invisible="state not in ['send_invoice','handle_overload', 'done']">
+                    <field name="sale_order_count" invisible="1"/>
+                    <div invisible="sale_order_count == 0">
                         <h2>Sales and Invoices</h2>
                         <notebook>
                             <page string="Sale Orders" name="sale_order_page" >
