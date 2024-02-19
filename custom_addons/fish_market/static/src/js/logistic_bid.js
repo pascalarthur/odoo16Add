@@ -18,17 +18,23 @@ function update_usd_price(container) {
 }
 
 
+function update_max_load(element) {
+    element.parentNode.querySelector('input[name="max_load_per_truck[]"]').value = 49_900 - element.value;
+}
+
+
 function getTruckDiv() {
     var truckDetail = document.createElement('div');
 
     truckDetail.classList.add('truck-detail');
     truckDetail.innerHTML = `
+        <input hidden type="number" name="max_load_per_truck[]" placeholder="Max. Load [kg]"/><br/>
         <input required type="text" name="horse_number[]" placeholder="Horse Number"/>
         <input required type="text" name="trailer_number[]" placeholder="Trailer Number"/>
         <input required type="text" name="container_number[]" placeholder="Container Number"/>
         <input required type="text" name="driver_name[]" placeholder="Driver Name"/>
         <input required type="text" name="telephone_number[]" placeholder="Telephone Number"/>
-        <input required type="number" name="max_load_per_truck[]" placeholder="Max. Load [kg]"/><br/>
+        <input required type="number" onchange="update_max_load(this)" placeholder="GVM Truck & Trailer [kg]"/><br/>
         <input class="priceNad" required type="number" placeholder="Price in NAD" onchange="update_usd_price(this.parentNode)"/>
         <span class="currency-label">NAD</span><br/>
         <input readonly type="number" name="price_in_usd[]" class="priceUsd input-no-border" placeholder="Price in USD"/>
