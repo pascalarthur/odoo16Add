@@ -26,6 +26,9 @@ class ProductOfferController(http.Controller):
                     product_pricelist_item['date_start'] = product_pricelist_item['date_start'].strftime('%d-%m-%Y')
                 if product_pricelist_item['date_end']:
                     product_pricelist_item['date_end'] = product_pricelist_item['date_end'].strftime('%d-%m-%Y')
+                # add max load to product_pricelist_item
+                product_pricelist_item['max_load'] = http.request.env['truck.route'].sudo().search(
+                    [('id', '=', product_pricelist_item['truck_route_id'][0])]).max_load
 
             obj_start_end_dict = http.request.env['truck.route'].sudo().search_read(
                 [('id', '=', product_pricelist_items[0]['truck_route_id'][0])], [

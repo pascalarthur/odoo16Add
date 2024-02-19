@@ -139,16 +139,17 @@ function add_product_offers() {
     const product_pricelist_items = JSON.parse(product_offer_form_element.getAttribute('data-product-pricelist-items-list'));
     const product_offer_form_container = product_offer_form_element.querySelector('#product_offer_templates_container')
     for (const [ii, item] of product_pricelist_items.entries()) {
-        var product_product_description = item['product_id'][1]
         var date_start = item['date_start'] ? item['date_start'] : 'Date unspecified';
         var date_end = item['date_end'] ? item['date_end'] : 'Date unspecified';
+
+        var max_load = item['max_load'] ? item['max_load'] : 'Max Load unspecified';
 
         var pricelist_item_element = document.createElement('div');
 
         pricelist_item_element.innerHTML = `
             <input hidden type="number" name="product_pricelist_item_id[]"/>
             <input hidden type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price [USD]"/>
-            <p style="margin-bottom: 5">${date_start} (Start Date) - ${date_end} (End Date): ${product_product_description}: </p>
+            <p style="margin-bottom: 5">${date_start} (Start Date) - ${date_end} (End Date): ${max_load} (Max. Load [kg]) </p>
             <input type="number" onchange=synch_price_product_offer(this) placeholder="Price [USD]"/>
             <input type="number" name="approx_loading_time[]" placeholder="Approx. Loading Time [hours]"/>
             <input type="number" name="approx_offloading_time[]" placeholder="Approx. Offloading Time [hours]"/>
