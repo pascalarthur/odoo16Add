@@ -11,7 +11,7 @@
                     <button name="action_send_confirmations" string="Send Confirmations" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                     <button name="action_confirm_seals" string="Confirm Seals" type="object" class="oe_highlight" invisible="state not in ['seal_trucks']"/>
                     <button name="action_send_invoice" string="Invoice" type="object" class="oe_highlight" invisible="state not in ['send_invoice']"/>
-                    <button name="action_set_done" string="Done" type="object" class="oe_highlight" invisible="state not in ['handle_overload', 'done']"/>
+                    <button name="action_set_done" string="Done" type="object" class="oe_highlight" invisible="state not in ['handle_overload']"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,transport,allocated,send_confirmations,seal_trucks,send_invoice,handle_overload,done"/>
                 </header>
                 <sheet>
@@ -73,7 +73,7 @@
                                         <field name="max_load"/>
                                         <field name="truck_route_id"/>
 
-                                        <field name="truck_route_state" widget="badge" string="State" decoration-info="truck_route_state == 'confirmed'" decoration-success="truck_route_state == 'loaded'"/>
+                                        <field name="truck_route_state" widget="badge" string="State" decoration-info="truck_route_state == 'confirmed'" decoration-success="truck_route_state in ['loaded', 'done']"/>
                                         <field name="truck_route_state_backorder" widget="badge" string="State Backorder" decoration-info="truck_route_state_backorder == 'confirmed'" decoration-success="truck_route_state_backorder == 'loaded'"/>
 
                                         <button name="action_toggle_confirm_truck_route" string="Confirm" type="object" class="oe_highlight" invisible="truck_route_state not in ['draft']"/>

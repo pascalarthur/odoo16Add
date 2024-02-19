@@ -82,6 +82,7 @@ class MetaSaleOrder(models.Model):
     date_start = fields.Date(string='Start Date', required=True)
     date_end = fields.Date(string='End Date', required=True)
 
+    @api.depends('sale_order_ids')
     def _compute_sale_order_count(self):
         for record in self:
             record.sale_order_count = len(record.sale_order_ids)
