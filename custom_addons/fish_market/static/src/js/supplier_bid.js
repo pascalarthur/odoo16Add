@@ -135,6 +135,12 @@ function synch_price_product_offer(element) {
     element.parentNode.querySelector('.priceUsd').value = element.value;
 }
 
+function update_price_per_ton(priceUsd_element) {
+    var max_load = priceUsd_element.parentNode.querySelector('.max-load').value;
+    var price_per_ton = (priceUsd_element.value / max_load) * 1000;
+    priceUsd_element.parentNode.querySelector('.pricePerTon').innerHTML = price_per_ton;
+}
+
 function add_product_offers() {
     const product_pricelist_items = JSON.parse(product_offer_form_element.getAttribute('data-product-pricelist-items-list'));
     const product_offer_form_container = product_offer_form_element.querySelector('#product_offer_templates_container')
@@ -148,14 +154,17 @@ function add_product_offers() {
 
         pricelist_item_element.innerHTML = `
             <input hidden type="number" name="product_pricelist_item_id[]"/>
-            <input hidden type="number" name="price_in_usd[]" class="priceUsd" placeholder="Price [USD]"/>
-            <p style="margin-bottom: 5">${date_start} (Start Date) - ${date_end} (End Date): ${max_load} (Max. Load [kg]) </p>
-            <input type="number" onchange=synch_price_product_offer(this) placeholder="Price [USD]"/>
+            <input hidden type="number" name="price_in_usd[]" class="priceUsd"/>
+            <input hidden type="number" class="max-load"/>
+            <p style="margin-bottom: 5">${date_start} (Start Date) - ${date_end} (End Date): ${max_load} [kg] (Max. Load) </p>
+            <input type="number" onchange='synch_price_product_offer(this); update_price_per_ton(this);' placeholder="Price [USD]"/>
             <input type="number" name="approx_loading_time[]" placeholder="Approx. Loading Time [hours]"/>
             <input type="number" name="approx_offloading_time[]" placeholder="Approx. Offloading Time [hours]"/>
+            <div style="margin-bottom: 5">Price per ton: <span class="pricePerTon">0.0</span></div>
         `;
         pricelist_item_element.querySelector('input[name="product_pricelist_item_id[]"]').value = item['id'];
         pricelist_item_element.querySelector('input[name="price_in_usd[]"]').value = NaN;
+        pricelist_item_element.querySelector('.max-load').value = max_load;
 
         product_offer_form_container.appendChild(pricelist_item_element);
     }
