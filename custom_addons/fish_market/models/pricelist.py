@@ -9,6 +9,7 @@ class PriceCollectionItem(models.Model):
     truck_route_id = fields.Many2one('truck.route', string='Truck Route')
     truck_id = fields.Many2one('truck', string='Truck', related='truck_route_id.truck_id', store=True)
     max_load = fields.Float(string='Max. Load [kg]', related='truck_route_id.max_load', store=True)
+    price_per_kg = fields.Float(string='USD/kg', related='truck_route_id.price_per_kg', digits=(4, 4), store=True)
     truck_route_state = fields.Selection(related='truck_route_id.state', string='Truck Route State', store=True)
 
     meta_sale_order_id = fields.Many2one('meta.sale.order', string='Meta Sale Order')
@@ -125,10 +126,10 @@ class PriceCollectionItem(models.Model):
         }
 
     def action_toggle_confirm_truck_route(self):
-        self.truck_route_id.state = 'confirmed' if self.truck_route_id.state != 'confirmed' else 'draft'
+        self.truck_route_id.state = 'draft' if self.truck_route_id.state in ['confirmed', 'loaded'] else 'confirmed'
         self.truck_route_id.load_line_ids = False
 
 
     def action_toggle_confirm_truck_route_with_backload(self):
-        self.backload_id.truck_route_id.state = 'confirmed' if self.backload_id.truck_route_id.state != 'confirmed' else 'draft'
+        self.backload_id.truck_route_id.state = 'draft' if self.backload_id.truck_route_id.state in ['confirmed', 'loaded'] else 'confirmed'
         self.backload_id.truck_route_id.load_line_ids = False

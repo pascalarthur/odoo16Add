@@ -59,7 +59,7 @@ class TruckDetail(models.Model):
 
     price = fields.Float(string='Price')
     max_load = fields.Float(string='Max. Load [kg]')
-    price_per_kg = fields.Float(string='Price per Kg', compute='_compute_price_per_kg', digits=(4, 4))
+    price_per_kg = fields.Float(string='Price per Kg', compute='_compute_price_per_kg', digits=(4, 4), store=True)
 
     load_line_ids = fields.One2many('truck.route.line', 'truck_route_id', string='Load')
     truck_utilization = fields.Float(string='Truck Utilization (%)', compute='_compute_truck_utilization', store=True)

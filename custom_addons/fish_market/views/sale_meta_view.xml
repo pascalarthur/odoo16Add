@@ -71,15 +71,16 @@
                                         <field name="fixed_price" string="Price"/>
                                         <field name="backload_fixed_price_char" string="Backload Price"/>
                                         <field name="max_load"/>
+                                        <field name="price_per_kg"/>
                                         <field name="truck_route_id"/>
 
                                         <field name="truck_route_state" widget="badge" string="State" decoration-info="truck_route_state == 'confirmed'" decoration-success="truck_route_state in ['loaded', 'done']"/>
                                         <field name="truck_route_state_backorder" widget="badge" string="State Backorder" decoration-info="truck_route_state_backorder == 'confirmed'" decoration-success="truck_route_state_backorder == 'loaded'"/>
 
                                         <button name="action_toggle_confirm_truck_route" string="Confirm" type="object" class="oe_highlight" invisible="truck_route_state not in ['draft']"/>
-                                        <button name="action_toggle_confirm_truck_route" string="Cancel" type="object" class="oe_highlight" invisible="truck_route_state not in ['confirmed']"/>
+                                        <button name="action_toggle_confirm_truck_route" string="Cancel" type="object" class="oe_highlight" invisible="truck_route_state not in ['confirmed', 'loaded']"/>
                                         <button name="action_toggle_confirm_truck_route_with_backload" string="Confirm Backload" type="object" class="oe_highlight" invisible="not backload_id or truck_route_state_backorder not in ['draft']"/>
-                                        <button name="action_toggle_confirm_truck_route_with_backload" string="Cancel Backload" type="object" class="oe_highlight" invisible="not backload_id or truck_route_state_backorder not in ['confirmed']"/>
+                                        <button name="action_toggle_confirm_truck_route_with_backload" string="Cancel Backload" type="object" class="oe_highlight" invisible="not backload_id or truck_route_state_backorder not in ['confirmed', 'loaded']"/>
                                     </tree>
                                 </field>
                             </page>
