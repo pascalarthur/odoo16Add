@@ -23,9 +23,9 @@
                 </div>
             </footer>
         </div>
-        <link rel="stylesheet" type="text/css" href="/fish_market/static/src/scss/supplier_bid.css"/>
-        <script type="text/javascript" src="/fish_market/static/src/js/logistic_bid.js"></script>
-        <script type="text/javascript" src="/fish_market/static/src/js/supplier_bid.js"></script>
+        <link rel="stylesheet" type="text/css" href="/fish_market/static/src/scss/supplier_bid.css?version=0.0.0"/>
+        <script type="text/javascript" src="/fish_market/static/src/js/logistic_bid.js?version=0.0.0"></script>
+        <script type="text/javascript" src="/fish_market/static/src/js/supplier_bid.js?version=0.0.0"></script>
     </template>
 
     <template id="logistic_form_template" inherit_id="base_form_template" name="Logistic Form">
