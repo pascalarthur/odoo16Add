@@ -64,15 +64,15 @@ class AccountPayment(models.Model):
         statement_line_id.action_reconcile()
 
     def action_post(self):
-        self.ensure_one()
-        if self.is_internal_transfer:
-            if self.journal_id.currency_id.id != self.destination_journal_id.currency_id.id:
-                if self.company_id.currency_id.id not in [
-                        self.journal_id.currency_id.id, self.destination_journal_id.currency_id.id
-                ]:
-                    raise UserError("One of the currencies must be in the company currency.")
-                if self.currency_id.id == self.company_id.currency_id.id:
-                    raise UserError("The currency of the payment must be different from the currency of the company.")
+        for payment in self:
+            if payment.is_internal_transfer:
+                if payment.journal_id.currency_id.id != payment.destination_journal_id.currency_id.id:
+                    if payment.company_id.currency_id.id not in [
+                            payment.journal_id.currency_id.id, payment.destination_journal_id.currency_id.id
+                    ]:
+                        raise UserError("One of the currencies must be in the company currency.")
+                    if payment.currency_id.id == payment.company_id.currency_id.id:
+                        raise UserError("The currency of the payment must be different from the currency of the company.")
         super(AccountPayment, self).action_post()
 
     def action_custom_post(self):
