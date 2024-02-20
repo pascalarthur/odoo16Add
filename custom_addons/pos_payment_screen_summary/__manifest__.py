@@ -1,13 +1,15 @@
 {
     'name': "Point of Sale - Payment Screen Summary",
-    'version': '17.0',
     'depends': ['base', 'point_of_sale'],
     'author': "Ludwig Gräf",
-    'category': 'Category',
     'description': """
-    Description text
+    Module that displays a summary of the orders on the payment screen.
     """,
-    # data files always loaded at installation
+    'price': 5.0,
+    'currency': 'USD',
+    'category': 'Accounting',
+    'version':'17.0.0.0.0',
+
     'installable': True,
     'assets': {
         'point_of_sale._assets_pos': [
