@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="add_payment_screen_summary">
+	<t t-name="PaymentScreenPaymentLines" t-inherit="point_of_sale.PaymentScreenPaymentLines" t-inherit-mode="extension" owl="1">
+		<xpath expr="div[hasclass('paymentlines')]" position="before">
+			<div class="paymentmethods-container overflow-y-auto">
+				<div class="paymentmethods d-flex flex-column">
+					<h4 class="title-category pt-3 pb-2 px-3 m-0 bg-view border-bottom border-2">Order Details</h4>
+					<t t-foreach="pos.get_order().orderlines" t-as="line" t-key="line.id">
+						<li class="orderline border-bottom p-2 lh-sm btn-light" style="font-size: 10px !important;">
+							<div class="d-flex justify-content-between">
+								<div class="product-name d-inline-block flex-grow-1 fw-bolder pe-1 text-truncate">
+									<span class="text-wrap" t-esc="line.getDisplayData().productName"/>
+									<t t-slot="product-name"/>
+								</div>
+								<span t-esc="line.getDisplayData().price" class="price fw-bolder"/>
+							</div>
+							<ul class="info-list ms-2">
+								<li class="price-per-unit">
+									<span t-esc="line.getDisplayData().qty"/> <span t-esc="line.getDisplayData().unit"/>
+								</li>
+							</ul>
+						</li>
+					</t>
+				</div>
+			</div>
+		</xpath>
+	</t>
+</templates>
