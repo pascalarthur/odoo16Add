@@ -41,12 +41,16 @@ function getTruckDiv() {
         <span class="currency-label">USD</span><br/>
         <table>
             <tr>
-                <td><label>Start Date:</label></td>
-                <td><input required type="date" name="date_start[]"/></td>
+                <td><label>Estimated loading date and time:</label></td>
             </tr>
             <tr>
-                <td><label>End Date:</label></td>
-                <td><input required type="date" name="date_end[]"/></td>
+                <td><input required type="datetime-local" name="date_start[]"/></td>
+            </tr>
+            <tr>
+                <td><label>Estimated arrival date and time at destination Address:</label></td>
+            </tr>
+            <tr>
+                <td><input required type="datetime-local" name="date_end[]"/></td>
             </tr>
         </table>
         <button class="backload-button" type="button" onclick="toggle_backload(this)">Add Backload</button>
@@ -78,8 +82,10 @@ function addTruck() {
         <span class="currency-label">USD</span>
         <table>
             <tr>
-                <td><label>End Date:</label></td>
-                <td><input type="date" name="date_end_backload[]"/></td>
+                <td><label>Estimated arrival date and time at start Address:</label></td>
+            </tr>
+            <tr>
+                <td><input type="datetime-local" name="date_end_backload[]"/></td>
             </tr>
         </table>
     `;

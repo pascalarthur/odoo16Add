@@ -18,9 +18,11 @@ class TruckRouteLoadLine(models.Model):
     _description = 'Truck Route Line'
 
     truck_route_id = fields.Many2one('truck.route', string='Truck Route', ondelete='cascade')
-    available_product_ids = fields.One2many('product.product', related='truck_route_id.available_product_ids', store=False)
+    available_product_ids = fields.One2many('product.product', related='truck_route_id.available_product_ids',
+                                            store=False)
     location_id = fields.Many2one('stock.location', string='Origin Location')
-    available_location_ids = fields.One2many('stock.location', related='truck_route_id.available_location_ids', store=False)
+    available_location_ids = fields.One2many('stock.location', related='truck_route_id.available_location_ids',
+                                             store=False)
     product_id = fields.Many2one('product.product', string='Product', required=True, ondelete='cascade')
     unit_price = fields.Float('Unit Price', default=0.0)
     quantity = fields.Float(string='Quantity', default=1.0)
@@ -67,8 +69,8 @@ class TruckDetail(models.Model):
     available_location_ids = fields.One2many('stock.location', string='Locations',
                                              compute="_compute_available_locations", store=False)
 
-    date_start = fields.Date(string='Start Date')
-    date_end = fields.Date(string='End Date')
+    date_start = fields.Datetime(string='Start Date')
+    date_end = fields.Datetime(string='End Date')
 
     approx_loading_time = fields.Float(string='Approx. Loading Time [hours]')
     approx_offloading_time = fields.Float(string='Approx. Offloading Time [hours]')

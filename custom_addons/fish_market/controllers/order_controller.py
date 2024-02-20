@@ -99,8 +99,8 @@ class TransportOrderController(http.Controller):
                     'container_number': container_numbers[ii],
                     'driver_name': driver_names[ii],
                     'telephone_number': telephone_numbers[ii],
-                    'date_start': dates_start[ii],
-                    'date_end': dates_end[ii],
+                    'date_start': dates_start[ii].replace('T', ' '),
+                    'date_end': dates_end[ii].replace('T', ' '),
                     'route_start_street': route_demand_id.route_start_street,
                     'route_start_street2': route_demand_id.route_start_street2,
                     'route_start_city': route_demand_id.route_start_city,
@@ -128,8 +128,8 @@ class TransportOrderController(http.Controller):
                     'compute_price': 'fixed',
                     'applied_on': '0_product_variant',
                     'fixed_price': float(prices_in_usd[ii]),
-                    'date_start': dates_start[ii],
-                    'date_end': dates_end[ii],
+                    'date_start': dates_start[ii].replace('T', ' '),
+                    'date_end': dates_end[ii].replace('T', ' '),
                     'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                 }
                 product_pricelist_item_id = request.env['product.pricelist.item'].sudo().create(product_detail)
@@ -143,8 +143,8 @@ class TransportOrderController(http.Controller):
                         'container_number': container_numbers[ii],
                         'driver_name': driver_names[ii],
                         'telephone_number': telephone_numbers[ii],
-                        'date_start': dates_end[ii],
-                        'date_end': dates_end_backload[ii],
+                        'date_start': dates_end[ii].replace('T', ' '),
+                        'date_end': dates_end_backload[ii].replace('T', ' '),
                         'route_start_street': route_demand_id.route_end_street,
                         'route_start_street2': route_demand_id.route_end_street2,
                         'route_start_city': route_demand_id.route_end_city,
@@ -172,8 +172,8 @@ class TransportOrderController(http.Controller):
                         'compute_price': 'fixed',
                         'applied_on': '0_product_variant',
                         'fixed_price': float(backload_prices[ii]),
-                        'date_start': dates_end[ii],
-                        'date_end': dates_end_backload[ii],
+                        'date_start': dates_end[ii].replace('T', ' '),
+                        'date_end': dates_end_backload[ii].replace('T', ' '),
                         'meta_sale_order_id': route_demand_id.meta_sale_order_id.id,
                     }
                     product_pricelist_item_id_backload = request.env['product.pricelist.item'].sudo().create(
