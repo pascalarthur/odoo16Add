@@ -169,8 +169,7 @@ patch(PosStore.prototype, {
         return result;
     },
 
-
     formatCurrency(amount, currency_id) {
-        return formatCurrency(parseFloat(amount), currency_id);
+        return formatCurrency(parseFloat(amount.toString().replace(",", '')), currency_id);
     },
 });

@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="add_currency_conversation">
-	<t t-name="CustomClosePosPopup" t-inherit="point_of_sale.ClosePosPopup" t-inherit-mode="extension">
+    <t t-name="CustomCashOpeningPopup" t-inherit="point_of_sale.CashOpeningPopup" t-inherit-mode="extension">
+		<xpath expr="//div[contains(@class, 'cash-input-sub-section')]" position="replace">
+            <div><strong>Opening Cash</strong></div>
+            <div t-esc="this.pos.formatCurrency(state.openingCash, this.pos.currency.id)"/>
+
+            <table class="text-start">
+                <thead>
+                    <tr class="text-dark">
+                        <th>Currency</th>
+                        <th>Amount</th>
+                        <th>Manual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="this.pos.currencies" t-as="currency" t-key="currency.id">
+                        <td t-esc="currency.name"/>
+                        <td>
+                            <Input tModel="[currency, 'counted']"
+                                isValid.bind="env.utils.isValidFloat"
+                                callback.bind="(value) => this.setCashCurrencies(value)"/>
+                        </td>
+                        <td>
+                            <div class="button icon btn btn-secondary" t-on-click="openDetailsPopup">
+                                <i class="fa fa-money fa-2x" role="img" title="Open the money details popup"/>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+		</xpath>
+	</t>
+    <t t-name="CustomClosePosPopup" t-inherit="point_of_sale.ClosePosPopup" t-inherit-mode="extension">
 		<xpath expr="//div[contains(@class, 'payment-methods-overview')]" position="replace">
             <div class="payment-methods-overview overflow-auto">
                 <table class="text-start">
@@ -83,37 +114,6 @@
                     </tbody>
                 </table>
             </div>
-		</xpath>
-	</t>
-    <t t-name="CustomCashOpeningPopup" t-inherit="point_of_sale.CashOpeningPopup" t-inherit-mode="extension">
-		<xpath expr="//div[contains(@class, 'cash-input-sub-section')]" position="replace">
-            <div><strong>Opening Cash</strong></div>
-            <div t-esc="this.pos.formatCurrency(state.openingCash, this.pos.currency.id)"/>
-
-            <table class="text-start">
-                <thead>
-                    <tr class="text-dark">
-                        <th>Currency</th>
-                        <th>Amount</th>
-                        <th>Manual</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr t-foreach="this.pos.currencies" t-as="currency" t-key="currency.id">
-                        <td t-esc="currency.name"/>
-                        <td>
-                            <Input tModel="[currency, 'counted']"
-                                isValid.bind="env.utils.isValidFloat"
-                                callback.bind="(value) => this.setCashCurrencies(value)"/>
-                        </td>
-                        <td>
-                            <div class="button icon btn btn-secondary" t-on-click="openDetailsPopup">
-                                <i class="fa fa-money fa-2x" role="img" title="Open the money details popup"/>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
 		</xpath>
 	</t>
     <t t-name="CustomProductCard" t-inherit="point_of_sale.ProductCard" t-inherit-mode="extension">
