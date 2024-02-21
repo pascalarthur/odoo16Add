@@ -72,10 +72,11 @@ class AccountPayment(models.Model):
                     ]:
                         raise UserError("One of the currencies must be in the company currency.")
                     if payment.currency_id.id == payment.company_id.currency_id.id:
-                        raise UserError("The currency of the payment must be different from the currency of the company.")
+                        raise UserError(
+                            "The currency of the payment must be different from the currency of the company.")
         super(AccountPayment, self).action_post()
 
-    def action_custom_post(self):
+    def action_post_and_reconcile(self):
         super(AccountPayment, self).action_post()
         self.auto_reconcile()
         self.paired_internal_transfer_payment_id.auto_reconcile()

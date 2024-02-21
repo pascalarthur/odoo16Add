@@ -41,10 +41,11 @@ class PosSession(models.Model):
 
             # The payment is always in the currency that is not equal to the company currency
             if cash['id'] == self.company_id.currency_id.id:
+                exchange_vals['manual_currency_rate'] = 1 / exchange_rate
                 exchange_vals['amount'] *= exchange_rate
 
             exchange_record = self.env['account.payment'].create(exchange_vals)
-            exchange_record.action_custom_post()
+            exchange_record.action_post_and_reconcile()
 
     def correct_cash_amounts_closing(self, cash_amounts_in_currencies: List[dict]):
         # print('correct_cash_amounts_closing', 'location_id', self.config_id.location_id.id)
@@ -84,10 +85,11 @@ class PosSession(models.Model):
 
             # The payment is always in the currency that is not equal to the company currency
             if cash['id'] == self.company_id.currency_id.id:
+                exchange_vals['manual_currency_rate'] = 1 / exchange_rate
                 exchange_vals['amount'] *= exchange_rate
 
             exchange_record = self.env['account.payment'].create(exchange_vals)
-            exchange_record.action_custom_post()
+            exchange_record.action_post_and_reconcile()
 
     def get_available_product_quantities(self):
         available_product_quantities = {}

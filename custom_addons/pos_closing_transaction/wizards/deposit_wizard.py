@@ -48,4 +48,4 @@ class YourWizard(models.TransientModel):
             f'POS-Deposit from {self.pos_session.cash_journal_id.name} to {self.destination_journal_id.name}',
         })
 
-        payment_id.action_custom_post()
+        payment_id.action_post_and_reconcile()
