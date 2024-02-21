@@ -14,5 +14,3 @@ access_location_redistribution_wizard_line,access_location_redistribution_wizard
 access_seal_wizard,access_seal_wizard,model_seal_wizard,base.group_user,1,1,1,1
 access_supplier_price_wizard,access_supplier_price_wizard,model_supplier_price_wizard,base.group_user,1,1,1,1
 access_product_offer_wizard,access_product_offer_wizard,model_product_offer_wizard,base.group_user,1,1,1,1
-access_inventory_damage,access_inventory_damage,model_inventory_damage,base.group_user,1,1,1,1
-access_inventory_damage_operation,access_inventory_damage_operation,model_inventory_damage_operation,base.group_user,1,1,1,1

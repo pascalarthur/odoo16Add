@@ -22,6 +22,5 @@
                 <menuitem id="trucks" action="action_view_truck_tree"/>
             </menuitem>
         </menuitem>
-        <menuitem id="Damages" action="action_damage_form"/>
     </menuitem>
 </odoo>
