@@ -30,6 +30,8 @@ class StockQuant(models.Model):
         # Change reason for inventory adjustment
         if self.quantity_damaged > 0 or self._use_adjusted_name_on_stock_move_line:
             res['name'] = _('Adjustment for Damaged Product')
+            for line in res['move_line_ids']:
+                line[-1]['is_product_damage_stock_move_line'] = True
         return res
 
     def action_apply_inventory(self):
@@ -55,3 +57,9 @@ class StockQuant(models.Model):
     def action_clear_inventory_quantity(self):
         self.quantity_damaged = 0
         super(StockQuant, self).action_clear_inventory_quantity()
+
+    @api.model
+    def _get_inventory_fields_create(self):
+        """ Returns a list of fields user can edit when he want to create a quant in `inventory_mode`.
+        """
+        return ['product_id', 'owner_id', 'quantity_damaged'] + self._get_inventory_fields_write()

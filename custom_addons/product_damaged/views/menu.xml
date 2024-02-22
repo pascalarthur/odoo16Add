@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_action_damage_form" name="Damages" parent="stock.menu_stock_adjustments" sequence="10" action="action_picking_tree_damaged"/>
+    <menuitem id="menu_action_damage_form" name="Damages" parent="stock.menu_stock_adjustments" sequence="10" action="stock_move_line_damaged_action"/>
 </odoo>

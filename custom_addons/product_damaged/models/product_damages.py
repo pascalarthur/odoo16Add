@@ -12,6 +12,11 @@ class DamageOperation(models.Model):
     _description = 'Records Damages to boxes'
 
 
+class StockMoveLine(models.Model):
+    _inherit = 'stock.move.line'
+    is_product_damage_stock_move_line = fields.Boolean('Is Damaged Operation', default=False)
+
+
 class StockPickingDamageLine(models.Model):
     _inherit = 'stock.move'
     quantity_damaged = fields.Float('Damaged Quantity')
@@ -54,7 +59,7 @@ class StockPicking(models.Model):
             })
 
             for line in self.move_ids_without_package.filtered(lambda x: x.quantity_damaged > 0):
-                self.env['stock.move'].create({
+                stock_move_return_id = self.env['stock.move'].create({
                     'name': self.env['ir.sequence'].next_by_code('product.damages'),
                     'product_id': line.product_id.id,
                     'product_uom_qty': line.quantity_damaged,
@@ -67,7 +72,7 @@ class StockPicking(models.Model):
                 })
 
                 damaged_product_id = line.product_id.compute_product_as_damaged()
-                self.env['stock.move'].create({
+                stock_move_damaged_id = self.env['stock.move'].create({
                     'name': self.env['ir.sequence'].next_by_code('product.damages'),
                     'product_id': damaged_product_id.id,
                     'product_uom_qty': line.quantity_damaged,
@@ -78,6 +83,9 @@ class StockPicking(models.Model):
                     'origin': self.name,
                     'state': 'draft',
                 })
+
+            stock_move_return_id.move_line_ids.is_product_damage_stock_move_line = True
+            stock_move_damaged_id.move_line_ids.is_product_damage_stock_move_line = True
 
             stock_picking_return_id.button_validate()
             stock_picking_damaged_id.button_validate()

@@ -11,6 +11,7 @@
     'data': [
         'security/ir.model.access.csv',
         'data/product_damages_sequence.xml',
+        'views/stock_move_line_views.xml',
         'views/stock_picking.xml',
         'views/stock_quant.xml',
         'views/menu.xml',

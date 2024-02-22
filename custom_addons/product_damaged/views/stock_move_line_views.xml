@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit the existing search view for stock.move.line -->
+    <record id="stock_move_line_view_search_inherit" model="ir.ui.view">
+        <field name="name">stock.move.line.search.inherit</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.stock_move_line_view_search"/>
+        <field name="arch" type="xml">
+            <search>
+                <filter name="inventory" position="after">
+                    <filter string="Damages" name="damage" domain="[('is_product_damage_stock_move_line', '=', True)]"/>
+                </filter>
+            </search>
+        </field>
+    </record>
+
+    <record id="stock_move_line_damaged_action" model="ir.actions.act_window">
+        <field name="name">Damage History</field>
+        <field name="res_model">stock.move.line</field>
+        <field name="view_mode">tree,kanban,pivot,form</field>
+        <field name="view_id" ref="stock.view_move_line_tree"/>
+        <field name="context">{
+            'search_default_done': 1,
+            'search_default_damage': 1,
+            'create': 0,
+            'pivot_measures': ['quantity_product_uom', '__count__']}
+        </field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">
+                There's no product move yet
+            </p><p>
+                This menu gives you the full traceability of inventory operations on a specific product.
+                You can filter on the product to see all the past movements for the product.
+            </p>
+        </field>
+    </record>
+</odoo>
