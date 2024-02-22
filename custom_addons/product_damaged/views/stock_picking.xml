@@ -7,10 +7,92 @@
             <field name="model">stock.picking</field>
             <field name="inherit_id" ref="stock.view_picking_form"/>
             <field name="arch" type="xml">
+                <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                    <field name="damaged_stock_picking_ids_count" invisible="1"/>
+                    <button type="object" name="action_damaged_stock_picking_ids" invisible="damaged_stock_picking_ids_count == 0" class="oe_stat_button" icon="fa-trash">
+                        <div class="o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="damaged_stock_picking_ids_count"/>
+                            </span>
+                            <span class="o_stat_text">
+                                Damaged Moves
+                            </span>
+                        </div>
+                    </button>
+                </xpath>
                 <xpath expr="//field[@name='quantity']" position="replace">
                     <field name="quantity" string="Quantity (OK + Damaged)" readonly="not is_quantity_done_editable" column_invisible="parent.state=='draft'" decoration-danger="product_uom_qty and quantity > product_uom_qty and parent.state not in ['done', 'cancel']"/>
                     <field name="quantity_damaged" string="Damaged Quantity" column_invisible="parent.state=='draft'" options="{'always_reload': True}"/>
                 </xpath>
+            </field>
+        </record>
+        <record id="view_picking_damaged_search" model="ir.ui.view">
+            <field name="name">stock.picking.damaged.search</field>
+            <field name="model">stock.picking</field>
+            <field name="arch" type="xml">
+                <search string="Picking Lists">
+                    <field name="name" string="Transfer" filter_domain="['|', ('name', 'ilike', self), ('origin', 'ilike', self)]"/>
+                    <field name="partner_id" filter_domain="[('partner_id', 'child_of', self)]"/>
+                    <field name="origin"/>
+                    <field name="product_id"/>
+                    <field name="picking_type_id"/>
+                    <field name="move_line_ids"
+                        string="Package"
+                        filter_domain="['|', ('move_line_ids.package_id.name', 'ilike', self), ('move_line_ids.result_package_id.name', 'ilike', self)]"
+                        groups="stock.group_tracking_lot"/>
+                    <field name="lot_id" groups="stock.group_production_lot"/>
+                    <filter name="to_do_transfers" string="To Do" domain="['&amp;',('user_id', 'in', [uid, False]),('state','not in',['done','cancel'])]"/>
+                    <filter name="my_transfers" string="My Transfers" domain="[('user_id', '=', uid)]"/>
+                    <filter string="Starred" name="starred" domain="[('priority', '=', '1')]"/>
+                    <separator/>
+                    <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]" help="Draft Moves"/>
+                    <filter name="waiting" string="Waiting" domain="[('state', 'in', ('confirmed', 'waiting'))]" help="Waiting Moves"/>
+                    <filter name="available" string="Ready" domain="[('state', '=', 'assigned')]" help="Assigned Moves"/>
+                    <separator/>
+                    <filter name="damage" string="Damages" domain="[('is_damaged_picking', '=', True)]"/>
+                    <filter name="reception" string="Receipts" domain="[('picking_type_code', '=', 'incoming')]"/>
+                    <filter name="delivery" string="Deliveries" domain="[('picking_type_code', '=', 'outgoing')]"/>
+                    <filter name="internal" string="Internal" domain="[('picking_type_code', '=', 'internal')]"/>
+                    <separator/>
+                    <filter name="late" string="Late" help="Deadline exceed or/and by the scheduled"
+                        domain="[('state', 'in', ('assigned', 'waiting', 'confirmed')), '|', '|', ('has_deadline_issue', '=', True), ('date_deadline', '&lt;', current_date), ('scheduled_date', '&lt;', current_date)]"/>
+                    <filter string="Planning Issues" name="planning_issues" help="Transfers that are late on scheduled time or one of pickings will be late"
+                        domain="['|', ('delay_alert_date', '!=', False), '&amp;', ('scheduled_date','&lt;', time.strftime('%Y-%m-%d %H:%M:%S')), ('state', 'in', ('assigned', 'waiting', 'confirmed'))]"/>
+                    <separator/>
+                    <filter name="backorder" string="Backorders" domain="[('backorder_id', '!=', False), ('state', 'in', ('assigned', 'waiting', 'confirmed'))]" help="Remaining parts of picking partially processed"/>
+                    <separator/>
+                    <filter invisible="1" string="Late Activities" name="activities_overdue"
+                        domain="[('my_activity_date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]"
+                        help="Show all records which has next action date is before today"/>
+                    <filter invisible="1" string="Today Activities" name="activities_today"
+                        domain="[('my_activity_date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter invisible="1" string="Future Activities" name="activities_upcoming_all"
+                        domain="[('my_activity_date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))]"/>
+                    <separator/>
+                    <filter string="Warnings" name="activities_exception"
+                        domain="[('activity_exception_decoration', '!=', False)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Status" name="status" domain="[]" context="{'group_by': 'state'}"/>
+                        <filter string="Scheduled Date" name="expected_date" domain="[]" context="{'group_by': 'scheduled_date'}"/>
+                        <filter string="Source Document" name="origin" domain="[]" context="{'group_by': 'origin'}"/>
+                        <filter string="Operation Type" name="picking_type" domain="[]" context="{'group_by': 'picking_type_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        <record id="action_picking_tree_damaged" model="ir.actions.act_window">
+            <field name="name">Damages</field>
+            <field name="res_model">stock.picking</field>
+            <field name="view_mode">tree,kanban,form,calendar,activity</field>
+            <field name="domain"></field>
+            <field name="context">{'default_company_id': allowed_company_ids[0], 'search_default_damage': 1}</field>
+            <field name="search_view_id" ref="view_picking_damaged_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No damage found. Let's create one!
+                </p><p>
+                    Damages allow you to convert products from OK to Damaged.
+                </p>
             </field>
         </record>
     </data>
