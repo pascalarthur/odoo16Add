@@ -1,5 +1,6 @@
+from datetime import datetime
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import ValidationError
 
 
 class InterTransferCompany(models.Model):
@@ -43,7 +44,6 @@ class InterTransferCompany(models.Model):
     @api.depends('purchase_id')
     def _compute_purchase_internal(self):
         for internal in self:
-            internal_transfer = self.env['purchase.order'].search([('id', '=', self.purchase_id.id)])
             if self.purchase_id:
                 internal.purchase_count = len(self.purchase_id)
 
@@ -106,13 +106,6 @@ class InterTransferCompany(models.Model):
         transfer = self.env['purchase.order'].search(domain)
         action['domain'] = [('id', '=', transfer.id)]
         return action
-
-        #  def action_view_sale_internal(self):
-        # action = self.env.ref('sale.action_orders').read()[0]
-        # domain = [('id', '=', self.sale_id.id)]
-        # transfer = self.env['sale.order'].search(domain)
-        # action['domain'] = [('id', '=', transfer.id)]
-        # return action
 
     sale_id = fields.Many2one("sale.order", string="Sale Order", copy=False)
     sale_count = fields.Integer('Sale Count', compute="_compute_sale_internal", copy=False, default=0, store=True)
@@ -185,10 +178,6 @@ class InterTransferCompany(models.Model):
             'warehouse_id': self.from_warehouse.id,
         })
         for line in self.product_lines:
-            company_id = self.env['res.company'].search([('partner_id', '=',
-                                                          self.from_warehouse.company_id.partner_id.id)])
-            partner_c_id = self.env['res.company'].search([('partner_id', '=',
-                                                            self.to_warehouse.company_id.partner_id.id)])
             fpos = sale_order.fiscal_position_id or sale_order.partner_id.property_account_position_id
             taxes = line.product_id.taxes_id.filtered(lambda r: r.company_id == self.env.user.company_id)
             tax_ids = fpos.map_tax(taxes, line.product_id, line.order_id.partner_shipping_id) if fpos else taxes
@@ -201,7 +190,7 @@ class InterTransferCompany(models.Model):
                 'price_unit': line.price_unit,
                 'order_id': sale_order.id
             }
-            sale_order_line_id = self.env['sale.order.line'].create(sale_order_line_vals)
+            self.env['sale.order.line'].create(sale_order_line_vals)
 
         sale_order.action_confirm()
 
@@ -217,10 +206,6 @@ class InterTransferCompany(models.Model):
         })
 
         for line in self.product_lines:
-            company_id = self.env['res.company'].search([('partner_id', '=',
-                                                          self.from_warehouse.company_id.partner_id.id)])
-            partner_c_id = self.env['res.company'].search([('partner_id', '=',
-                                                            self.to_warehouse.company_id.partner_id.id)])
             fpos = purchase_order.fiscal_position_id or purchase_order.partner_id.property_account_position_id
             taxes = line.product_id.taxes_id.filtered(lambda r: r.company_id == self.env.user.company_id)
             tax_ids = fpos.map_tax(taxes, line.product_id, line.order_id.partner_shipping_id) if fpos else taxes
@@ -234,7 +219,7 @@ class InterTransferCompany(models.Model):
                 'price_unit': line.price_unit,
                 'order_id': purchase_order.id
             }
-            purchase_order_line_id = self.env['purchase.order.line'].create(purchase_order_line_vals)
+            self.env['purchase.order.line'].create(purchase_order_line_vals)
         purchase_order.button_confirm()
         return self.write({'state': 'process'})
 
@@ -243,10 +228,8 @@ class InterTransferCompany(models.Model):
         This function returns an action that display existing vendor bills of given purchase order ids.
         When only one found, show the vendor bill immediately.
         '''
-        # self.write({'state' : 'return'})
         action = self.env["ir.actions.actions"]._for_xml_id("bi_inter_company_transfer.action_return_form_template")
         result = action
-        # override the context to get rid of the default filtering
 
         value = []
         for i in self.product_lines:
@@ -289,6 +272,3 @@ class InterTransferCompanyLines(models.Model):
                 rec.write({
                     'price_unit': rec.product_id.list_price,
                 })
-
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
