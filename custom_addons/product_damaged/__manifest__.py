@@ -12,7 +12,6 @@
         'security/ir.model.access.csv',
         'data/product_damages_sequence.xml',
         'views/stock_picking.xml',
-        'views/damage_views.xml',
         'views/stock_quant.xml',
         'views/menu.xml',
     ],
