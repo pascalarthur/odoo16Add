@@ -130,17 +130,14 @@ class SaleOrderInherit(models.Model):
     def _create_po_from_so(self, company):
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         current_company_id = self.env.company
-        purchase_order = self.env['purchase.order']
-        purchase_order_line = self.env['purchase.order.line']
-        bill_id = False
         line_lot = []
         po_vals = self.sudo().get_po_values(company_partner_id, current_company_id)
-        po_id = purchase_order.sudo().create(po_vals)
+        po_id = self.env['purchase.order'].sudo().create(po_vals)
         for line in self.order_line:
             if line.product_id.tracking != 'none':
                 line_lot.append(line.product_id)
             po_line_vals = self.sudo().get_po_line_data(po_id.id, company_partner_id, line)
-            purchase_order_line.sudo().create(po_line_vals)
+            self.env['purchase.order.line'].sudo().create(po_line_vals)
         if not self.client_order_ref:
             self.client_order_ref = po_id.name
         po_id.sudo().button_confirm()
@@ -188,7 +185,9 @@ class SaleOrderInherit(models.Model):
                     # ===============================
                 receipt.sudo()._action_done()
         if setting_id.create_invoice:
-            invoice_object = self.env['account.move']
+            for purchase_order_line_id in po_id.order_line:
+                purchase_order_line_id.qty_to_invoice = purchase_order_line_id.product_qty
+
             journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
                                                                  ('company_id', '=', company.id)], limit=1)
             ctx = dict(self._context or {})
@@ -201,7 +200,7 @@ class SaleOrderInherit(models.Model):
                 'current_company_id': current_company_id.id,
                 'company_partner_id': company_partner_id.id
             })
-            bill_id = invoice_object.with_context(create_bill=True).sudo().with_company(company).create({
+            bill_id = self.env['account.move'].with_context(create_bill=True).sudo().with_company(company).create({
                 'partner_id':
                 po_id.partner_id.id,
                 'currency_id':
@@ -230,10 +229,7 @@ class SaleOrderInherit(models.Model):
             bill_id.ref = ', '.join(po_id.filtered('partner_ref').mapped('partner_ref')) or bill_id.reference
 
             if setting_id.validate_invoice:
-                if bill_id:
-                    bill_id.sudo().with_company(company)._post()
-                else:
-                    raise ValidationError(_('Please First give access to Create invoice.'))
+                bill_id.sudo().with_company(company)._post()
 
         if self.internal_id.id:
             if po_id.id:
