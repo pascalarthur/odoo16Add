@@ -4,14 +4,14 @@ from odoo import api, fields, models, _
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    allow_auto_intercompany = fields.Boolean('Allow Auto Intercompany Transaction', default=False,
+                                             related="company_id.allow_auto_intercompany", readonly=False)
     validate_picking = fields.Boolean('Validate Receipt/picking in so/po ', default=False,
                                       related="company_id.validate_picking", readonly=False)
     create_invoice = fields.Boolean('Create Invoice/Bill in so/po ', default=False, related="company_id.create_invoice",
                                     readonly=False)
     validate_invoice = fields.Boolean('Validate Invoice/Bill in so/po ', default=False,
                                       related="company_id.validate_invoice", readonly=False)
-    allow_auto_intercompany = fields.Boolean('Allow Auto Intercompany Transaction', default=False,
-                                             related="company_id.allow_auto_intercompany", readonly=False)
 
     @api.model
     def get_values(self):
