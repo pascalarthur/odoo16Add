@@ -53,6 +53,7 @@
                                 <field name="box_weight"/>
                                 <field name="quantity"/>
                                 <field name="unit_price"/>
+                                <field name="tax_ids" widget="many2many_tags"/>
                             </tree>
                         </field>
                     </group>
@@ -108,6 +109,20 @@
                                         <button name="action_load_truck" string="Load" type="object" class="oe_highlight" invisible="state not in ['confirmed']"/>
                                         <button name="action_create_invoice" string="Invoice" type="object" class="oe_highlight" invisible="state not in ['loaded']"/>
                                         <button name="action_handle_overload" string="Handle Overload" type="object" class="oe_highlight" invisible="state not in ['done']"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Extra Products on all Trucks" name="extra_products_on_truck_ids_page">
+                                <field
+                                    name="extra_products_on_truck_ids"
+                                    widget="section_and_note_one2many"
+                                    mode="tree"
+                                    readonly="state == 'cancel'"
+                                    string="">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="list_price"/>
+                                        <field name="taxes_id" widget="many2many_tags"/>
                                     </tree>
                                 </field>
                             </page>

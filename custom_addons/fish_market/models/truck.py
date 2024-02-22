@@ -26,6 +26,7 @@ class TruckRouteLoadLine(models.Model):
     product_id = fields.Many2one('product.product', string='Product', required=True, ondelete='cascade')
     unit_price = fields.Float('Unit Price', default=0.0)
     quantity = fields.Float(string='Quantity', default=1.0)
+    tax_ids = fields.Many2many('account.tax', string='Taxes')
 
 
 class TruckDetail(models.Model):
@@ -106,7 +107,7 @@ class TruckDetail(models.Model):
             else:
                 record.price_per_kg = 0.0
 
-    def allocate_product(self, product, unit_price, location_id, quantity):
+    def allocate_product(self, product, unit_price, location_id, quantity, tax_ids):
         self.ensure_one()
         self.state = 'loaded'
         self.env['truck.route.line'].create({
@@ -115,6 +116,7 @@ class TruckDetail(models.Model):
             'unit_price': unit_price,
             'location_id': location_id.id,
             'quantity': quantity,
+            'tax_ids': [(6, 0, tax_ids.ids)],
         })
 
     def action_load_truck(self):

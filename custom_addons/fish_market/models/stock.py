@@ -23,6 +23,7 @@ class StockQuant(models.Model):
                 'location_id': quant.location_id.id,
                 'quantity': quant.quantity,
                 'unit_price': quant.product_id.list_price,
+                'tax_ids': [(6, 0, quant.product_id.taxes_id.ids)],
             })
 
         selected_quants.write({'selected_for_action': False})

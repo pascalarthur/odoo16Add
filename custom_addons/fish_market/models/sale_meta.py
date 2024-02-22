@@ -24,6 +24,7 @@ class MetaSaleOrderLine(models.Model):
     unit_price = fields.Float('Unit Price', required=True)
     location_id = fields.Many2one('stock.location', string='Origin Location')
     quantity = fields.Float(string='Quantity', default=1.0)
+    tax_ids = fields.Many2many('account.tax', string='Taxes')
 
 
 class MetaSaleOrder(models.Model):
@@ -74,9 +75,11 @@ class MetaSaleOrder(models.Model):
     truck_route_ids_no_backload = fields.One2many('truck.route', string='Trucks',
                                                   compute='_compute_truck_route_ids_no_backload', readonly=False)
 
+    extra_products_on_truck_ids = fields.Many2many('product.product', string='Extra Products')
+
     sale_order_ids = fields.One2many('sale.order', 'meta_sale_order_id', string='Sales Orders', readonly=True)
     sale_order_count = fields.Integer(string='Sale Orders', compute='_compute_sale_order_count', store=True)
-    invoice_ids = fields.Many2many('account.move', string='Invoices', related='sale_order_ids.invoice_ids',
+    invoice_ids = fields.Many2many('account.move', string='Invoices', compute='_compute_invoice_ids', store=True,
                                    readonly=True)
 
     date_start = fields.Date(string='Start Date', required=True)
@@ -86,6 +89,11 @@ class MetaSaleOrder(models.Model):
     def _compute_sale_order_count(self):
         for record in self:
             record.sale_order_count = len(record.sale_order_ids)
+
+    @api.depends('sale_order_ids')
+    def _compute_invoice_ids(self):
+        for record in self:
+            record.invoice_ids = record.sale_order_ids.mapped('invoice_ids')
 
     def _compute_company_id(self):
         for meta_sale in self:
@@ -114,6 +122,17 @@ class MetaSaleOrder(models.Model):
     @api.model
     def get_warehouse(self, warehouse_id):
         return self.env['stock.warehouse'].search([('id', '=', warehouse_id.id)])
+
+    @api.onchange('transport_product_id')
+    def _onchange_extra_products_on_truck_ids(self):
+        for record in self:
+            if record.transport_product_id:
+                if record.transport_product_id.sh_is_bundle:
+                    for sh_bundle_product_id in record.transport_product_id.sh_bundle_product_ids:
+                        record.extra_products_on_truck_ids = [(4, sh_bundle_product_id.sh_product_id.id)]
+                else:
+                    one_way_variant_id = record.transport_product_id.product_variant_ids[0]
+                    record.extra_products_on_truck_ids = [(4, one_way_variant_id.id)]
 
     def set_transport_state(self):
         self.ensure_one()
@@ -171,6 +190,8 @@ class MetaSaleOrder(models.Model):
             truck_route_id.load_line_ids.unlink()  # This will delete the TruckLoadLine records
             truck_route_id.state = 'confirmed'
 
+        truck_route_ids = self.truck_route_ids_no_backload.filtered(lambda t: t.state == 'confirmed').sorted(
+            key=lambda t: t.price_per_kg)
         # Step 3: Proceed with new allocations
         for order_line in self.order_line_ids:
             product = order_line.product_id
@@ -179,8 +200,8 @@ class MetaSaleOrder(models.Model):
 
             required_quantity = order_line.quantity  # Assuming 'quantity' is the correct field
             allocated_quantity = 0.0
-            truck_route_ids = self.truck_route_ids_no_backload.sorted(key=lambda t: t.price_per_kg)
-            for truck_route_id in truck_route_ids.filtered(lambda t: t.state == 'confirmed'):
+
+            for truck_route_id in truck_route_ids:
                 if allocated_quantity >= required_quantity:
                     break
 
@@ -193,7 +214,7 @@ class MetaSaleOrder(models.Model):
                 if available_capacity > 10:
                     quantity_to_allocate = min(required_quantity - allocated_quantity, available_capacity)
                     truck_route_id.allocate_product(product, order_line.unit_price, order_line.location_id,
-                                                    quantity_to_allocate)
+                                                    quantity_to_allocate, order_line.tax_ids)
                     allocated_quantity += quantity_to_allocate
 
         self.ensure_one()
@@ -300,7 +321,17 @@ class MetaSaleOrder(models.Model):
                 'product_id': load_line.product_id.id,
                 'product_uom_qty': load_line.quantity,
                 'price_unit': load_line.unit_price,
+                'tax_id': [(6, 0, load_line.tax_ids.ids)],
             })
+
+        for product_id in self.extra_products_on_truck_ids:
+            SaleOrderLine.create({
+                'order_id': sale_order_id.id,
+                'product_id': product_id.id,
+                'product_uom_qty': 1,
+                'price_unit': product_id.list_price,
+            })
+
         sale_order_id.action_quotation_send_programmatically()
         sale_order_id.state = 'sent'
         return sale_order_id
