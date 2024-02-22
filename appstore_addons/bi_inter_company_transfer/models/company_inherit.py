@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-# Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
-
-from odoo import api, fields, models, _
+from odoo import fields, models
 
 
 class ResCompany(models.Model):
@@ -13,6 +10,3 @@ class ResCompany(models.Model):
     create_invoice = fields.Boolean('Create Invoice/Bill in so/po ', default=False)
     validate_invoice = fields.Boolean('Validate Invoice/Bill in so/po ', default=False)
     allow_auto_intercompany = fields.Boolean('Allow Auto Intercompany Transaction', default=False)
-
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

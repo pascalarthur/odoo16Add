@@ -1,16 +1,5 @@
-# -*- coding: utf-8 -*-
-# Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
-
-from itertools import groupby
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from odoo import api, fields, models, SUPERUSER_ID, _
-from odoo.exceptions import UserError, ValidationError
-from odoo.tools import float_is_zero, float_compare, DEFAULT_SERVER_DATETIME_FORMAT
-from odoo.tools.misc import formatLang
-from odoo.tools import html2plaintext
-import odoo.addons.decimal_precision as dp
-import time
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class PurchaseOrderInherit(models.Model):
@@ -41,15 +30,11 @@ class PurchaseOrderInherit(models.Model):
         so_available = self.env['sale.order'].search([('client_order_ref', '=', self.name)])
         setting_id = self.env.company
         invoice_object = self.env['account.move']
-        invoice_line_obj = self.env['account.move.line']
         journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
                                                              ('company_id', '=', self.env.company.id)], limit=1)
         internal_id = self.env['inter.transfer.company']
         inter_transfer_lines = self.env['inter.transfer.company.line']
         inter_lines = []
-        picking_access = False
-        create_invoice = False
-        validate_invoice = False
         bill_id = False
         line_lot = []
         if self.env.user.has_group(
@@ -79,8 +64,6 @@ class PurchaseOrderInherit(models.Model):
                                     for entry in move.account_move_ids:
                                         entry.write({'partner_id': move.partner_id.id})
 
-                            if receipt.state == 'done':
-                                picking_access = True
                     else:
                         for receipt in self.picking_ids:
                             for move in receipt.move_ids_without_package:
@@ -178,14 +161,13 @@ class PurchaseOrderInherit(models.Model):
                     if self._context.get('stop_so') == True:
                         pass
                     else:
-                        receipt = self._create_so_from_po(company_partner_id)
+                        receipt = self._create_so_from_po()
         return True
 
-    def _create_so_from_po(self, company):
+    def _create_so_from_po(self):
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         current_company_id = self.env.company
         sale_order = self.env['sale.order']
-        picking_validate = False
         invoice = False
         setting_id = self.env.company
         sale_order_line = self.env['sale.order.line']
@@ -211,8 +193,6 @@ class PurchaseOrderInherit(models.Model):
                             })
                     picking.button_validate()
                     picking._action_done()
-                if picking.state == 'done':
-                    picking_validate = True
         if setting_id.create_invoice:
             invoice = so_id.order_line.invoice_lines.move_id.filtered(lambda r: r.move_type in
                                                                       ('out_invoice', 'out_refund'))
@@ -279,11 +259,8 @@ class PurchaseOrderInherit(models.Model):
             if not company_partner_id.intercompany_warehouse_id:
                 raise ValidationError(_('Please Select Intercompany Warehouse On  %s.') % company_partner_id.name)
         so_name = self.env['ir.sequence'].sudo().with_company(company_partner_id).next_by_code('sale.order') or '/'
-        if self.internal_id.id:
-            if self.internal_id.pricelist_id.id:
-                pricelist_id = self.internal_id.pricelist_id.id
-            else:
-                pricelist_id = current_company_id.intercompany_warehouse_id.partner_id.property_product_pricelist.id
+        if self.internal_id.id and self.internal_id.pricelist_id.id:
+            pricelist_id = current_company_id.intercompany_warehouse_id.partner_id.property_product_pricelist.id
         else:
             pricelist_id = current_company_id.intercompany_warehouse_id.partner_id.property_product_pricelist.id
         return {
@@ -302,6 +279,3 @@ class PurchaseOrderInherit(models.Model):
             'internal_id': self.internal_id.id,
             'partner_shipping_id': current_company_id.intercompany_warehouse_id.partner_id.id
         }
-
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -1,15 +1,5 @@
-# -*- coding: utf-8 -*-
-# Part of BrowseInfo. See LICENSE file for full copyright and licensing details.
-
-from itertools import groupby
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from odoo import api, fields, models, SUPERUSER_ID, _
-from odoo.exceptions import UserError, ValidationError
-from odoo.tools import float_is_zero, float_compare, DEFAULT_SERVER_DATETIME_FORMAT
-from odoo.tools.misc import formatLang
-from odoo.tools import html2plaintext
-import odoo.addons.decimal_precision as dp
+from odoo import api, fields, models, _
+from odoo.exceptions import ValidationError
 
 
 class SaleOrderLineInherit(models.Model):
@@ -37,16 +27,16 @@ class SaleOrderLineInherit(models.Model):
 class SaleOrderInherit(models.Model):
     _inherit = 'sale.order'
 
+    internal_id = fields.Many2one('inter.transfer.company', copy=False)
+    inter_transfer_count = fields.Integer(string="Internal Transfer", compute="_compute_internal", copy=False,
+                                          default=0, store=True)
+
     @api.depends('internal_id')
     def _compute_internal(self):
         for internal in self:
             internal_transfer = self.env['inter.transfer.company'].search([('id', '=', internal.internal_id.id)])
             if internal_transfer:
                 internal.inter_transfer_count = len(internal_transfer)
-
-    internal_id = fields.Many2one('inter.transfer.company', copy=False)
-    inter_transfer_count = fields.Integer(string="Internal Transfer", compute="_compute_internal", copy=False,
-                                          default=0, store=True)
 
     def action_view_internal(self):
         action = self.env["ir.actions.actions"]._for_xml_id(
@@ -60,11 +50,9 @@ class SaleOrderInherit(models.Model):
         res = super(SaleOrderInherit, self).action_confirm()
         setting_id = self.env.user.company_id
         invoice = False
-        create_picking = False
         internal_id = self.env['inter.transfer.company']
         inter_transfer_lines = self.env['inter.transfer.company.line']
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
-        po_available = self.env['purchase.order'].search([('partner_ref', '=', self.client_order_ref)])
         if self.env.user.has_group(
                 'bi_inter_company_transfer.group_ict_manager_access') and setting_id.allow_auto_intercompany:
             if company_partner_id.id:
@@ -83,9 +71,6 @@ class SaleOrderInherit(models.Model):
                             if move.account_move_ids:
                                 for entry in move.account_move_ids:
                                     entry.write({'partner_id': move.partner_id.id})
-
-                        if picking.state == 'done':
-                            create_picking = True
 
                 else:
                     for picking in self.picking_ids:
@@ -139,7 +124,7 @@ class SaleOrderInherit(models.Model):
                     if self._context.get('stop_po') == True:
                         pass
                     else:
-                        receipt = self._create_po_from_so(company_partner_id)
+                        self._create_po_from_so(company_partner_id)
         return True
 
     def _create_po_from_so(self, company):
@@ -147,9 +132,6 @@ class SaleOrderInherit(models.Model):
         current_company_id = self.env.company
         purchase_order = self.env['purchase.order']
         purchase_order_line = self.env['purchase.order.line']
-        picking_validate = False
-        create_invoice = False
-        validate_invoice = False
         bill_id = False
         line_lot = []
         po_vals = self.sudo().get_po_values(company_partner_id, current_company_id)
@@ -167,7 +149,6 @@ class SaleOrderInherit(models.Model):
             sequence_number = 1
             for receipt in po_id.picking_ids:
                 for move in receipt.move_ids_without_package:
-                    # move.write({'quantity_done':move.product_uom_qty})
                     # below code for adding auto serial number in picking
                     prefix = ''
                     if move.product_id.tracking == 'serial':
@@ -205,62 +186,54 @@ class SaleOrderInherit(models.Model):
                                 sequence_number += 1
                                 move_qty -= 1
                     # ===============================
-                if not line_lot:
-                    receipt.sudo()._action_done()
-                else:
-                    receipt.sudo()._action_done()
-                if receipt.state == 'done':
-                    picking_validate = True
+                receipt.sudo()._action_done()
         if setting_id.create_invoice:
-            if setting_id.create_invoice == True:
-                invoice_object = self.env['account.move']
-                invoice_line_obj = self.env['account.move.line']
-                journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
-                                                                     ('company_id', '=', company.id)], limit=1)
-                internal_id = self.env['inter.transfer.company']
-                inter_transfer_lines = self.env['inter.transfer.company.line']
-                ctx = dict(self._context or {})
-                ctx.update({
-                    'move_type': 'in_invoice',
-                    'default_purchase_id': po_id.id,
-                    'default_currency_id': po_id.currency_id.id,
-                    'default_origin': po_id.name,
-                    'default_reference': po_id.name,
-                    'current_company_id': current_company_id.id,
-                    'company_partner_id': company_partner_id.id
-                })
-                bill_id = invoice_object.with_context(create_bill=True).sudo().with_company(company).create({
-                    'partner_id':
-                    po_id.partner_id.id,
-                    'currency_id':
-                    po_id.currency_id.id,
-                    'company_id':
-                    po_id.company_id.id,
-                    'move_type':
-                    'in_invoice',
-                    'journal_id':
-                    journal.id,
-                    'purchase_vendor_bill_id':
-                    po_id.id,
-                    'purchase_id':
-                    po_id.id,
-                    'ref':
-                    po_id.name,
-                })
+            invoice_object = self.env['account.move']
+            journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
+                                                                 ('company_id', '=', company.id)], limit=1)
+            ctx = dict(self._context or {})
+            ctx.update({
+                'move_type': 'in_invoice',
+                'default_purchase_id': po_id.id,
+                'default_currency_id': po_id.currency_id.id,
+                'default_origin': po_id.name,
+                'default_reference': po_id.name,
+                'current_company_id': current_company_id.id,
+                'company_partner_id': company_partner_id.id
+            })
+            bill_id = invoice_object.with_context(create_bill=True).sudo().with_company(company).create({
+                'partner_id':
+                po_id.partner_id.id,
+                'currency_id':
+                po_id.currency_id.id,
+                'company_id':
+                po_id.company_id.id,
+                'move_type':
+                'in_invoice',
+                'journal_id':
+                journal.id,
+                'purchase_vendor_bill_id':
+                po_id.id,
+                'purchase_id':
+                po_id.id,
+                'ref':
+                po_id.name,
+            })
 
-                new_lines = self.env['account.move.line']
-                new_lines = []
-                for line in po_id.order_line.filtered(lambda l: not l.display_type):
-                    new_lines.append((0, 0, line._prepare_account_move_line(bill_id)))
-                bill_id.write({'invoice_line_ids': new_lines, 'purchase_id': False, 'invoice_date': bill_id.date})
-                bill_id.invoice_payment_term_id = po_id.payment_term_id
-                bill_id.invoice_origin = ', '.join(po_id.mapped('name'))
-                bill_id.ref = ', '.join(po_id.filtered('partner_ref').mapped('partner_ref')) or bill_id.reference
-        if setting_id.validate_invoice:
-            if bill_id:
-                bill_id.sudo().with_company(company)._post()
-            else:
-                raise ValidationError(_('Please First give access to Create invoice.'))
+            new_lines = self.env['account.move.line']
+            new_lines = []
+            for line in po_id.order_line.filtered(lambda l: not l.display_type):
+                new_lines.append((0, 0, line._prepare_account_move_line(bill_id)))
+            bill_id.write({'invoice_line_ids': new_lines, 'purchase_id': False, 'invoice_date': bill_id.date})
+            bill_id.invoice_payment_term_id = po_id.payment_term_id
+            bill_id.invoice_origin = ', '.join(po_id.mapped('name'))
+            bill_id.ref = ', '.join(po_id.filtered('partner_ref').mapped('partner_ref')) or bill_id.reference
+
+            if setting_id.validate_invoice:
+                if bill_id:
+                    bill_id.sudo().with_company(company)._post()
+                else:
+                    raise ValidationError(_('Please First give access to Create invoice.'))
 
         if self.internal_id.id:
             if po_id.id:
@@ -289,7 +262,6 @@ class SaleOrderInherit(models.Model):
         return po_id
 
     def get_po_line_data(self, po_id, company, line):
-
         fpos = line.order_id.fiscal_position_id or line.order_id.partner_id.property_account_position_id
         taxes = line.product_id.taxes_id.filtered(lambda r: not line.company_id or r.company_id == company)
         tax_ids = fpos.map_tax(taxes) if fpos else taxes
@@ -314,13 +286,8 @@ class SaleOrderInherit(models.Model):
             if not company_partner_id.intercompany_warehouse_id:
                 raise ValidationError(_('Please Select Intercompany Warehouse On  %s.') % company_partner_id.name)
 
-        if self.internal_id.id:
-            if self.internal_id.currency_id.id:
-                currency_id = self.internal_id.currency_id.id
-            else:
-                currency_id = self.currency_id.id
-        else:
-            currency_id = self.currency_id.id
+        currency_id = self.internal_id.currency_id.id if self.internal_id.id and self.internal_id.currency_id.id else self.currency_id.id
+
         res = {
             'name': po_name,
             'origin': self.name,
@@ -335,6 +302,3 @@ class SaleOrderInherit(models.Model):
             'company_id': company_partner_id.id,
         }
         return res
-
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
