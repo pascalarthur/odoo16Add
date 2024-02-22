@@ -5,6 +5,7 @@ class StockQuant(models.Model):
     _inherit = 'stock.quant'
 
     quantity_damaged = fields.Float('Damaged Quantity', default=0)
+    _use_adjusted_name_on_stock_move_line = fields.Boolean('Adjustment Name')
 
     def write(self, vals):
         if 'quantity_damaged' in vals:
@@ -24,18 +25,32 @@ class StockQuant(models.Model):
             quant = self.create({'location_id': location_id.id, 'product_id': product_id.id, 'quantity': 0})
         return quant
 
+    def _get_inventory_move_values(self, *args, **kwargs):
+        res = super(StockQuant, self)._get_inventory_move_values(*args, **kwargs)
+        # Change reason for inventory adjustment
+        if self.quantity_damaged > 0 or self._use_adjusted_name_on_stock_move_line:
+            res['name'] = _('Adjustment for Damaged Product')
+        return res
+
     def action_apply_inventory(self):
         for quant in self:
             if quant.quantity_damaged > 0:
                 # Adjust damaged product -> Create Damaged product
                 damaged_product_id = quant.product_id.compute_product_as_damaged()
                 damaged_quant_id = self.browse_create(quant.location_id, damaged_product_id)
-                damaged_quant_id.quantity += quant.quantity_damaged
+                if damaged_quant_id.inventory_quantity_set:
+                    damaged_quant_id.inventory_quantity += quant.quantity_damaged
+                else:
+                    damaged_quant_id.inventory_quantity = damaged_quant_id.quantity + quant.quantity_damaged
+
+                damaged_quant_id._use_adjusted_name_on_stock_move_line = True
+                damaged_quant_id.action_apply_inventory()
+                damaged_quant_id._use_adjusted_name_on_stock_move_line = False
 
         super(StockQuant, self).action_apply_inventory()
 
         for quant in self:
-            quant.quantity_damaged = 0
+            quant.action_clear_inventory_quantity()
 
     def action_clear_inventory_quantity(self):
         self.quantity_damaged = 0

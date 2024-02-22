@@ -14,23 +14,18 @@ class DamageOperation(models.Model):
 
 class StockPickingDamageLine(models.Model):
     _inherit = 'stock.move'
-
     quantity_damaged = fields.Float('Damaged Quantity')
-    inventory_damage_id = fields.Many2one('inventory.damage', string='Inventory Damage')
 
 
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
     inventory_damage_id = fields.Many2one('inventory.damage.operation', string='Inventory Damage')
-
     damaged_stock_picking_id = fields.Many2one('stock.picking', string='Damaged Stock Picking', readonly=True)
-
     damaged_stock_picking_ids = fields.One2many('stock.picking', 'damaged_stock_picking_id',
                                                 string='Damaged Stock Pickings')
-    damaged_stock_picking_ids_count = fields.Integer('Damaged Stock Pickings Count',
+    damaged_stock_picking_ids_count = fields.Integer('Damaged Count',
                                                      compute='_compute_damaged_stock_picking_ids_count')
-
     is_damaged_picking = fields.Boolean('Is Damaged Picking', default=False)
 
     @api.depends('damaged_stock_picking_ids')
