@@ -28,10 +28,10 @@ class ReturnInterTransferCompany(models.Model):
     _description = "ReturnInterTransferCompany"
     _order = 'create_date desc, id desc'
 
-    @api.depends('internal_id')
+    @api.depends('inter_transfer_id')
     def _get_internal(self):
         for internal in self:
-            internal_transfer = self.env['inter.transfer.company'].search([('id', '=', self.internal_id.id)])
+            internal_transfer = self.env['inter.transfer.company'].search([('id', '=', self.inter_transfer_id.id)])
             if internal_transfer:
                 internal.internal_count = len(internal_transfer)
 
@@ -74,7 +74,7 @@ class ReturnInterTransferCompany(models.Model):
     purchase_id = fields.Many2one("purchase.order", string="Purchase Order")
     purchase_count = fields.Integer('Purchase Count', compute="_compute_purchase_internal", copy=False, default=0,
                                     store=True)
-    internal_id = fields.Many2one("inter.transfer.company", string='return', copy=False)
+    inter_transfer_id = fields.Many2one("inter.transfer.company", string='return', copy=False)
     internal_count = fields.Integer(string='Internal Count', compute="_get_internal", copy=False, default=0, store=True)
     name = fields.Char("Name", readonly=True, copy=False)
     state = fields.Selection([('draft', 'Draft'), ('process', 'Process'), ('return', 'Return')], string="state",
@@ -92,8 +92,8 @@ class ReturnInterTransferCompany(models.Model):
         rict_name = self.env['ir.sequence'].next_by_code('return.inter.transfer.company')
         vals['name'] = rict_name
         res = super(ReturnInterTransferCompany, self).create(vals)
-        internal_id = self.env['inter.transfer.company'].search([('id', '=', vals['internal_id'])])
-        internal_id.write({'return_id': res.id, 'state': 'return'})
+        inter_transfer_id = self.env['inter.transfer.company'].search([('id', '=', vals['inter_transfer_id'])])
+        inter_transfer_id.write({'return_id': res.id, 'state': 'return'})
         return res
 
     def action_view_sale_internal(self):
@@ -106,7 +106,7 @@ class ReturnInterTransferCompany(models.Model):
     def action_view_internal(self):
         action = self.env["ir.actions.actions"]._for_xml_id(
             "bi_inter_company_transfer.stock_inter_company_transfer_action")
-        domain = [('id', '=', self.internal_id.id)]
+        domain = [('id', '=', self.inter_transfer_id.id)]
         transfer = self.env['inter.transfer.company'].search(domain)
         action['domain'] = [('id', '=', transfer.id)]
         return action
@@ -169,7 +169,7 @@ class ReturnInterTransferCompany(models.Model):
         date = False
         description = False
         mode = 'refund'
-        for inv in inv_obj.browse(self.internal_id.invoice_id.ids):
+        for inv in inv_obj.browse(self.inter_transfer_id.invoice_id.ids):
             if inv.move_type == 'out_invoice':
                 credit_note_wizard = self.env['account.move.reversal'].with_context({
                     'active_ids': [inv.id],
@@ -249,7 +249,7 @@ class ReturnInterTransferCompany(models.Model):
         date = False
         description = False
         mode = 'refund'
-        for inv in inv_obj.browse(self.internal_id.invoice_id.ids):
+        for inv in inv_obj.browse(self.inter_transfer_id.invoice_id.ids):
             if inv.move_type == 'in_invoice':
                 credit_note_wizard = self.env['account.move.reversal'].with_context({
                     'active_ids': [inv.id],
@@ -493,7 +493,7 @@ class ReturnInterTransferCompanyLines(models.Model):
     _name = 'return.inter.transfer.company.line'
     _description = "ReturnInterTransferCompanyLines"
 
-    internal_id = fields.Many2one('inter.transfer.company')
+    inter_transfer_id = fields.Many2one('inter.transfer.company')
     return_id = fields.Many2one('return.inter.transfer.company')
     product_id = fields.Many2one('product.product')
     quantity = fields.Integer('Quantity', default=1)

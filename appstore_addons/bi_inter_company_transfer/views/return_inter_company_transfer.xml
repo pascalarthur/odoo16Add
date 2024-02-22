@@ -40,7 +40,7 @@
 					<group>
 						<group>
 							<field name = "from_warehouse" readonly="state in ('process')"/>
-							<field name='internal_id' readonly="state in ('process')"/>
+							<field name='inter_transfer_id' readonly="state in ('process')"/>
 							<field name='invoice_id' invisible="1"/>
 							<field name = "pricelist_id" readonly="state in ('process')"/>
 						</group>
@@ -55,12 +55,12 @@
 						<page string="Product details" >
 						  <field name="product_lines" readonly="state in ('process')">
 							<tree editable="bottom">
-								<field name = "internal_id"  column_invisible="1"/>
+								<field name = "inter_transfer_id"  column_invisible="1"/>
 								<field name="product_id"/>
 								<field name="quantity"/>
 								<field name = "price_unit"/>
 							</tree>
-						  </field> 
+						  </field>
 						</page>
 					</notebook>
 				</sheet>
