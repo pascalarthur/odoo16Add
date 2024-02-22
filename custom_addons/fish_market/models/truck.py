@@ -9,10 +9,6 @@ TRUCK_STATES = [
 ]
 
 
-class TruckLoadLine(models.Model):
-    _name = "truck.detail.line"
-
-
 class TruckRouteLoadLine(models.Model):
     _name = "truck.route.line"
     _description = 'Truck Route Line'
@@ -27,10 +23,6 @@ class TruckRouteLoadLine(models.Model):
     unit_price = fields.Float('Unit Price', default=0.0)
     quantity = fields.Float(string='Quantity', default=1.0)
     tax_ids = fields.Many2many('account.tax', string='Taxes')
-
-
-class TruckDetail(models.Model):
-    _name = "truck.detail"
 
 
 class TruckDetail(models.Model):

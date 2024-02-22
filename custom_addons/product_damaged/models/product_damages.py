@@ -1,15 +1,4 @@
-from odoo import models, fields, api, _
-from odoo import exceptions
-
-
-class Damage(models.Model):
-    _name = 'inventory.damage'
-    _description = 'Records Damages to boxes'
-
-
-class DamageOperation(models.Model):
-    _name = 'inventory.damage.operation'
-    _description = 'Records Damages to boxes'
+from odoo import models, fields, api, exceptions, _
 
 
 class StockMoveLine(models.Model):
