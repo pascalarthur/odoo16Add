@@ -7,6 +7,21 @@ class StockQuant(models.Model):
     quantity_damaged = fields.Float('Damaged Quantity', default=0)
     _use_adjusted_name_on_stock_move_line = fields.Boolean('Adjustment Name')
 
+    @api.onchange('quantity_damaged')
+    def _onchange_quantity_damaged(self):
+        for quant in self:
+            # Raises error if the product is already marked as damaged and set the quantity_damaged to 0
+            try:
+                quant.product_id.compute_product_as_damaged()
+            except Exception as e:
+                quant.action_clear_inventory_quantity()
+                return {
+                    'warning': {
+                        'title': _('Warning'),
+                        'message': e.args[0],
+                    }
+                }
+
     def write(self, vals):
         if 'quantity_damaged' in vals:
             for quant in self:
