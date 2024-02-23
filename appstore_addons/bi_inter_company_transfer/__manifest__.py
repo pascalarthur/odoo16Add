@@ -12,7 +12,7 @@
     'Auto Inter company Transfer document Auto intercompany transfer document auto intercompany transection automatic inter-company Transection inter company rules setup for multiple company inter company sales inter company purchase inter-company warehouse',
     "description":
     """
-    
+
             intercompany,
             odoo intercompany,
             odoo intercompany for community,
@@ -22,7 +22,7 @@
             stock intercompany transfer,
             reverse intercompany transfer,
             reverse intercompany transaction,
-    
+
     """,
     "author":
     "BrowseInfo",
@@ -39,7 +39,6 @@
         'data/inter_company_transfer_sequence.xml',
         'views/recompanysettingInherit.xml',
         'views/internal_company_transfer.xml',
-        'views/return_inter_company_transfer.xml',
         'views/company_inherit_views.xml',
     ],
     'qweb': [],

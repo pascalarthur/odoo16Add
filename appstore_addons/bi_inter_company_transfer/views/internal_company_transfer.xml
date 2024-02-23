@@ -12,8 +12,12 @@
 				</header>
 				<sheet >
 					<div class="oe_button_box" name="button_box">
-						<button name="action_view_return_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="return_id == False">
-							<field name="return_id" widget="statinfo" string="Return Internal Transfer"/>
+						<button name="action_view_return_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="inter_company_transfer_id == False">
+							<field name="inter_company_transfer_id" widget="statinfo" string="Inter Company Transfer"/>
+						</button>
+
+						<button name="action_view_return_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="inter_company_transfer_return_id == False">
+							<field name="inter_company_transfer_return_id" widget="statinfo" string="Return Inter Company Transfer"/>
 						</button>
 
 						<button name="action_view_sale_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="sale_id == False">
