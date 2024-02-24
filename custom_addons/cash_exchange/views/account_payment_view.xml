@@ -54,7 +54,7 @@
                 </div>
 
                 <header>
-                    <button name="action_custom_post" string="Confirm" type="object" class="oe_highlight"/>
+                    <button name="action_post_and_reconcile" string="Confirm" type="object" class="oe_highlight"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
                 </header>
 

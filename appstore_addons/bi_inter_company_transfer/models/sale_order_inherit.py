@@ -187,12 +187,8 @@ class SaleOrderInherit(models.Model):
             })
             if not self.inter_transfer_id.to_warehouse.id:
                 self.inter_transfer_id.update({'to_warehouse': company_partner_id.intercompany_warehouse_id.id})
-            if bill_id:
-                bill_details = []
-                bill_details.append(bill_id.id)
-                if len(self.inter_transfer_id.invoice_id) > 0:
-                    for inv in self.inter_transfer_id.invoice_id:
-                        bill_details.append(inv.id)
+            if setting_id.create_invoice:
+                bill_details = [bill_id.id] + self.inter_transfer_id.invoice_id.mapped('id')
                 self.inter_transfer_id.update({
                     'invoice_id': [(6, 0, bill_details)],
                 })
