@@ -109,9 +109,7 @@ class PurchaseOrderInherit(models.Model):
                 'from_warehouse': so_id.warehouse_id.id,
             })
             if not self.inter_transfer_id.to_warehouse.id:
-                self.inter_transfer_id.update({
-                    'to_warehouse': self.env.company.intercompany_warehouse_id.id
-                })
+                self.inter_transfer_id.update({'to_warehouse': self.env.company.intercompany_warehouse_id.id})
             so_id.inter_transfer_id = self.inter_transfer_id.id
         return so_id
 
@@ -120,19 +118,15 @@ class PurchaseOrderInherit(models.Model):
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         if not company_partner_id.id:
             return res
-        setting_id = self.env.company
         journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
                                                              ('company_id', '=', self.env.company.id)], limit=1)
         inter_lines = []
         bill_id = False
-        line_lot = []
         if self.env.user.has_group(
-                'bi_inter_company_transfer.group_ict_manager_access') and setting_id.allow_auto_intercompany:
+                'bi_inter_company_transfer.group_ict_manager_access') and self.env.company.allow_auto_intercompany:
             if not self.env['sale.order'].search([('client_order_ref', '=', self.name)]).id:
-                if setting_id.validate_picking:
-                    for line in self.order_line:
-                        if line.product_id.tracking != 'none':
-                            line_lot.append(line.product_id)
+                if self.env.company.validate_picking:
+                    line_lot = self.order_line.filtered(lambda l: l.product_id.tracking != 'none')
                     for receipt in self.picking_ids:
                         for move in receipt.move_ids_without_package:
                             move.write({'quantity': move.product_uom_qty})
@@ -165,7 +159,7 @@ class PurchaseOrderInherit(models.Model):
                                     'price_unit':
                                     move.product_id.lst_price
                                 }))
-                if setting_id.create_invoice:
+                if self.env.company.create_invoice:
                     ctx = dict(self._context or {})
                     ctx.update({
                         'move_type': 'in_invoice',
@@ -193,8 +187,9 @@ class PurchaseOrderInherit(models.Model):
                     bill_id.invoice_origin = ', '.join(self.mapped('name'))
                     bill_id.ref = ', '.join(self.filtered('partner_ref').mapped('partner_ref')) or bill_id.ref
 
-                    if setting_id.validate_invoice:
+                    if self.env.company.validate_invoice:
                         bill_id._post()
+
                 if self.inter_transfer_id.id == False and self.partner_ref == False:
                     internal_transfer_vals = {
                         'purchase_id': self.id,
@@ -206,17 +201,13 @@ class PurchaseOrderInherit(models.Model):
                     if bill_id:
                         internal_transfer_vals['invoice_id'] = [(6, 0, bill_id.ids)]
 
-                    internal_transfer_id = self.env['inter.transfer.company'].create(internal_transfer_vals)
-                    self.inter_transfer_id = internal_transfer_id.id
+                    self.inter_transfer_id = self.env['inter.transfer.company'].create(internal_transfer_vals)
                     for inter_transfer_company_line_id in inter_lines:
                         inter_transfer_company_line_id.update({'inter_transfer_id': self.inter_transfer_id.id})
                 else:
-                    created_id = self.env['inter.transfer.company'].search([('id', '=', self.inter_transfer_id.id)])
-                    created_id.write({'purchase_id': self.id})
+                    self.inter_transfer_id.write({'purchase_id': self.id})
                     if bill_id:
-                        created_id.write({'invoice_id': [(6, 0, bill_id.ids)]})
-                if self.inter_transfer_id.id:
-                    self.inter_transfer_id = self.inter_transfer_id.id
+                        self.inter_transfer_id.write({'invoice_id': [(6, 0, bill_id.ids)]})
 
                 if self._context.get('stop_so') != True:
                     receipt = self._create_so_from_po()
