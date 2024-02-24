@@ -80,45 +80,7 @@ class SaleOrderInherit(models.Model):
         }
         return res
 
-    def _create_bill_int(self, purchase_order, company, company_partner_id):
-        for purchase_order_line_id in purchase_order.order_line:
-            purchase_order_line_id.qty_to_invoice = purchase_order_line_id.product_qty
-
-        journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
-                                                             ('company_id', '=', company.id)], limit=1)
-        ctx = dict(self._context or {})
-        ctx.update({
-            'move_type': 'in_invoice',
-            'default_purchase_id': purchase_order.id,
-            'default_currency_id': purchase_order.currency_id.id,
-            'default_origin': purchase_order.name,
-            'default_reference': purchase_order.name,
-            'current_company_id': self.env.company.id,
-            'company_partner_id': company_partner_id.id
-        })
-        account_move = self.env['account.move'].with_context(create_bill=True)
-        bill_id = account_move.sudo().with_company(company).create({
-            'partner_id': purchase_order.partner_id.id,
-            'currency_id': purchase_order.currency_id.id,
-            'company_id': purchase_order.company_id.id,
-            'move_type': 'in_invoice',
-            'journal_id': journal.id,
-            'purchase_vendor_bill_id': purchase_order.id,
-            'purchase_id': purchase_order.id,
-            'ref': purchase_order.name,
-        })
-
-        new_lines = self.env['account.move.line']
-        new_lines = []
-        for line in purchase_order.order_line.filtered(lambda l: not l.display_type):
-            new_lines.append((0, 0, line._prepare_account_move_line(bill_id)))
-        bill_id.write({'invoice_line_ids': new_lines, 'purchase_id': False, 'invoice_date': bill_id.date})
-        bill_id.invoice_payment_term_id = purchase_order.payment_term_id
-        bill_id.invoice_origin = ', '.join(purchase_order.mapped('name'))
-        bill_id.ref = ', '.join(purchase_order.filtered('partner_ref').mapped('partner_ref')) or bill_id.reference
-        return bill_id
-
-    def _create_po_from_so(self, company):
+    def _create_po_from_so(self):
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         line_lot = []
         po_vals = self.sudo().get_po_values(company_partner_id, self.env.company)
@@ -175,10 +137,10 @@ class SaleOrderInherit(models.Model):
                     # ===============================
                 receipt.sudo()._action_done()
         if setting_id.create_invoice:
-            bill_id = self._create_bill_int(po_id, company, company_partner_id)
+            bill_id = po_id.create_bill_int(company_partner_id, is_sale_bill=True)
 
             if setting_id.validate_invoice:
-                bill_id.sudo().with_company(company)._post()
+                bill_id.sudo().with_company(company_partner_id)._post()
 
         if self.inter_transfer_id.id:
             self.inter_transfer_id.update({
@@ -273,5 +235,5 @@ class SaleOrderInherit(models.Model):
                     if self._context.get('stop_po') == True:
                         pass
                     else:
-                        self._create_po_from_so(company_partner_id)
+                        self._create_po_from_so()
         return True

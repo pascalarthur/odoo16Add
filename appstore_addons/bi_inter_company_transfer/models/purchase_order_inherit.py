@@ -82,15 +82,12 @@ class PurchaseOrderInherit(models.Model):
         so_id.with_context(allowed_company_ids=allowed_company_ids).action_confirm()
 
         if self.env.company.validate_picking:
-            for picking in so_id.picking_ids:
-                if picking.state != 'done':
-                    for move in picking.move_ids_without_package:
-                        if move.product_id.qty_available > 0:
-                            move.write({
-                                'quantity': move.product_uom_qty,
-                            })
-                    picking.button_validate()
-                    picking._action_done()
+            for picking in so_id.picking_ids.filtered(lambda picking: picking.state != 'done'):
+                for move in picking.move_ids_without_package.filtered(lambda move: move.product_id.qty_available > 0):
+                    move.write({'quantity': move.product_uom_qty})
+                picking.button_validate()
+                picking._action_done()
+
         if self.env.company.create_invoice:
             invoice = so_id.order_line.invoice_lines.move_id.filtered(lambda r: r.move_type in
                                                                       ('out_invoice', 'out_refund'))
@@ -113,102 +110,109 @@ class PurchaseOrderInherit(models.Model):
             so_id.inter_transfer_id = self.inter_transfer_id.id
         return so_id
 
+    def create_bill_int(self, company, is_sale_bill: bool = False):
+        journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
+                                                             ('company_id', '=', company.id)], limit=1)
+        if not journal:
+            raise ValidationError(_(f'Please define purchase journal for company: {company.name}.'))
+
+        for purchase_order_line_id in self.order_line:
+            purchase_order_line_id.qty_to_invoice = purchase_order_line_id.product_qty
+
+        if is_sale_bill:
+            account_move = self.env['account.move'].with_context(
+                create_bill=True).sudo().with_company(company)
+        else:
+            ctx = dict(self._context or {})
+            ctx.update({
+                'move_type': 'in_invoice',
+                'default_purchase_id': self.id,
+                'default_currency_id': self.currency_id.id,
+                'default_invoice_origin': self.name,
+                'default_ref': self.name,
+            })
+            account_move = self.env['account.move'].with_context(ctx)
+        bill_id = account_move.create({
+            'partner_id': self.partner_id.id,
+            'currency_id': self.currency_id.id,
+            'company_id': self.company_id.id,
+            'move_type': 'in_invoice',
+            'journal_id': journal.id,
+            'purchase_vendor_bill_id': self.id,
+            'purchase_id': self.id,
+            'ref': self.name
+        })
+
+        new_lines = []
+        for line in self.order_line.filtered(lambda l: not l.display_type):
+            new_lines.append((0, 0, line._prepare_account_move_line(bill_id)))
+        bill_id.write({'invoice_line_ids': new_lines, 'purchase_id': False, 'invoice_date': bill_id.date})
+        bill_id.invoice_payment_term_id = self.payment_term_id
+        bill_id.invoice_origin = ', '.join(self.mapped('name'))
+        bill_id.ref = ', '.join(self.filtered('partner_ref').mapped('partner_ref')) or bill_id.ref
+        return bill_id
+
+    def _create_inter_lines(self, picking) -> list:
+        line_cls = self.env['inter.transfer.company.line']
+        inter_lines = []
+        for move in picking.move_ids_without_package:
+            if self.inter_transfer_id.id == False and self.partner_ref == False:
+                price = move.purchase_line_id.price_unit if self.env.company.validate_picking else move.product_id.lst_price
+
+                if self.env.company.validate_picking is True:
+                    move.write({'quantity': move.product_uom_qty})
+
+                inter_lines.append(
+                    line_cls.create({
+                        'product_id': move.product_id.id,
+                        'quantity': move.product_uom_qty,
+                        'price_unit': price
+                    }))
+
+            if self.env.company.validate_picking is True:
+                if self.order_line.filtered(lambda l: l.product_id.tracking == 'none'):
+                    picking._action_done()
+                else:
+                    picking.action_confirm()
+                for move in picking.move_ids_without_package:
+                    for entry in move.account_move_ids:
+                        entry.write({'partner_id': move.partner_id.id})
+        return inter_lines
+
+    def _create_inter_company_purchase(self) -> None:
+        trans_cls = self.env['inter.transfer.company']
+
+        inter_lines = [line for picking in self.picking_ids for line in self._create_inter_lines(picking)]
+
+        if self.env.company.create_invoice is True:
+            bill_id = self.create_bill_int(self.env.company)
+            if self.env.company.validate_invoice is True:
+                bill_id._post()
+
+        if self.inter_transfer_id.id == False and self.partner_ref == False:
+            self.inter_transfer_id = trans_cls.create({
+                'purchase_id': self.id,
+                'state': 'process',
+                'apply_type': 'sale',
+                'currency_id': self.currency_id.id,
+                'to_warehouse': self.picking_type_id.warehouse_id.id
+            })
+            for inter_line in inter_lines:
+                inter_line.update({'inter_transfer_id': self.inter_transfer_id.id})
+        else:
+            self.inter_transfer_id.write({'purchase_id': self.id})
+
+        if self.env.company.create_invoice:
+            self.inter_transfer_id.write({'invoice_id': [(6, 0, bill_id.ids)]})
+
+        if self._context.get('stop_so') != True:
+            self._create_so_from_po()
+
     def button_confirm(self):
         res = super(PurchaseOrderInherit, self).button_confirm()
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
-        if not company_partner_id.id:
-            return res
-        journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
-                                                             ('company_id', '=', self.env.company.id)], limit=1)
-        inter_lines = []
-        bill_id = False
-        if self.env.user.has_group(
-                'bi_inter_company_transfer.group_ict_manager_access') and self.env.company.allow_auto_intercompany:
+        is_correct_group = self.env.user.has_group('bi_inter_company_transfer.group_ict_manager_access')
+        if company_partner_id.id and is_correct_group and self.env.company.allow_auto_intercompany:
             if not self.env['sale.order'].search([('client_order_ref', '=', self.name)]).id:
-                if self.env.company.validate_picking:
-                    line_lot = self.order_line.filtered(lambda l: l.product_id.tracking != 'none')
-                    for receipt in self.picking_ids:
-                        for move in receipt.move_ids_without_package:
-                            move.write({'quantity': move.product_uom_qty})
-                            if self.inter_transfer_id.id == False and self.partner_ref == False:
-                                inter_lines.append(self.env['inter.transfer.company.line'].create({
-                                    'product_id':
-                                    move.product_id.id,
-                                    'quantity':
-                                    move.product_uom_qty,
-                                    'price_unit':
-                                    move.purchase_line_id.price_unit
-                                }))
-                        if not line_lot:
-                            receipt._action_done()
-                        else:
-                            receipt.action_confirm()
-                        for move in receipt.move_ids_without_package:
-                            if move.account_move_ids:
-                                for entry in move.account_move_ids:
-                                    entry.write({'partner_id': move.partner_id.id})
-                else:
-                    for receipt in self.picking_ids:
-                        for move in receipt.move_ids_without_package:
-                            if self.inter_transfer_id.id == False and self.partner_ref == False:
-                                inter_lines.append(self.env['inter.transfer.company.line'].create({
-                                    'product_id':
-                                    move.product_id.id,
-                                    'quantity':
-                                    move.product_uom_qty,
-                                    'price_unit':
-                                    move.product_id.lst_price
-                                }))
-                if self.env.company.create_invoice:
-                    ctx = dict(self._context or {})
-                    ctx.update({
-                        'move_type': 'in_invoice',
-                        'default_purchase_id': self.id,
-                        'default_currency_id': self.currency_id.id,
-                        'default_invoice_origin': self.name,
-                        'default_ref': self.name,
-                    })
-                    bill_id = self.env['account.move'].with_context(ctx).create({
-                        'partner_id': self.partner_id.id,
-                        'currency_id': self.currency_id.id,
-                        'company_id': self.company_id.id,
-                        'move_type': 'in_invoice',
-                        'journal_id': journal.id,
-                        'purchase_vendor_bill_id': self.id,
-                        'purchase_id': self.id,
-                        'ref': self.name
-                    })
-                    new_lines = self.env['account.move.line']
-                    new_lines = []
-                    for line in self.order_line.filtered(lambda l: not l.display_type):
-                        new_lines.append((0, 0, line._prepare_account_move_line(bill_id)))
-                    bill_id.write({'invoice_line_ids': new_lines, 'purchase_id': False, 'invoice_date': bill_id.date})
-                    bill_id.invoice_payment_term_id = self.payment_term_id
-                    bill_id.invoice_origin = ', '.join(self.mapped('name'))
-                    bill_id.ref = ', '.join(self.filtered('partner_ref').mapped('partner_ref')) or bill_id.ref
-
-                    if self.env.company.validate_invoice:
-                        bill_id._post()
-
-                if self.inter_transfer_id.id == False and self.partner_ref == False:
-                    internal_transfer_vals = {
-                        'purchase_id': self.id,
-                        'state': 'process',
-                        'apply_type': 'sale',
-                        'currency_id': self.currency_id.id,
-                        'to_warehouse': self.picking_type_id.warehouse_id.id
-                    }
-                    if bill_id:
-                        internal_transfer_vals['invoice_id'] = [(6, 0, bill_id.ids)]
-
-                    self.inter_transfer_id = self.env['inter.transfer.company'].create(internal_transfer_vals)
-                    for inter_transfer_company_line_id in inter_lines:
-                        inter_transfer_company_line_id.update({'inter_transfer_id': self.inter_transfer_id.id})
-                else:
-                    self.inter_transfer_id.write({'purchase_id': self.id})
-                    if bill_id:
-                        self.inter_transfer_id.write({'invoice_id': [(6, 0, bill_id.ids)]})
-
-                if self._context.get('stop_so') != True:
-                    receipt = self._create_so_from_po()
+                self._create_inter_company_purchase()
         return res
