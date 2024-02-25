@@ -4,7 +4,7 @@
     'version':
     '1.0',
     'depends': [
-        'base', 'purchase', 'web', 'fleet', 'stock', 'sale_management', 'dynamic_accounts_report', 'hy_currency_rate',
+        'base', 'purchase', 'web', 'fleet', 'stock', 'sale_management', 'hy_currency_rate',
         'pos_absolute_discount', 'pos_multi_currency_cash', 'pos_receipt_extend', 'pos_closing_transaction',
         'pos_invoice_automate', 'bi_inter_company_transfer', 'cash_exchange'
     ],
