@@ -10,8 +10,9 @@ class InterTransferCompanyLines(models.Model):
     quantity = fields.Integer('Quantity', default=1, required=True)
     price_unit = fields.Float('Price')
 
-    def _prepare_internal_from_move_line(self, move):
-        return ({
+    @api.model
+    def create_from_move(self, move):
+        return self.create({
             'product_id': move.product_id.id,
             'quantity': move.product_uom_qty,
             'price_unit': move.sale_line_id.price_unit or move.product_id.lst_price
@@ -26,7 +27,7 @@ class InterTransferCompanyLines(models.Model):
 
 class InterTransferCompany(models.Model):
     _name = 'inter.transfer.company'
-    _description = "InterTransferCompany"
+    _description = "Intercompany Transfer"
     _order = 'create_date desc, id desc'
 
     name = fields.Char("Name", readonly=True, copy=False)

@@ -2,113 +2,95 @@ from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
 
-class PurchaseOrderInherit(models.Model):
+class PurchaseOrderLine(models.Model):
+    _inherit = 'purchase.order.line'
+
+    @api.model
+    def create_from_sale_order_line(self, line, purchase_order, company):
+        fpos = line.order_id.fiscal_position_id or line.order_id.partner_id.property_account_position_id
+        taxes = line.product_id.taxes_id.filtered(lambda r: not line.company_id or r.company_id == company)
+        tax_ids = fpos.map_tax(taxes) if fpos else taxes
+        price = line.price_unit - (line.price_unit * (line.discount / 100))
+        quantity = line.product_uom._compute_quantity(line.product_uom_qty,
+                                                      line.product_id.uom_po_id) or line.product_uom_qty
+        price = line.product_uom._compute_price(price, line.product_id.uom_po_id) or price
+        return self.sudo().create({
+            'name': line.name,
+            'date_planned': line.order_id.expected_date,
+            'taxes_id': [(6, 0, tax_ids.ids)],
+            'order_id': purchase_order.id,
+            'product_qty': quantity,
+            'product_id': line.product_id and line.product_id.id or False,
+            'product_uom': line.product_id and line.product_id.uom_po_id.id or line.product_uom.id,
+            'price_unit': price or 0.0,
+        })
+
+
+class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
     inter_transfer_id = fields.Many2one('inter.transfer.company', copy=False)
-    inter_transfer_count = fields.Integer(string="Internal Transfer", compute="_compute_intertransfer_count",
-                                          copy=False, default=0, store=True)
-
-    @api.depends('inter_transfer_id')
-    def _compute_intertransfer_count(self):
-        for record in self:
-            record.inter_transfer_count = len(self.inter_transfer_id)
 
     def action_view_internal(self):
         return self.inter_transfer_id.action_view_internal()
 
     @api.model
-    def get_so_line_data(self, company, sale_id, line):
-        fpos = line.order_id.fiscal_position_id or line.order_id.partner_id.property_account_position_id
-        taxes = line.product_id.taxes_id.filtered(lambda r: not line.company_id or r.company_id == company)
-        tax_ids = fpos.map_tax(taxes) if fpos else taxes
-        quantity = line.product_uom._compute_quantity(line.product_qty, line.product_id.uom_id)
-
-        price = line.price_unit or 0.0
-        price = line.product_uom._compute_price(price, line.product_id.uom_id)
-        return {
-            'name': line.name,
-            'customer_lead': line.product_id and line.product_id.sale_delay or 0.0,
-            'tax_id': [(6, 0, tax_ids.ids)],
-            'order_id': sale_id,
-            'product_uom_qty': quantity,
-            'product_id': line.product_id and line.product_id.id or False,
-            'product_uom': line.product_id and line.product_id.uom_id.id or line.product_uom.id,
-            'price_unit': price,
-            'company_id': company.id
+    def create_from_sale_order(self, sale_order, company_partner, current_company):
+        currency_id = sale_order.inter_transfer_id.currency_id.id if sale_order.inter_transfer_id.id and sale_order.inter_transfer_id.currency_id.id else sale_order.currency_id.id
+        vals = {
+            'name': self.env['ir.sequence'].sudo().with_company(company_partner).next_by_code('purchase.order'),
+            'origin': sale_order.name,
+            'fiscal_position_id': current_company.partner_id.property_account_position_id.id,
+            'payment_term_id': current_company.partner_id.property_supplier_payment_term_id.id,
+            'partner_ref': sale_order.name,
+            'currency_id': currency_id,
+            'user_id': sale_order.env.uid,
+            'partner_id': current_company.partner_id.id,
+            'inter_transfer_id': sale_order.inter_transfer_id.id,
+            'date_order': sale_order.date_order,
+            'company_id': company_partner.id,
         }
+        purchase_order = self.sudo().create(vals)
+        for order_line in sale_order.order_line:
+            self.env['purchase.order.line'].sudo().create_from_sale_order_line(order_line, purchase_order,
+                                                                               company_partner)
+        return purchase_order
 
-    def get_so_values(self, name, company_partner_id, partner_id):
-        if company_partner_id:
-            if not company_partner_id.intercompany_warehouse_id:
-                raise ValidationError(_('Please select intercompany warehouse on  %s.') % company_partner_id.name)
-
-        so_name = self.env['ir.sequence'].sudo().with_company(company_partner_id).next_by_code('sale.order') or '/'
-        if self.inter_transfer_id.id and self.inter_transfer_id.pricelist_id.id:
-            pricelist_id = self.inter_transfer_id.pricelist_id.id
-        else:
-            pricelist_id = partner_id.property_product_pricelist.id
-        return {
-            'name': so_name,
-            'partner_invoice_id': partner_id.id,
-            'date_order': self.date_order,
-            'fiscal_position_id': partner_id.property_account_position_id.id,
-            'payment_term_id': partner_id.property_payment_term_id.id,
-            'user_id': False,
-            'company_id': company_partner_id.id,
-            'warehouse_id': company_partner_id.intercompany_warehouse_id.id,
-            'client_order_ref': name,
-            'partner_id': partner_id.id,
-            'pricelist_id': pricelist_id,
-            'inter_transfer_id': self.inter_transfer_id.id,
-            'partner_shipping_id': partner_id.id
-        }
-
-    def _create_so_from_po(self):
-        company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
-        invoice = False
-        allowed_company_ids = [company_partner_id.id, self.env.company.id]
-        so_vals = self.sudo().get_so_values(self.name, company_partner_id,
-                                            self.env.company.intercompany_warehouse_id.partner_id)
-        so_id = self.env['sale.order'].with_context(allowed_company_ids=allowed_company_ids).sudo().create(so_vals)
-        for line in self.order_line.sudo():
-            so_line_vals = self.sudo().get_so_line_data(company_partner_id, so_id.id, line)
-            self.env['sale.order.line'].with_context(
-                allowed_company_ids=allowed_company_ids).sudo().create(so_line_vals)
-        if so_id.client_order_ref:
-            so_id.client_order_ref = self.name
-        ctx = dict(self._context or {})
-        ctx.update({'company_partner_id': company_partner_id.id, 'current_company_id': self.env.company.id})
-        so_id.with_context(allowed_company_ids=allowed_company_ids).action_confirm()
+    def _create_sale_order_from_purchase_order(self):
+        company_partner = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
+        allowed_company_ids = [company_partner.id, self.env.company.id]
+        sale_order = self.env['sale.order'].sudo().create_from_purchase_order(
+            self, company_partner, self.env.company.intercompany_warehouse_id.partner_id, allowed_company_ids)
+        if sale_order.client_order_ref:
+            sale_order.client_order_ref = self.name
+        sale_order.with_context(allowed_company_ids=allowed_company_ids).action_confirm()
 
         if self.env.company.validate_picking:
-            for picking in so_id.picking_ids.filtered(lambda picking: picking.state != 'done'):
+            for picking in sale_order.picking_ids.filtered(lambda picking: picking.state != 'done'):
                 for move in picking.move_ids_without_package.filtered(lambda move: move.product_id.qty_available > 0):
                     move.write({'quantity': move.product_uom_qty})
                 picking.button_validate()
                 picking._action_done()
 
         if self.env.company.create_invoice:
-            invoice = so_id.order_line.invoice_lines.move_id.filtered(lambda r: r.move_type in
-                                                                      ('out_invoice', 'out_refund'))
+            invoice = sale_order.order_line.invoice_lines.move_id.filtered(lambda r: r.move_type in
+                                                                           ('out_invoice', 'out_refund'))
             if not invoice:
-                invoice = so_id.sudo()._create_invoices()
+                invoice = sale_order.sudo()._create_invoices()
 
-            if self.env.company.validate_invoice:
-                if invoice.state != 'posted':
-                    invoice_id = self.env['account.move'].browse(invoice.id)
-                    invoice_id.sudo()._post()
+            if self.env.company.validate_invoice and invoice.state != 'posted':
+                invoice.sudo()._post()
 
         if self.inter_transfer_id.id:
             self.inter_transfer_id.update({
-                'sale_id': so_id.id,
-                'pricelist_id': so_id.pricelist_id.id,
-                'from_warehouse': so_id.warehouse_id.id,
+                'sale_id': sale_order.id,
+                'pricelist_id': sale_order.pricelist_id.id,
+                'from_warehouse': sale_order.warehouse_id.id,
             })
             if not self.inter_transfer_id.to_warehouse.id:
                 self.inter_transfer_id.update({'to_warehouse': self.env.company.intercompany_warehouse_id.id})
-            so_id.inter_transfer_id = self.inter_transfer_id.id
-        return so_id
+            sale_order.inter_transfer_id = self.inter_transfer_id.id
+        return sale_order
 
     def create_bill_int(self, company, is_sale_bill: bool = False):
         journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
@@ -120,18 +102,17 @@ class PurchaseOrderInherit(models.Model):
             purchase_order_line_id.qty_to_invoice = purchase_order_line_id.product_qty
 
         if is_sale_bill:
-            account_move = self.env['account.move'].with_context(
-                create_bill=True).sudo().with_company(company)
+            account_move = self.env['account.move'].with_context(create_bill=True).sudo().with_company(company)
         else:
-            ctx = dict(self._context or {})
-            ctx.update({
+            context = dict(self._context or {})
+            context.update({
                 'move_type': 'in_invoice',
                 'default_purchase_id': self.id,
                 'default_currency_id': self.currency_id.id,
                 'default_invoice_origin': self.name,
                 'default_ref': self.name,
             })
-            account_move = self.env['account.move'].with_context(ctx)
+            account_move = self.env['account.move'].with_context(context)
         bill_id = account_move.create({
             'partner_id': self.partner_id.id,
             'currency_id': self.currency_id.id,
@@ -206,13 +187,13 @@ class PurchaseOrderInherit(models.Model):
             self.inter_transfer_id.write({'invoice_id': [(6, 0, bill_id.ids)]})
 
         if self._context.get('stop_so') != True:
-            self._create_so_from_po()
+            self._create_sale_order_from_purchase_order()
 
     def button_confirm(self):
-        res = super(PurchaseOrderInherit, self).button_confirm()
-        company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
+        res = super(PurchaseOrder, self).button_confirm()
+        company_partner = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         is_correct_group = self.env.user.has_group('bi_inter_company_transfer.group_ict_manager_access')
-        if company_partner_id.id and is_correct_group and self.env.company.allow_auto_intercompany:
+        if company_partner.id and is_correct_group and self.env.company.allow_auto_intercompany:
             if not self.env['sale.order'].search([('client_order_ref', '=', self.name)]).id:
                 self._create_inter_company_purchase()
         return res

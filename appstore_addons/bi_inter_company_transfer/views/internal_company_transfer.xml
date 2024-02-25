@@ -5,7 +5,7 @@
 		<field name="model">inter.transfer.company</field>
 		<field eval="12" name="priority"/>
 		<field name="arch" type="xml">
-			<form string="tranfer details">
+			<form string="Tranfer Details">
 				<header>
 					<button name="action_view_return_form" string="Reverse" type="object" class="oe_highlight" invisible="state in ('draft','return')"/>
 					<field name="state" widget="statusbar" statusbar_visible="draft,process,return"/>
@@ -127,14 +127,14 @@
 		id="inter_company_transfer"
 		parent="stock.menu_stock_root" sequence="10"
 		groups="bi_inter_company_transfer.group_ict_manager_access"
-		name="InterCompany Transaction"/>
+		name="Intercompany Transaction"/>
 
 	<menuitem
 		action="stock_inter_company_transfer_action"
 		id="stock_inter_company_transfer_menu1"
 		parent="bi_inter_company_transfer.inter_company_transfer"
 		sequence="1"
-		name="InterCompany Transaction"/>
+		name="Intercompany Transaction"/>
 
 
 	<record id="purchase_order_inherit_inter_company_form" model="ir.ui.view">
@@ -143,9 +143,8 @@
 		<field name="inherit_id" ref="purchase.purchase_order_form"/>
 		<field name="arch" type="xml">
 		<xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-				<button type="object" name="action_view_internal" class="oe_stat_button" icon="fa-exchange" invisible="inter_transfer_count == 0 or state in ('draft','sent','to approve')">
-					<field name="inter_transfer_count" widget="statinfo" string="Inter Transfer Company"/>
-					<field name="inter_transfer_id" invisible="1"/>
+				<button type="object" name="action_view_internal" class="oe_stat_button" icon="fa-exchange" invisible="inter_transfer_id == False or state in ('draft','sent','to approve')">
+					<field name="inter_transfer_id" widget="statinfo" string="Intercompany Transfer"/>
 				</button>
 			</xpath>
 		</field>
@@ -157,9 +156,8 @@
 		<field name="inherit_id" ref="sale.view_order_form"/>
 		<field name="arch" type="xml">
 		<xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-				<button type="object" name="action_view_internal" class="oe_stat_button" icon="fa-exchange" invisible="inter_transfer_count == 0 or state in ('draft','sent','to approve')">
-					<field name="inter_transfer_count" widget="statinfo" string="Inter Transfer Company"/>
-					<field name="inter_transfer_id" invisible="1"/>
+				<button type="object" name="action_view_internal" class="oe_stat_button" icon="fa-exchange" invisible="inter_transfer_id == False or state in ('draft','sent','to approve')">
+					<field name="inter_transfer_id" widget="statinfo" string="Intercompany Transfer"/>
 				</button>
 			</xpath>
 		</field>

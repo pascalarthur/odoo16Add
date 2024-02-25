@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <odoo>
-		 
+
 	<record id="seq_inter_transfer" model="ir.sequence">
 		<field name="name">Inter Company Transfer</field>
 		<field name="code">inter.transfer.company</field>
@@ -13,6 +13,22 @@
 		<field name="name">Return Inter Company Transfer</field>
 		<field name="code">return.inter.transfer.company</field>
 		<field name="prefix">RINT/%(year)s/</field>
+		<field name="padding">5</field>
+		<field name="company_id" eval="False"/>
+	</record>
+
+	<record id="seq_stock_lot_tracking_serial" model="ir.sequence">
+		<field name="name">Stock Lot Tracking Serial</field>
+		<field name="code">stock.lot.tracking.serial</field>
+		<field name="prefix">SN/%(year)s/</field>
+		<field name="padding">5</field>
+		<field name="company_id" eval="False"/>
+	</record>
+
+	<record id="seq_stock_lot_tracking_lot" model="ir.sequence">
+		<field name="name">Stock Lot Tracking Lot</field>
+		<field name="code">stock.lot.tracking.lot</field>
+		<field name="prefix">LT/%(year)s/</field>
 		<field name="padding">5</field>
 		<field name="company_id" eval="False"/>
 	</record>

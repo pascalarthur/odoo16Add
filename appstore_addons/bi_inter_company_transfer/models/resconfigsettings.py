@@ -1,11 +1,11 @@
-from odoo import api, fields, models, _
+from odoo import fields, models, _
 
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
     intercompany_warehouse_id = fields.Many2one('stock.warehouse', string="Intercompany Warehouse")
-    allow_auto_intercompany = fields.Boolean('Allow Auto Intercompany Transaction')
+    allow_auto_intercompany = fields.Boolean('Enable Intercompany Transaction')
     validate_picking = fields.Boolean('Validate Receipt/picking in so/po')
     create_invoice = fields.Boolean('Create Invoice/Bill in so/po')
     validate_invoice = fields.Boolean('Validate Invoice/Bill in so/po')
@@ -14,7 +14,7 @@ class ResCompany(models.Model):
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    allow_auto_intercompany = fields.Boolean('Allow Auto Intercompany Transaction',
+    allow_auto_intercompany = fields.Boolean('Enable Intercompany Transaction',
                                              related="company_id.allow_auto_intercompany", readonly=False)
     validate_picking = fields.Boolean('Validate Receipt/picking in so/po', related="company_id.validate_picking",
                                       readonly=False)
