@@ -178,10 +178,11 @@ class PurchaseOrder(models.Model):
                 'currency_id': self.currency_id.id,
                 'to_warehouse': self.picking_type_id.warehouse_id.id
             })
-            for inter_line in inter_lines:
-                inter_line.update({'inter_transfer_id': self.inter_transfer_id.id})
         else:
             self.inter_transfer_id.write({'purchase_id': self.id})
+
+        for inter_line in inter_lines:
+            inter_line.update({'inter_transfer_id': self.inter_transfer_id.id})
 
         if self.env.company.create_invoice:
             self.inter_transfer_id.write({'invoice_id': [(6, 0, bill_id.ids)]})

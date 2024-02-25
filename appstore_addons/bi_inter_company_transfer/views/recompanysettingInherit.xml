@@ -7,26 +7,26 @@
 		<field name="inherit_id" ref="sale.res_config_settings_view_form" />
 		<field name="arch" type="xml">
             <xpath expr="//block[@name='quotation_order_setting_container']" position="before">
-				<h2>Setup Intercompany Transaction Details</h2>
+				<h2>Intercompany Transactions</h2>
 				<div class="row mt16 o_settings_container" >
 				   <div class="col-12 col-lg-6 o_setting_box" >
 						<div class="o_setting_left_pane">
-							<field name="allow_auto_intercompany"/>
+							<field name="allow_intercompany_transactions"/>
 						</div>
 						<div class="o_setting_right_pane">
-							<span class="o_form_label">Allow Auto Intercompany Transaction</span>
+							<span class="o_form_label">Enable Intercompany Transaction</span>
 							<div class="content-group">
 							</div>
 						</div>
 					</div>
 				</div>
-				<div class="row mt16 o_settings_container" invisible="allow_auto_intercompany == False">
+				<div class="row mt16 o_settings_container" invisible="allow_intercompany_transactions == False">
 					 <div class="col-12 col-lg-6 o_setting_box" >
 						<div class="o_setting_left_pane">
 							<field name="validate_picking"/>
 						</div>
 						<div class="o_setting_right_pane">
-							<span class="o_form_label">Auto Validate Delivery/Receipt</span>
+							<span class="o_form_label">Enable Validate Delivery/Receipt</span>
 							<div class="content-group">
 							</div>
 						</div>
@@ -36,7 +36,7 @@
 							<field name="create_invoice"/>
 						</div>
 						<div class="o_setting_right_pane">
-							<span class="o_form_label">Auto Create Invoice/Vendor Bills</span>
+							<span class="o_form_label">Enable Create Invoice/Vendor Bills</span>
 							<div class="content-group">
 							</div>
 						</div>
@@ -46,15 +46,13 @@
 							<field name="validate_invoice"/>
 						</div>
 						<div class="o_setting_right_pane">
-							<span class="o_form_label">Auto Validate Invoice / Vendor Bill</span>
+							<span class="o_form_label">Enable Validate Invoice / Vendor Bill</span>
 							<div class="content-group">
 							</div>
 						</div>
 					</div>
 				</div>
-
 			</xpath>
 		</field>
 	</record>
-
 </odoo>

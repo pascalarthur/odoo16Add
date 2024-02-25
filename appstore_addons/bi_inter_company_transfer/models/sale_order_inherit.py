@@ -147,29 +147,28 @@ class SaleOrder(models.Model):
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
 
-        setting_id = self.env.user.company_id
-        trans_cls = self.env['inter.transfer.company']
-        inter_lines = []
-
         is_correct_group = self.env.user.has_group('bi_inter_company_transfer.group_ict_manager_access')
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
-        if company_partner_id.id and is_correct_group and setting_id.allow_auto_intercompany:
+        if company_partner_id.id and is_correct_group and self.env.user.company_id.allow_auto_intercompany:
+            trans_cls = self.env['inter.transfer.company']
+            inter_lines = []
+
             for picking in self.picking_ids:
                 for move in picking.move_ids_without_package:
-                    if setting_id.validate_picking:
+                    if self.env.user.company_id.validate_picking:
                         move.write({'quantity': move.product_uom_qty})
                     if self.inter_transfer_id.id == False and self.client_order_ref == False:
                         inter_lines += self.env['inter.transfer.company.line'].create_from_move(move)
 
-                if setting_id.validate_picking:
+                if self.env.user.company_id.validate_picking:
                     picking._action_done()
                     for move in picking.move_ids_without_package:
                         for entry in move.account_move_ids:
                             entry.write({'partner_id': move.partner_id.id})
 
-            if setting_id.create_invoice:
+            if self.env.user.company_id.create_invoice:
                 invoice = self._create_invoices()
-                if setting_id.validate_invoice:
+                if self.env.user.company_id.validate_invoice:
                     invoice._post()
 
             if self.inter_transfer_id.id == False and self.client_order_ref == False:
