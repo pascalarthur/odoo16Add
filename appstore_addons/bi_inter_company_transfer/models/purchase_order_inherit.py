@@ -172,14 +172,15 @@ class PurchaseOrder(models.Model):
 
         if self.inter_transfer_id.id == False and self.partner_ref == False:
             self.inter_transfer_id = trans_cls.create({
-                'purchase_id': self.id,
                 'state': 'process',
                 'apply_type': 'sale',
                 'currency_id': self.currency_id.id,
-                'to_warehouse': self.picking_type_id.warehouse_id.id
             })
-        else:
-            self.inter_transfer_id.write({'purchase_id': self.id})
+
+        self.inter_transfer_id.update({
+            'purchase_id': self.id,
+            'to_warehouse': self.picking_type_id.warehouse_id.id,
+        })
 
         for inter_line in inter_lines:
             inter_line.update({'inter_transfer_id': self.inter_transfer_id.id})

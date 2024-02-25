@@ -144,10 +144,10 @@ class InterTransferCompany(models.Model):
 
     @api.onchange('from_warehouse')
     def change_details(self):
-        if self.from_warehouse:
-            from_partner = self.from_warehouse.company_id.partner_id
-            self.currency_id = from_partner.currency_id.id
-            self.pricelist_id = from_partner.property_product_pricelist.id
+        for rec in self:
+            from_partner = rec.from_warehouse.company_id.partner_id
+            rec.currency_id = from_partner.currency_id.id
+            rec.pricelist_id = from_partner.property_product_pricelist.id
 
     def action_view_return_form(self):
         value = [{
@@ -165,8 +165,8 @@ class InterTransferCompany(models.Model):
             'target': 'new',
             'context': {
                 'default_inter_company_transfer_id': self.id,
-                'default_from_warehouse': self.from_warehouse.id,
-                'default_to_warehouse': self.to_warehouse.id,
+                'default_from_warehouse': self.to_warehouse.id,
+                'default_to_warehouse': self.from_warehouse.id,
                 'default_pricelist_id': self.pricelist_id.id,
                 'default_currency_id': self.currency_id.id,
                 'default_product_lines': value,
