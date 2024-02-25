@@ -40,6 +40,7 @@
         'views/recompanysettingInherit.xml',
         'views/internal_company_transfer.xml',
         'views/company_inherit_views.xml',
+        'views/menu.xml',
     ],
     'qweb': [],
     "auto_install":

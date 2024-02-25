@@ -35,7 +35,7 @@ class InterTransferCompany(models.Model):
     invoice_id = fields.Many2many("account.move", string='Invoice', related="sale_id.invoice_ids", copy=False)
     purchase_id = fields.Many2one("purchase.order", string="Purchase Order", copy=False)
     bill_id = fields.Many2many("account.move", string='Bills', related="purchase_id.invoice_ids", copy=False)
-    state = fields.Selection([('draft', 'Draft'), ('process', 'Process'), ('return', 'Return')], string="state",
+    state = fields.Selection([('draft', 'Draft'), ('process', 'Process'), ('return', 'Return')], string="State",
                              default='draft', readonly=True)
     currency_id = fields.Many2one('res.currency', string="Currency")
     from_warehouse = fields.Many2one('stock.warehouse', string="From Warehouse",
@@ -50,6 +50,12 @@ class InterTransferCompany(models.Model):
 
     inter_company_transfer_id = fields.Many2one("inter.transfer.company", string='Inter Company Transfer', copy=False)
     inter_company_transfer_return_id = fields.Many2one("inter.transfer.company", string='Return', copy=False)
+    is_return = fields.Boolean('Is Return', compute='_compute_is_return', default=False, store=True)
+
+    @api.depends('inter_company_transfer_return_id')
+    def _compute_is_return(self):
+        for rec in self:
+            rec.is_return = bool(rec.inter_company_transfer_id)
 
     def action_view_internal(self):
         return {

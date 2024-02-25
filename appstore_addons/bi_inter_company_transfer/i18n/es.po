@@ -536,7 +536,6 @@ msgstr ""
 
 #. module: bi_inter_company_transfer
 #: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_form
-#: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_lines_form
 #: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_inter_company_transfer_tree
 #: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_form
 #: model_terms:ir.ui.view,arch_db:bi_inter_company_transfer.view_return_inter_company_transfer_lines_form

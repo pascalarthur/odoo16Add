@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<odoo>
+	<menuitem
+		id="inter_company_transfer_menu2"
+		action="inter_company_transfer_action"
+		parent="purchase.menu_procurement_management"
+		sequence="50"
+		name="Intercompany Transactions"/>
+    <menuitem
+		id="inter_company_transfer_menu2"
+		action="inter_company_transfer_action"
+		parent="sale.sale_order_menu"
+		sequence="40"
+		name="Intercompany Transactions"/>
+</odoo>
