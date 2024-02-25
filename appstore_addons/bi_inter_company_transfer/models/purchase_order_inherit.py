@@ -194,7 +194,7 @@ class PurchaseOrder(models.Model):
         res = super(PurchaseOrder, self).button_confirm()
         company_partner = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         is_correct_group = self.env.user.has_group('bi_inter_company_transfer.group_ict_manager_access')
-        if company_partner.id and is_correct_group and self.env.company.allow_auto_intercompany:
+        if company_partner.id and is_correct_group and self.env.company.allow_intercompany_transactions:
             if not self.env['sale.order'].search([('client_order_ref', '=', self.name)]).id:
                 self._create_inter_company_purchase()
         return res

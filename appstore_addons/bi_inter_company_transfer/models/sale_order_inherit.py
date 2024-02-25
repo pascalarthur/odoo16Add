@@ -149,7 +149,7 @@ class SaleOrder(models.Model):
 
         is_correct_group = self.env.user.has_group('bi_inter_company_transfer.group_ict_manager_access')
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
-        if company_partner_id.id and is_correct_group and self.env.user.company_id.allow_auto_intercompany:
+        if company_partner_id.id and is_correct_group and self.env.user.company_id.allow_intercompany_transactions:
             trans_cls = self.env['inter.transfer.company']
             inter_lines = []
 
