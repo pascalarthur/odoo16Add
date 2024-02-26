@@ -52,6 +52,59 @@ class RedistributionWizard(models.TransientModel):
     location_redistribution_lines = fields.One2many('location.redistribution.wizard.line', 'wizard_id',
                                                     string='Redistribution Locations')
 
+    def _redistribute_to_other_truck(self):
+        for truck_line in self.truck_redistribution_lines:
+            # Decrease quantity in source truck
+            source_load_line = self.truck_route_id.load_line_ids.filtered(
+                lambda l: l.product_id == truck_line.product_id)
+            if source_load_line:
+                source_load_line.quantity -= truck_line.quantity
+                if source_load_line.quantity == 0:
+                    source_load_line.unlink()
+
+            # Increase quantity in target truck
+            target_load_line = truck_line.target_truck_route_id.load_line_ids.filtered(
+                lambda l: l.product_id == truck_line.product_id)
+            if target_load_line:
+                target_load_line.quantity += truck_line.quantity
+            else:
+                # Create a new truck.route.line if it doesn't exist
+                self.env['truck.route.line'].create({
+                    'truck_route_id': truck_line.target_truck_route_id.id,
+                    'product_id': truck_line.product_id.id,
+                    'quantity': truck_line.quantity,
+                })
+
+    def _move_to_stock(self):
+        for location_line in self.location_redistribution_lines:
+            load_lines_to_unlink = []
+            for load_line in self.truck_route_id.load_line_ids:
+                if load_line.product_id == location_line.product_id:
+                    load_line.quantity -= location_line.quantity
+                    if load_line.quantity == 0:
+                        load_lines_to_unlink.append(load_line)
+                    break
+
+            picking = self.env['stock.picking'].create({
+                'location_id': load_line.location_id.id,
+                'location_dest_id': location_line.location_dest_id.id,
+                'picking_type_id': self._get_picking_type().id,
+                'origin': self.meta_sale_order_id.name,
+            })
+
+            # Create a stock move for each product
+            self.env['stock.move'].create({
+                'name': location_line.product_id.name,
+                'product_id': location_line.product_id.id,
+                'product_uom_qty': location_line.quantity,
+                'product_uom': location_line.product_id.uom_id.id,
+                'picking_id': picking.id,
+                'location_id': load_line.location_id.id,
+                'location_dest_id': location_line.location_dest_id.id,
+            })
+            for load_line in load_lines_to_unlink:
+                load_line.unlink()
+
     def confirm_action(self):
         self.ensure_one()
 
@@ -71,61 +124,11 @@ class RedistributionWizard(models.TransientModel):
                     f"The quantity of product {load_line.product_id.name} to be unloaded is greater than the quantity loaded"
                 )
 
-        StockPicking = self.env['stock.picking']
-        StockMove = self.env['stock.move']
-
         if self.redistribute:
-            for truck_line in self.truck_redistribution_lines:
-                # Decrease quantity in source truck
-                source_load_line = self.truck_route_id.load_line_ids.filtered(
-                    lambda l: l.product_id == truck_line.product_id)
-                if source_load_line:
-                    source_load_line.quantity -= truck_line.quantity
-                    if source_load_line.quantity == 0:
-                        source_load_line.unlink()
-
-                # Increase quantity in target truck
-                target_load_line = truck_line.target_truck_route_id.load_line_ids.filtered(
-                    lambda l: l.product_id == truck_line.product_id)
-                if target_load_line:
-                    target_load_line.quantity += truck_line.quantity
-                else:
-                    # Create a new truck.route.line if it doesn't exist
-                    self.env['truck.route.line'].create({
-                        'truck_route_id': truck_line.target_truck_route_id.id,
-                        'product_id': truck_line.product_id.id,
-                        'quantity': truck_line.quantity,
-                    })
+            self._redistribute_to_other_truck()
 
         if self.move_to_stock:
-            for location_line in self.location_redistribution_lines:
-                load_lines_to_unlink = []
-                for load_line in self.truck_route_id.load_line_ids:
-                    if load_line.product_id == location_line.product_id:
-                        load_line.quantity -= location_line.quantity
-                        if load_line.quantity == 0:
-                            load_lines_to_unlink.append(load_line)
-                        break
-
-                picking = StockPicking.create({
-                    'location_id': load_line.location_id.id,
-                    'location_dest_id': location_line.location_dest_id.id,
-                    'picking_type_id': self._get_picking_type().id,
-                    'origin': self.meta_sale_order_id.name,
-                })
-
-                # Create a stock move for each product
-                StockMove.create({
-                    'name': location_line.product_id.name,
-                    'product_id': location_line.product_id.id,
-                    'product_uom_qty': location_line.quantity,
-                    'product_uom': location_line.product_id.uom_id.id,
-                    'picking_id': picking.id,
-                    'location_id': load_line.location_id.id,
-                    'location_dest_id': location_line.location_dest_id.id,
-                })
-                for load_line in load_lines_to_unlink:
-                    load_line.unlink()
+            self._move_to_stock()
 
     def _get_picking_type(self):
         # Return the picking type (e.g., internal transfer)

@@ -299,11 +299,12 @@ class MetaSaleOrder(models.Model):
             content += f"Truck {truck.trailer_number} will pick up: Product {line.product_id.name}, Quantity: {line.quantity}<br/>"
         return content
 
-    def create_sale_order_for_truck(self, truck_route_id):
-        SaleOrder = self.env['sale.order']
-        SaleOrderLine = self.env['sale.order.line']
+    def _attach_sale_and_purchase_to_truck_route(self, sale_order):
+        sale_order.truck_route_id.sale_id = sale_order
+        sale_order.truck_route_id.purchase_id = sale_order.inter_transfer_id.purchase_id
 
-        sale_order_id = SaleOrder.create({
+    def create_sale_order_for_truck(self, truck_route_id):
+        sale_order_id = self.env['sale.order'].create({
             'meta_sale_order_id': self.id,
             'partner_id': self.partner_id.id,
             'truck_route_id': truck_route_id.id,
@@ -316,7 +317,7 @@ class MetaSaleOrder(models.Model):
         })
 
         for load_line in truck_route_id.load_line_ids:
-            SaleOrderLine.create({
+            self.env['sale.order.line'].create({
                 'order_id': sale_order_id.id,
                 'product_id': load_line.product_id.id,
                 'product_uom_qty': load_line.quantity,
@@ -325,7 +326,7 @@ class MetaSaleOrder(models.Model):
             })
 
         for product_id in self.extra_products_on_truck_ids:
-            SaleOrderLine.create({
+            self.env['sale.order.line'].create({
                 'order_id': sale_order_id.id,
                 'product_id': product_id.id,
                 'product_uom_qty': 1,
@@ -333,6 +334,7 @@ class MetaSaleOrder(models.Model):
             })
 
         sale_order_id.action_quotation_send_programmatically()
+        self._attach_sale_and_purchase_to_truck_route(sale_order_id)
         sale_order_id.state = 'sent'
         return sale_order_id
 
@@ -361,6 +363,7 @@ class MetaSaleOrder(models.Model):
                     'partner_bank_id': self.partner_bank_id.id,
                     'seal_number': sale_id.truck_route_id.seal_number
                 })
+        self._attach_sale_and_purchase_to_truck_route(sale_id)
 
     def action_send_invoice(self):
         self.ensure_one()

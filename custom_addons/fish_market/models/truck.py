@@ -82,6 +82,25 @@ class TruckDetail(models.Model):
     route_end_state_id = fields.Many2one('res.country.state')
     route_end_country_id = fields.Many2one('res.country')
 
+    sale_id = fields.Many2one('sale.order', string='Sale Order')
+    purchase_id = fields.Many2one('purchase.order', string='Purchase Order')
+
+    picking_delivery_ids = fields.One2many('stock.picking', related="sale_id.picking_ids", string='Delivery')
+    picking_receipt_ids = fields.Many2many('stock.picking', related="purchase_id.picking_ids", string='Receipt')
+
+    picking_delivery_ids_count = fields.Integer(string='Delivery Count', related="sale_id.delivery_count")
+    picking_receipt_ids_count = fields.Integer(string='Receipt Count', related="purchase_id.incoming_picking_count")
+
+    @api.depends('picking_delivery_ids')
+    def _compute_picking_delivery_ids_count(self):
+        for record in self:
+            record.picking_delivery_ids_count = len(record.picking_delivery_ids)
+
+    @api.depends('picking_receipt_ids')
+    def _compute_picking_receipt_ids_count(self):
+        for record in self:
+            record.picking_receipt_ids_count = len(record.picking_receipt_ids)
+
     @api.depends('load_line_ids.quantity', 'max_load')
     def _compute_truck_utilization(self):
         for record in self:
@@ -120,6 +139,12 @@ class TruckDetail(models.Model):
             'target': 'new',
             'res_id': self.id
         }
+
+    def action_view_deliveries(self):
+        return self.sale_id.action_view_delivery()
+
+    def action_view_receipts(self):
+        return self.purchase_id.action_view_picking()
 
     def action_create_invoice(self):
         if len(self.load_line_ids) == 0:

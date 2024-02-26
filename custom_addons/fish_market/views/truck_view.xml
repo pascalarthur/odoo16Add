@@ -8,36 +8,61 @@
                 <header>
                     <field name="state" widget="statusbar"/>
                 </header>
-                <group>
-                    <field name="meta_sale_order_id" invisible="1"/>
-                    <field name="truck_id"/>
-                    <field name="partner_id"/>
-                    <field name="trailer_number"/>
-                    <field name="horse_number"/>
-                    <field name="container_number"/>
-                    <field name="driver_name"/>
-                    <field name="telephone_number"/>
-                    <field name="price"/>
-                    <field name="max_load"/>
-                    <field name="price_per_kg"/>
-                    <field name="seal_number"/>
-                    <field name="is_backload"/>
-                    <field name="date_start"/>
-                    <field name="date_end"/>
-                    <field name="approx_loading_time"/>
-                    <field name="approx_offloading_time"/>
-                </group>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" name="action_view_deliveries" invisible="picking_delivery_ids_count == 0"  class="oe_stat_button" icon="fa-exchange">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="picking_delivery_ids_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Delivery
+                                </span>
+                            </div>
+                        </button>
+                        <button type="object" name="action_view_receipts" invisible="picking_receipt_ids_count == 0"  class="oe_stat_button" icon="fa-exchange">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="picking_receipt_ids_count"/>
+                                </span>
+                                <span class="o_stat_text">
+                                    Receipt
+                                </span>
+                            </div>
+                        </button>
+                    </div>
 
-                <field name="load_line_ids" readonly="state in ['draft']">
-                    <tree editable="bottom">
-                        <field name="available_product_ids" column_invisible="1"/>
-                        <field name="available_location_ids" column_invisible="1"/>
+                    <group>
+                        <field name="meta_sale_order_id" invisible="1"/>
+                        <field name="truck_id"/>
+                        <field name="partner_id"/>
+                        <field name="trailer_number"/>
+                        <field name="horse_number"/>
+                        <field name="container_number"/>
+                        <field name="driver_name"/>
+                        <field name="telephone_number"/>
+                        <field name="price"/>
+                        <field name="max_load"/>
+                        <field name="price_per_kg"/>
+                        <field name="seal_number"/>
+                        <field name="is_backload"/>
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                        <field name="approx_loading_time"/>
+                        <field name="approx_offloading_time"/>
+                    </group>
 
-                        <field name="product_id" domain="[('id', 'in', available_product_ids)]"/>
-                        <field name="location_id" domain="[('id', 'in', available_location_ids)]"/>
-                        <field name="quantity"/>
-                    </tree>
-                </field>
+                    <field name="load_line_ids" readonly="state in ['draft']">
+                        <tree editable="bottom">
+                            <field name="available_product_ids" column_invisible="1"/>
+                            <field name="available_location_ids" column_invisible="1"/>
+
+                            <field name="product_id" domain="[('id', 'in', available_product_ids)]"/>
+                            <field name="location_id" domain="[('id', 'in', available_location_ids)]"/>
+                            <field name="quantity"/>
+                        </tree>
+                    </field>
+                </sheet>
             </form>
         </field>
     </record>
