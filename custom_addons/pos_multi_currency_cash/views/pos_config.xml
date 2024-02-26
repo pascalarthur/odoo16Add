@@ -22,7 +22,6 @@
 					<field name="currency_journal_ids"/>
 					<h2 name="order">Filter Available Products</h2>
 					<field name="available_product_ids"/>
-					<h2 name="order">Location</h2>
 				</xpath>
 			</field>
 		</record>

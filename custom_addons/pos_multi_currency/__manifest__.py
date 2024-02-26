@@ -10,6 +10,7 @@
     # data files always loaded at installation
     'data': [
         'security/ir.model.access.csv',
+        'views/pos_config.xml',
     ],
     'installable': True,
     'assets': {

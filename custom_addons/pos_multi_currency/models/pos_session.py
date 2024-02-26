@@ -8,7 +8,7 @@ class PosSession(models.Model):
         loaded_data = super(PosSession, self).load_pos_data()
 
         currencies = self.env['res.currency'].search_read(
-            domain=[('active', '=', True)],
+            domain=[('id', 'in', self.config_id.pos_currencies.ids)],
             fields=['name', 'symbol', 'position', 'rounding', 'rate', 'rate'],
         )
         loaded_data['currency_rates'] = currencies
