@@ -7,8 +7,6 @@
             <form>
                 <header>
                     <field name="state" widget="statusbar"/>
-                </header>
-                <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button type="object" name="action_view_deliveries" invisible="picking_delivery_ids_count == 0"  class="oe_stat_button" icon="fa-exchange">
                             <div class="o_stat_info">
@@ -31,7 +29,8 @@
                             </div>
                         </button>
                     </div>
-
+                    </header>
+                <sheet>
                     <group>
                         <field name="meta_sale_order_id" invisible="1"/>
                         <field name="truck_id"/>
@@ -50,6 +49,7 @@
                         <field name="date_end"/>
                         <field name="approx_loading_time"/>
                         <field name="approx_offloading_time"/>
+                        <field name="delivery_time"/>
                     </group>
 
                     <field name="load_line_ids" readonly="state in ['draft']">

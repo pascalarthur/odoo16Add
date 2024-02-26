@@ -5,5 +5,4 @@ from . import controllers
 from . import wizards
 from . import models
 from . import report
-from . import utils
 # from . import populate

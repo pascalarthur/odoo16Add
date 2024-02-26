@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<odoo>
+	<record id="seq_cash_exchange" model="ir.sequence">
+		<field name="name">Cash Exchange</field>
+		<field name="code">cash.exchange</field>
+		<field name="prefix">CEXCH/%(year)s/</field>
+		<field name="padding">5</field>
+		<field name="company_id" eval="False"/>
+	</record>
+</odoo>

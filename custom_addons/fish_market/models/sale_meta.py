@@ -1,5 +1,4 @@
 from collections import defaultdict
-from ..utils.model_utils import default_name
 from odoo import models, fields, api, exceptions
 
 META_SALE_STATES = [
@@ -32,7 +31,7 @@ class MetaSaleOrder(models.Model):
     _description = 'Meta Sale Order'
 
     name = fields.Char(string="Meta Sale Reference", required=True, copy=False, readonly=False, index='trigram',
-                       default=lambda self: default_name(self, prefix='MS'))
+                       default=lambda self: self.env['ir.sequence'].next_by_code('meta.sale.order'))
 
     company_id = fields.Many2one(
         comodel_name='res.company',

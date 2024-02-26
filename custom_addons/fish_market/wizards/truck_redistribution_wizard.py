@@ -52,6 +52,13 @@ class RedistributionWizard(models.TransientModel):
     location_redistribution_lines = fields.One2many('location.redistribution.wizard.line', 'wizard_id',
                                                     string='Redistribution Locations')
 
+    def _adjust_receipt_picking(self, redistribution_line):
+        # Adjust receipt note
+        picking_receipt = self.truck_route_id.picking_receipt_ids[0]
+        move_line = picking_receipt.move_ids.filtered(lambda m: m.product_id == redistribution_line.product_id)
+        if move_line:
+            move_line.product_uom_qty -= redistribution_line.quantity
+
     def _redistribute_to_other_truck(self):
         for truck_line in self.truck_redistribution_lines:
             # Decrease quantity in source truck
@@ -74,6 +81,15 @@ class RedistributionWizard(models.TransientModel):
                     'product_id': truck_line.product_id.id,
                     'quantity': truck_line.quantity,
                 })
+
+            # Increase the receipt on the target truck
+            picking_receipt = truck_line.target_truck_route_id.picking_receipt_ids[0]
+            move_line = picking_receipt.move_ids.filtered(lambda m: m.product_id == truck_line.product_id)
+            if move_line:
+                move_line.product_uom_qty += truck_line.quantity
+
+            # Decrease the receipt on the source truck
+            self._adjust_receipt_picking(truck_line)
 
     def _move_to_stock(self):
         for location_line in self.location_redistribution_lines:
@@ -104,6 +120,8 @@ class RedistributionWizard(models.TransientModel):
             })
             for load_line in load_lines_to_unlink:
                 load_line.unlink()
+
+            self._adjust_receipt_picking(location_line)
 
     def confirm_action(self):
         self.ensure_one()

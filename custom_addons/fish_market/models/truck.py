@@ -1,5 +1,4 @@
 from odoo import models, fields, api, _, exceptions
-from ..utils.model_utils import default_name
 
 TRUCK_STATES = [
     ('draft', 'Draft'),
@@ -30,7 +29,7 @@ class TruckDetail(models.Model):
     _description = 'Truck Route'
 
     name = fields.Char(string="Truck Ref", required=True, copy=False, readonly=False, index='trigram',
-                       default=lambda self: default_name(self, prefix='TR'))
+                       default=lambda self: self.env['ir.sequence'].next_by_code('truck.route'))
 
     state = fields.Selection(selection=TRUCK_STATES, string="Status", readonly=True, copy=False, index=True,
                              default='draft')
@@ -88,8 +87,22 @@ class TruckDetail(models.Model):
     picking_delivery_ids = fields.One2many('stock.picking', related="sale_id.picking_ids", string='Delivery')
     picking_receipt_ids = fields.Many2many('stock.picking', related="purchase_id.picking_ids", string='Receipt')
 
+    date_transport_start = fields.Datetime(string='Transport Start Date', related="picking_delivery_ids.date_done")
+    date_transport_end = fields.Datetime(string='Transport End Date', related="picking_receipt_ids.date_done")
+
     picking_delivery_ids_count = fields.Integer(string='Delivery Count', related="sale_id.delivery_count")
     picking_receipt_ids_count = fields.Integer(string='Receipt Count', related="purchase_id.incoming_picking_count")
+
+    delivery_time = fields.Float(string='Delivery Time [days]', compute='_compute_delivery_time', store=True)
+
+    @api.depends('date_transport_start', 'date_transport_end')
+    def _compute_delivery_time(self):
+        for record in self:
+            if record.date_transport_start and record.date_transport_end:
+                # Compute the delivery time in days
+                record.delivery_time = (record.date_transport_end - record.date_transport_start).seconds / (86400)
+            else:
+                record.delivery_time = False
 
     @api.depends('picking_delivery_ids')
     def _compute_picking_delivery_ids_count(self):
@@ -193,7 +206,7 @@ class Truck(models.Model):
     _description = "Truck"
 
     name = fields.Char(string="Truck", required=True, copy=False, readonly=False, index='trigram',
-                       default=lambda self: default_name(self, prefix='T'))
+                       default=lambda self: self.env['ir.sequence'].next_by_code('truck'))
 
     partner_id = fields.Many2one('res.partner', string="Transporter")
     horse_number = fields.Char(string='Horse Number')

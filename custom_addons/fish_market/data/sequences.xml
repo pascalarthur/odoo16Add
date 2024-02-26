@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<odoo>
+	<record id="seq_meta_sale" model="ir.sequence">
+		<field name="name">Meta Sale</field>
+		<field name="code">meta.sale.order</field>
+		<field name="prefix">MS/%(year)s/</field>
+		<field name="padding">5</field>
+		<field name="company_id" eval="False"/>
+	</record>
+	<record id="seq_truck" model="ir.sequence">
+		<field name="name">Truck</field>
+		<field name="code">truck</field>
+		<field name="prefix">T/</field>
+		<field name="padding">5</field>
+		<field name="company_id" eval="False"/>
+	</record>
+	<record id="seq_truck_route" model="ir.sequence">
+		<field name="name">Truck Route</field>
+		<field name="code">truck.route</field>
+		<field name="prefix">TR/%(year)s/</field>
+		<field name="padding">5</field>
+		<field name="company_id" eval="False"/>
+	</record>
+</odoo>

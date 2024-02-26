@@ -1,6 +1,5 @@
 from odoo import _, fields, models
 from odoo.exceptions import UserError
-from ..utils.model_utils import default_name
 
 
 class AccountAccount(models.Model):
@@ -82,7 +81,7 @@ class AccountMove(models.Model):
 
         # Create journal entry
         move_vals_outgoing = {
-            'name': default_name(self, prefix='CEXCH/'),
+            'name': self.env['ir.sequence'].next_by_code('cash.exchange'),
             'journal_id': source_journal_id,
             'date': date,
         }
@@ -96,7 +95,7 @@ class AccountMove(models.Model):
         })
 
         move_vals_incoming = {
-            'name': default_name(self, prefix='CEXCH/'),
+            'name': self.env['ir.sequence'].next_by_code('cash.exchange'),
             'journal_id': dest_journal_id,
             'date': date,
         }
