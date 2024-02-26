@@ -25,6 +25,7 @@
         'data/form_templates.xml',
         'data/sequences.xml',
 
+        'views/res_partner_views.xml',
         'views/truck_redistribution_wizard.xml',
         'views/pricelist_wizard.xml',
         'views/product_offer_wizard.xml',

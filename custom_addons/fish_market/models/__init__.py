@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from . import pricelist
-from . import custom_partner
+from . import res_partner
 from . import custom_purchase
 from . import product
 from . import stock

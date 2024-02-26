@@ -93,7 +93,17 @@ class TruckDetail(models.Model):
     picking_delivery_ids_count = fields.Integer(string='Delivery Count', related="sale_id.delivery_count")
     picking_receipt_ids_count = fields.Integer(string='Receipt Count', related="purchase_id.incoming_picking_count")
 
+    promised_time = fields.Float(string='Approx. Time [days]', compute='_compute_promised_time', store=True)
     delivery_time = fields.Float(string='Delivery Time [days]', compute='_compute_delivery_time', store=True)
+
+    @api.depends('date_start', 'date_end')
+    def _compute_promised_time(self):
+        for record in self:
+            if record.date_start and record.date_end:
+                # Compute the delivery time in days
+                record.delivery_time = (record.date_end - record.date_start).seconds / (86400)
+            else:
+                record.delivery_time = False
 
     @api.depends('date_transport_start', 'date_transport_end')
     def _compute_delivery_time(self):

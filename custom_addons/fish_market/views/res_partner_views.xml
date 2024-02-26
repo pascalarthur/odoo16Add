@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_res_partner_delivery_score_form" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="purchase.res_partner_view_purchase_buttons"/>
+        <field name="arch" type="xml">
+             <xpath expr="//field[@name='purchase_order_count']/.." position="after">
+                <field name="is_logistic" invisible="1"/>
+                <button type="object" name="action_view_trucks" invisible="is_logistic == 0" class="oe_stat_button" icon="fa-trash">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="delivery_score"/> %
+                        </span>
+                        <span class="o_stat_text">
+                            Logistic Performance
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>
