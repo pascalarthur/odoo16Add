@@ -10,17 +10,18 @@ class StockQuant(models.Model):
     @api.onchange('quantity_damaged')
     def _onchange_quantity_damaged(self):
         for quant in self:
-            # Raises error if the product is already marked as damaged and set the quantity_damaged to 0
-            try:
-                quant.product_id.compute_product_as_damaged()
-            except Exception as e:
-                quant.action_clear_inventory_quantity()
-                return {
-                    'warning': {
-                        'title': _('Warning'),
-                        'message': e.args[0],
+            if quant.product_id and quant.quantity_damaged > 0:
+                # Raises error if the product is already marked as damaged and set the quantity_damaged to 0
+                try:
+                    quant.product_id.compute_product_as_damaged()
+                except Exception as e:
+                    quant.action_clear_inventory_quantity()
+                    return {
+                        'warning': {
+                            'title': _('Warning'),
+                            'message': e.args[0],
+                        }
                     }
-                }
 
     def write(self, vals):
         if 'quantity_damaged' in vals:

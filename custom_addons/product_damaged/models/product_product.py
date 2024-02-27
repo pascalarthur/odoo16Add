@@ -11,8 +11,7 @@ class ProductProduct(models.Model):
 
         if damaged_attrs_map == {} or set(damaged_attrs_map.keys()) != {'OK', 'Damaged'}:
             raise exceptions.UserError(
-                _(f"'Quality'-attribute on product {self.product_tmpl_id.name} not found.\
-                    Go to product template 'Attributes & Variants' and add attribute 'Quality'. Add then 'OK' and 'Damaged' as possible values."
+                _(f"'Quality'-attribute on product {self.product_tmpl_id.name} not found. \nGo to product template 'Attributes & Variants' and add attribute 'Quality'. Add then 'OK' and 'Damaged' as possible values."
                   ))
 
         attributes = list(map(int, self.combination_indices.split(',')))
