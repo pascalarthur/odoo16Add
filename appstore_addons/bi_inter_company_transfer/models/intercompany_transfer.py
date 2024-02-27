@@ -1,14 +1,14 @@
 from odoo import api, fields, models, _
 
 
-class InterTransferCompanyLines(models.Model):
+class IntercompanyTransferLines(models.Model):
     _name = 'inter.transfer.company.line'
-    _description = "InterTransferCompanyLines"
+    _description = "Intercompany Transfer Lines"
 
     inter_transfer_id = fields.Many2one('inter.transfer.company')
     product_id = fields.Many2one('product.product', required=True)
-    quantity = fields.Integer('Quantity', default=1, required=True)
     price_unit = fields.Float('Price')
+    quantity = fields.Integer('Quantity', default=1, required=True)
 
     @api.model
     def create_from_move(self, move):
@@ -25,7 +25,7 @@ class InterTransferCompanyLines(models.Model):
                 rec.write({'price_unit': rec.product_id.list_price})
 
 
-class InterTransferCompany(models.Model):
+class IntercompanyTransfer(models.Model):
     _name = 'inter.transfer.company'
     _description = "Intercompany Transfer"
     _order = 'create_date desc, id desc'
@@ -128,7 +128,7 @@ class InterTransferCompany(models.Model):
         if 'inter_company_transfer_id' in vals:
             vals['name'] = self.env['ir.sequence'].next_by_code('return.inter.transfer.company')
 
-            res = super(InterTransferCompany, self).create(vals)
+            res = super(IntercompanyTransfer, self).create(vals)
 
             sale_order = self.env['inter.transfer.company'].browse(vals['inter_company_transfer_id']).sale_id
             res.process_return(sale_order)
@@ -140,7 +140,7 @@ class InterTransferCompany(models.Model):
             return res
         else:
             vals['name'] = self.env['ir.sequence'].next_by_code('inter.transfer.company')
-            return super(InterTransferCompany, self).create(vals)
+            return super(IntercompanyTransfer, self).create(vals)
 
     @api.onchange('from_warehouse')
     def change_details(self):
