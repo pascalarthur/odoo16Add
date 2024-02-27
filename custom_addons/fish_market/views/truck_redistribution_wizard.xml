@@ -16,33 +16,29 @@
                         </tree>
                     </field>
                 </group>
-                <group>
-                    <group name="trucks_redistribute_details" colspan="4">
-                        <field name="move_to_stock" string='Move to Stock'/>
-                        <field name="location_redistribution_lines" invisible="not move_to_stock">
-                            <tree editable="top">
-                                <field name="meta_sale_order_id" column_invisible="1"/>
-                                <field name="truck_route_id" column_invisible="1"/>
-                                <field name="product_ids_from_load_lines" column_invisible="1"/>
-                                <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
-                                <field name="location_dest_id"/>
-                                <field name="quantity"/>
-                            </tree>
-                        </field>
-                    </group>
-                    <group name="locations_redistribute_details" colspan="4">
-                        <field name="redistribute" string='Redistribute to another truck'/>
-                        <field name="truck_redistribution_lines" invisible="not redistribute">
-                            <tree editable="top">
-                                <field name="meta_sale_order_id" column_invisible="1"/>
-                                <field name="truck_route_id" column_invisible="1"/>
-                                <field name="product_ids_from_load_lines" column_invisible="1"/>
-                                <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
-                                <field name="target_truck_route_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_route_id), ('is_backload', '=', False)]"/>
-                                <field name="quantity"/>
-                            </tree>
-                        </field>
-                    </group>
+                <group name="trucks_redistribute_details" colspan="2">
+                    <field name="move_to_stock" string='Move to Stock'/>
+                    <field name="location_redistribution_lines" invisible="not move_to_stock" colspan="2" nolabel="1">
+                        <tree editable="top">
+                            <field name="meta_sale_order_id" column_invisible="1"/>
+                            <field name="truck_route_id" column_invisible="1"/>
+                            <field name="product_ids_from_load_lines" column_invisible="1"/>
+                            <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
+                            <field name="location_dest_id"/>
+                            <field name="quantity" widget="float"/>
+                        </tree>
+                    </field>
+                    <field name="redistribute" string='Redistribute to another truck'/>
+                    <field name="truck_redistribution_lines" invisible="not redistribute" colspan="2" nolabel="1">
+                        <tree editable="top">
+                            <field name="meta_sale_order_id" column_invisible="1"/>
+                            <field name="truck_route_id" column_invisible="1"/>
+                            <field name="product_ids_from_load_lines" column_invisible="1"/>
+                            <field name="product_id" domain="[('id', 'in', product_ids_from_load_lines)]"/>
+                            <field name="target_truck_route_id" domain="[('meta_sale_order_id', '=', meta_sale_order_id), ('id', '!=', truck_route_id), ('is_backload', '=', False)]"/>
+                            <field name="quantity" widget="float"/>
+                        </tree>
+                    </field>
                 </group>
                 <footer>
                     <button string="Confirm" type="object" name="confirm_action" class="btn-primary"/>

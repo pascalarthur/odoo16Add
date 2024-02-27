@@ -5,6 +5,7 @@ TRUCK_STATES = [
     ('confirmed', 'Confirmed'),
     ('loaded', 'Loaded'),
     ('done', 'Done'),
+    ('rejected', 'Rejected'),
 ]
 
 
@@ -31,8 +32,7 @@ class TruckDetail(models.Model):
     name = fields.Char(string="Truck Ref", required=True, copy=False, readonly=False, index='trigram',
                        default=lambda self: self.env['ir.sequence'].next_by_code('truck.route'))
 
-    state = fields.Selection(selection=TRUCK_STATES, string="Status", readonly=True, copy=False, index=True,
-                             default='draft')
+    state = fields.Selection(selection=TRUCK_STATES, string="Status", readonly=True, default='draft')
 
     truck_id = fields.Many2one('truck', string='Truck', ondelete='cascade')
 
@@ -132,6 +132,10 @@ class TruckDetail(models.Model):
                 record.truck_utilization = (total_allocated_quantity / record.max_load) * 100
             else:
                 record.truck_utilization = 0  # To handle cases where max_load is 0 or undefined
+            if record.truck_utilization > 0:
+                record.state = 'loaded'
+            else:
+                record.state = 'draft' if record.state == 'draft' else 'confirmed'
 
     @api.depends('price', 'max_load')
     def _compute_price_per_kg(self):
@@ -203,12 +207,6 @@ class TruckDetail(models.Model):
     def _compute_available_locations(self):
         for record in self:
             record.available_location_ids = record.meta_sale_order_id.order_line_ids.mapped('location_id')
-
-    @api.onchange('load_line_ids')
-    def _update_state(self):
-        for record in self:
-            if len(record.load_line_ids) > 0:
-                record.state = 'loaded'
 
 
 class Truck(models.Model):

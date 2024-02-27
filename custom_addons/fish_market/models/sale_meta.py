@@ -4,9 +4,9 @@ from odoo import models, fields, api, exceptions
 META_SALE_STATES = [
     ('draft', 'Draft'),
     ('transport', 'Transport'),
-    ('allocated', 'Allocated'),
-    ('send_confirmations', 'Send Confirmations'),
-    ('seal_trucks', 'Seal Trucks'),
+    ('allocated', 'Allocate'),
+    ('send_confirmations', 'Confirm'),
+    ('seal_trucks', 'Seal'),
     ('send_invoice', 'Invoice'),
     ('handle_overload', 'Handle Overload'),
     ('done', 'Done'),
@@ -44,7 +44,8 @@ class MetaSaleOrder(models.Model):
         index=True,
     )
 
-    state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False, default='draft')
+    state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False,
+                             default='transport')
     partner_id = fields.Many2one('res.partner', string='Customer')
     pricelist_id = fields.Many2one('product.pricelist', string='Pricelist', required=True)
     partner_bank_id = fields.Many2one(
@@ -191,13 +192,18 @@ class MetaSaleOrder(models.Model):
 
         truck_route_ids = self.truck_route_ids_no_backload.filtered(lambda t: t.state == 'confirmed').sorted(
             key=lambda t: t.price_per_kg)
+        done_truck_route_ids = self.truck_route_ids_no_backload.filtered(lambda t: t.state == 'done')
         # Step 3: Proceed with new allocations
         for order_line in self.order_line_ids:
             product = order_line.product_id
             if product.box_weight == 0.0:
                 raise exceptions.UserError(f"Please specify a box weight for product: {product.display_name}")
 
-            required_quantity = order_line.quantity  # Assuming 'quantity' is the correct field
+            # Calculate the required quantity (subtracting the already incoiced trucks (state = done))
+            required_quantity = order_line.quantity - sum([
+                t.load_line_ids.filtered(lambda l: l.product_id == order_line.product_id).quantity
+                for t in done_truck_route_ids
+            ])
             allocated_quantity = 0.0
 
             for truck_route_id in truck_route_ids:
@@ -221,6 +227,41 @@ class MetaSaleOrder(models.Model):
 
         return True
 
+    def _prepare_email_content_for_transporter(self, truck):
+        # Prepare the email content for the transporter
+        warehouse_id = self.transport_product_id.start_warehouse_id
+        address = self._get_warehouse_address(warehouse_id)
+
+        content = f"Dear {truck.partner_id.name},<br/>"
+        content += f"You are selected to pick up the following products:<br/>"
+        content += "<table style='border-collapse: collapse; text-align: left'>"
+        header = "".join([
+            "<th style='border: 1px solid black;'>" + x + "</th>"
+            for x in ["Product", "Quantity", "Address", "Address - Ref"]
+        ])
+        content += f"<strong><tr style='border: 1px solid black;'>{header}</tr></strong>"
+        for line in truck.load_line_ids:
+            address_ref = f"{line.location_id.location_id.name}/{line.location_id.name} ({warehouse_id.name})"
+            content_line = "".join([
+                f"<td style='border: 1px solid black;'>{x}</td>"
+                for x in [line.product_id.name, line.quantity, address, address_ref]
+            ])
+            content += f"<tr style='border: 1px solid black;'>{content_line}</tr>"
+        content += "</table>"
+        return content
+
+    def _prepare_rejection_emails_for_transporters(self, truck) -> str:
+        content = f"Dear {truck.partner_id.name},<br/>"
+        content += f"We are sorry to inform you that we did not select the truck {truck.truck_id}."
+
+    def _prepare_email_content_for_supplier_at_location(self, warehouse_id, location, lines):
+        content = f"Dear {warehouse_id.partner_id.name},<br/>"
+        content += f"The following products are scheduled to be picked up from your location ({location.name}):<br/>"
+        for line in lines:
+            truck = line.truck_route_id
+            content += f"Truck {truck.trailer_number} will pick up: Product {line.product_id.name}, Quantity: {line.quantity}<br/>"
+        return content
+
     def action_send_confirmations(self):
         template = self.env.ref('fish_market.email_template')
         my_company_email = self.env.user.company_id.email
@@ -232,10 +273,23 @@ class MetaSaleOrder(models.Model):
                 email_values = {
                     'email_to': transporter_email,
                     'email_from': my_company_email,
-                    'subject': 'Transport Order Confirmation',
+                    'subject': f'Transport Order Confirmation - {truck_route_id.truck_id}',
                     'body_html': self._prepare_email_content_for_transporter(truck_route_id),
                 }
                 template.send_mail(self.id, email_values=email_values, force_send=True)
+
+        # Send rejections to transporters
+        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) == 0):
+            transporter_email = truck_route_id.partner_id.email
+            if transporter_email:
+                email_values = {
+                    'email_to': transporter_email,
+                    'email_from': my_company_email,
+                    'subject': f'Transport Order Rejection - {truck_route_id.truck_id}',
+                    'body_html': self._prepare_rejection_emails_for_transporters(truck_route_id),
+                }
+                template.send_mail(self.id, email_values=email_values, force_send=True)
+            truck_route_id.state = 'rejected'
 
         location_load_map = defaultdict(list)
         for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
@@ -266,37 +320,6 @@ class MetaSaleOrder(models.Model):
                 else:
                     address.append(warehouse_id.partner_id[attr])
         return ', '.join(address)
-
-    def _prepare_email_content_for_transporter(self, truck):
-        # Prepare the email content for the transporter
-        warehouse_id = self.transport_product_id.start_warehouse_id
-        address = self._get_warehouse_address(warehouse_id)
-
-        content = f"Dear {truck.partner_id.name},<br/>"
-        content += f"You are selected to pick up the following products:<br/>"
-        content += "<table style='border-collapse: collapse; text-align: left'>"
-        header = "".join([
-            "<th style='border: 1px solid black;'>" + x + "</th>"
-            for x in ["Product", "Quantity", "Address", "Address - Ref"]
-        ])
-        content += f"<strong><tr style='border: 1px solid black;'>{header}</tr></strong>"
-        for line in truck.load_line_ids:
-            address_ref = f"{line.location_id.location_id.name}/{line.location_id.name} ({warehouse_id.name})"
-            content_line = "".join([
-                f"<td style='border: 1px solid black;'>{x}</td>"
-                for x in [line.product_id.name, line.quantity, address, address_ref]
-            ])
-            content += f"<tr style='border: 1px solid black;'>{content_line}</tr>"
-        content += "</table>"
-        return content
-
-    def _prepare_email_content_for_supplier_at_location(self, warehouse_id, location, lines):
-        content = f"Dear {warehouse_id.partner_id.name},<br/>"
-        content += f"The following products are scheduled to be picked up from your location ({location.name}):<br/>"
-        for line in lines:
-            truck = line.truck_route_id
-            content += f"Truck {truck.trailer_number} will pick up: Product {line.product_id.name}, Quantity: {line.quantity}<br/>"
-        return content
 
     def _attach_sale_and_purchase_to_truck_route(self, sale_order):
         sale_order.truck_route_id.sale_id = sale_order

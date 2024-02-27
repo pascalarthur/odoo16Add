@@ -7,12 +7,11 @@
             <form>
                 <header>
                     <button name="set_transport_state" string="Transport" type="object" class="oe_highlight" invisible="state not in ['draft']"/>
-                    <button name="action_find_transporters" string="Find Transport" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                     <button name="action_send_confirmations" string="Send Confirmations" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                     <button name="action_confirm_seals" string="Confirm Seals" type="object" class="oe_highlight" invisible="state not in ['seal_trucks']"/>
                     <button name="action_send_invoice" string="Invoice" type="object" class="oe_highlight" invisible="state not in ['send_invoice']"/>
                     <button name="action_set_done" string="Done" type="object" class="oe_highlight" invisible="state not in ['handle_overload']"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,transport,allocated,send_confirmations,seal_trucks,send_invoice,handle_overload,done"/>
+                    <field name="state" widget="statusbar" statusbar_visible="transport,allocated,send_confirmations,seal_trucks,send_invoice,handle_overload,done"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -62,11 +61,11 @@
                         <h2>Transport</h2>
                         <notebook>
                             <page string="Transport Bids" name="transport_bids_page">
+                                <button name="action_find_transporters" string="Find Transport" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                                 <field name="transport_pricelist_item_ids_no_backload" string="">
-                                    <tree>
+                                    <tree default_order="price_per_kg desc">
                                         <field name="currency_id" column_invisible="1"/>
                                         <field name="backload_id" column_invisible="1"/>
-                                        <field name="truck_route_state" column_invisible="1"/>
 
                                         <field name="partner_id"/>
                                         <field name="fixed_price" string="Price"/>
@@ -75,8 +74,8 @@
                                         <field name="price_per_kg"/>
                                         <field name="truck_route_id"/>
 
-                                        <field name="truck_route_state" widget="badge" string="State" decoration-info="truck_route_state == 'confirmed'" decoration-success="truck_route_state in ['loaded', 'done']"/>
-                                        <field name="truck_route_state_backorder" widget="badge" string="State Backorder" decoration-info="truck_route_state_backorder == 'confirmed'" decoration-success="truck_route_state_backorder == 'loaded'"/>
+                                        <field name="truck_route_state" widget="badge" string="State" decoration-info="truck_route_state == 'confirmed'" decoration-danger="truck_route_state == 'rejected'" decoration-success="truck_route_state in ['loaded', 'done']"/>
+                                        <field name="truck_route_state_backorder" widget="badge" string="State Backorder" decoration-info="truck_route_state_backorder == 'confirmed'" decoration-danger="truck_route_state_backorder == 'rejected'" decoration-success="truck_route_state_backorder == 'loaded'"/>
 
                                         <button name="action_toggle_confirm_truck_route" string="Confirm" type="object" class="oe_highlight" invisible="truck_route_state not in ['draft']"/>
                                         <button name="action_toggle_confirm_truck_route" string="Cancel" type="object" class="oe_highlight" invisible="truck_route_state not in ['confirmed', 'loaded']"/>
@@ -86,26 +85,29 @@
                                 </field>
                             </page>
                             <page string="Trucks" name="transport_bids_page">
-                                <button name="action_allocate_transporters" string="Load Trucks Automatically" type="object" class="oe_highlight"/>
-                                <button name="action_add_truck_route" string="Add Truck Manually" type="object" class="oe_highlight"/><br/>
+                                <div class="d-flex gap-1">
+                                    <button name="action_allocate_transporters" string="Load Trucks Automatically" type="object" class="oe_highlight" style="margin-right: 10px;"/>
+                                    <button name="action_add_truck_route" string="Add Truck Manually" type="object" class="oe_highlight"/><br/>
+                                </div>
                                 <field
                                     name="truck_route_ids_no_backload"
                                     widget="section_and_note_one2many"
                                     mode="tree,kanban"
                                     readonly="state == 'cancel'"
                                     string="">
-                                    <tree delete="0" create="0">
+                                    <tree editable="top" delete="0" create="0">
                                         <field name="is_backload" column_invisible="1"/>
-                                        <field name="name"/>
+                                        <field name="name" readonly="1"/>
                                         <field name="partner_id"/>
                                         <field name="max_load"/>
                                         <field name="price"/>
                                         <field name="price_per_kg" string="USD/kg"/>
                                         <field name="truck_utilization" string="Truck Utilization [%]"/>
-                                        <field name="seal_number"/>
+                                        <field name="seal_number" string="Seal Nr." readonly="0"/>
 
                                         <field name="state" widget="badge" decoration-info="state == 'loaded'" decoration-success="state == 'done'"/>
 
+                                        <button name="action_load_truck" string="View" type="object" class="oe_highlight"/>
                                         <button name="action_load_truck" string="Load" type="object" class="oe_highlight" invisible="state not in ['confirmed']"/>
                                         <button name="action_create_invoice" string="Invoice" type="object" class="oe_highlight" invisible="state not in ['loaded']"/>
                                         <button name="action_handle_overload" string="Handle Overload" type="object" class="oe_highlight" invisible="state not in ['done']"/>
