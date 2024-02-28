@@ -113,21 +113,18 @@ class PurchaseOrder(models.Model):
         return bill
 
     def _create_inter_lines(self, picking) -> list:
-        line_cls = self.env['inter.company.transfer.line']
         inter_lines = []
         for move in picking.move_ids_without_package:
             if self.inter_company_transfer.id == False and self.partner_ref == False:
-                price = move.purchase_line_id.price_unit if self.env.company.validate_picking else move.product_id.lst_price
-
                 if self.env.company.validate_picking is True:
                     move.write({'quantity': move.product_uom_qty})
 
-                inter_lines.append(
-                    line_cls.create({
-                        'product_id': move.product_id.id,
-                        'quantity': move.product_uom_qty,
-                        'price_unit': price
-                    }))
+                price = move.purchase_line_id.price_unit if self.env.company.validate_picking else move.product_id.lst_price
+                inter_lines.append(self.env['inter.company.transfer.line'].create({
+                    'product_id': move.product_id.id,
+                    'quantity': move.product_uom_qty,
+                    'price_unit': price
+                }))
 
             if self.env.company.validate_picking is True:
                 if self.order_line.filtered(lambda l: l.product_id.tracking == 'none'):
