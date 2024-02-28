@@ -85,20 +85,16 @@ class PurchaseOrder(models.Model):
             sale_order.inter_company_transfer = self.inter_company_transfer.id
         return sale_order
 
-    def create_bill_int(self, company, is_sale_bill: bool = False):
+    def create_bill_int(self, company):
         journal = self.env['account.journal'].sudo().search([('type', '=', 'purchase'),
                                                              ('company_id', '=', company.id)], limit=1)
         if not journal:
             raise ValidationError(_(f'Please define purchase journal for company: {company.name}.'))
 
-        for purchase_order_line_id in self.order_line:
-            purchase_order_line_id.qty_to_invoice = purchase_order_line_id.product_qty
+        for purchase_order_line in self.order_line:
+            purchase_order_line.qty_to_invoice = purchase_order_line.product_qty
 
-        if is_sale_bill:
-            account_move = self.env['account.move'].with_context(create_bill=True).sudo().with_company(company)
-        else:
-            account_move = self.env['account.move']
-        bill = account_move.create({
+        bill = self.env['account.move'].create({
             'purchase_id': self.id,
             'partner_id': self.partner_id.id,
             'currency_id': self.currency_id.id,
@@ -178,6 +174,8 @@ class PurchaseOrder(models.Model):
         partner_company = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         is_correct_group = self.env.user.has_group('inter_company_transfer.group_ict_manager_access')
         if partner_company.id and is_correct_group and self.env.company.allow_intercompany_transactions:
+            if self.company_id.id == partner_company.id:
+                raise ValidationError(_('You cannot create inter-company transaction for the same company.'))
             if not self.env['sale.order'].search([('client_order_ref', '=', self.name)]).id:
                 self._create_inter_company_purchase()
         return res

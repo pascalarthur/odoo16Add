@@ -121,7 +121,7 @@ class SaleOrder(models.Model):
                 receipt.sudo()._action_done()
 
         if self.env.user.company_id.create_invoice is True:
-            bill_id = purchase_order.create_bill_int(company_partner, is_sale_bill=True)
+            bill_id = purchase_order.create_bill_int(company_partner)
 
             if self.env.user.company_id.validate_invoice is True:
                 bill_id.sudo().with_company(company_partner)._post()
@@ -140,8 +140,10 @@ class SaleOrder(models.Model):
         res = super(SaleOrder, self).action_confirm()
 
         is_correct_group = self.env.user.has_group('inter_company_transfer.group_ict_manager_access')
-        company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
-        if company_partner_id.id and is_correct_group and self.env.user.company_id.allow_intercompany_transactions:
+        partner_company = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
+        if partner_company.id and is_correct_group and self.env.user.company_id.allow_intercompany_transactions:
+            if self.company_id.id == partner_company.id:
+                raise ValidationError(_('You cannot create inter-company transaction for the same company.'))
             trans_cls = self.env['inter.company.transfer']
             inter_lines = []
 
