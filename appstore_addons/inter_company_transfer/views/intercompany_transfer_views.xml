@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <odoo>
 	<record id="view_inter_company_transfer_form" model="ir.ui.view">
-		<field name="name">inter.transfer.company.form</field>
-		<field name="model">inter.transfer.company</field>
+		<field name="name">inter.company.transfer.form</field>
+		<field name="model">inter.company.transfer</field>
 		<field eval="12" name="priority"/>
 		<field name="arch" type="xml">
 			<form string="Tranfer Details">
@@ -12,12 +12,12 @@
 				</header>
 				<sheet >
 					<div class="oe_button_box" name="button_box">
-						<button name="action_view_return_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="inter_company_transfer_id == False">
-							<field name="inter_company_transfer_id" widget="statinfo" string="Inter Company Transfer"/>
+						<button name="action_view_return_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="inter_company_transfer == False">
+							<field name="inter_company_transfer" widget="statinfo" string="Inter Company Transfer"/>
 						</button>
 
-						<button name="action_view_return_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="inter_company_transfer_return_id == False">
-							<field name="inter_company_transfer_return_id" widget="statinfo" string="Return Inter Company Transfer"/>
+						<button name="action_view_return_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="inter_company_transfer_return == False">
+							<field name="inter_company_transfer_return" widget="statinfo" string="Return Inter Company Transfer"/>
 						</button>
 
 						<button name="action_view_sale_internal" type="object" class="oe_stat_button" icon="fa-pencil-square-o" invisible="sale_id == False">
@@ -57,7 +57,7 @@
 						<page string="Product details">
 						  <field name="product_lines" readonly="state in ('process','return')">
 							<tree editable="bottom" >
-								<field name="inter_transfer_id"  column_invisible="1"/>
+								<field name="inter_company_transfer"  column_invisible="1"/>
 								<field name="product_id"/>
 								<field name="quantity"/>
 								<field name="price_unit"/>
@@ -71,8 +71,8 @@
 	</record>
 
 	<record id="view_inter_company_transfer_tree" model="ir.ui.view">
-		<field name="name">inter.transfer.company.form</field>
-		<field name="model">inter.transfer.company</field>
+		<field name="name">inter.company.transfer.form</field>
+		<field name="model">inter.company.transfer</field>
 		<field name="arch" type="xml">
 			<tree string="tranfer details" create="0">
 				<field name="is_return" column_invisible="1"/>
@@ -87,8 +87,8 @@
 	</record>
 
 	<record id="view_inter_transfer_company_search" model="ir.ui.view">
-		<field name="name">inter.transfer.company.search</field>
-		<field name="model">inter.transfer.company</field>
+		<field name="name">inter.company.transfer.search</field>
+		<field name="model">inter.company.transfer</field>
 		<field name="arch" type="xml">
 			<search string="Filter out Returns">
 				<filter string="Transactions" name="filter_returned" domain="[('is_return','=',True)]"/>
@@ -99,7 +99,7 @@
 
 	<record id="inter_company_transfer_action" model="ir.actions.act_window">
 		<field name="name">Inter Company Transfer</field>
-		<field name="res_model">inter.transfer.company</field>
+		<field name="res_model">inter.company.transfer</field>
 		<field name="type">ir.actions.act_window</field>
 		<field name="view_mode">tree,form</field>
 		<field name="search_view_id" ref="view_inter_transfer_company_search"/>
@@ -122,8 +122,8 @@
 		<field name="inherit_id" ref="purchase.purchase_order_form"/>
 		<field name="arch" type="xml">
 		<xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-				<button type="object" name="action_view_internal" class="oe_stat_button" icon="fa-exchange" invisible="inter_transfer_id == False or state in ('draft','sent','to approve')">
-					<field name="inter_transfer_id" widget="statinfo" string="Intercompany Transfer"/>
+				<button type="object" name="action_view_internal" class="oe_stat_button" icon="fa-exchange" invisible="inter_company_transfer == False or state in ('draft','sent','to approve')">
+					<field name="inter_company_transfer" widget="statinfo" string="Intercompany Transfer"/>
 				</button>
 			</xpath>
 		</field>
@@ -135,8 +135,8 @@
 		<field name="inherit_id" ref="sale.view_order_form"/>
 		<field name="arch" type="xml">
 		<xpath expr="//div[hasclass('oe_button_box')]" position="inside">
-				<button type="object" name="action_view_internal" class="oe_stat_button" icon="fa-exchange" invisible="inter_transfer_id == False or state in ('draft','sent','to approve')">
-					<field name="inter_transfer_id" widget="statinfo" string="Intercompany Transfer"/>
+				<button type="object" name="action_view_internal" class="oe_stat_button" icon="fa-exchange" invisible="inter_company_transfer == False or state in ('draft','sent','to approve')">
+					<field name="inter_company_transfer" widget="statinfo" string="Intercompany Transfer"/>
 				</button>
 			</xpath>
 		</field>

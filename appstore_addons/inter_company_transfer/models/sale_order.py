@@ -47,18 +47,18 @@ class SaleOrderLine(models.Model):
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    inter_transfer_id = fields.Many2one('inter.transfer.company', copy=False)
+    inter_company_transfer = fields.Many2one('inter.company.transfer', copy=False)
 
     def action_view_internal(self):
-        return self.inter_transfer_id.action_view_internal()
+        return self.inter_company_transfer.action_view_internal()
 
     def create_from_purchase_order(self, purchase_order, company_partner, partner_id, allowed_company_ids: list):
         if company_partner and not company_partner.intercompany_warehouse_id:
             raise ValidationError(_('Please select intercompany warehouse on  %s.') % company_partner.name)
 
         name = self.env['ir.sequence'].sudo().with_company(company_partner).next_by_code('sale.order') or '/'
-        if purchase_order.inter_transfer_id.id and purchase_order.inter_transfer_id.pricelist_id.id:
-            pricelist = purchase_order.inter_transfer_id.pricelist_id
+        if purchase_order.inter_company_transfer.id and purchase_order.inter_company_transfer.pricelist_id.id:
+            pricelist = purchase_order.inter_company_transfer.pricelist_id
         else:
             pricelist = partner_id.property_product_pricelist
         vals = {
@@ -73,7 +73,7 @@ class SaleOrder(models.Model):
             'client_order_ref': name,
             'partner_id': partner_id.id,
             'pricelist_id': pricelist.id,
-            'inter_transfer_id': purchase_order.inter_transfer_id.id,
+            'inter_company_transfer': purchase_order.inter_company_transfer.id,
             'partner_shipping_id': partner_id.id
         }
         sale_order = self.with_context(allowed_company_ids=allowed_company_ids).sudo().create(vals)
@@ -107,7 +107,7 @@ class SaleOrder(models.Model):
             move_qty -= 1
 
     def _create_purchase_order_from_sale_order(self):
-        assert self.inter_transfer_id.id, 'Inter Transfer is not set'
+        assert self.inter_company_transfer.id, 'Inter Transfer is not set'
 
         company_partner = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         purchase_order = self.env['purchase.order'].sudo().create_from_sale_order(self, company_partner,
@@ -133,31 +133,31 @@ class SaleOrder(models.Model):
             if self.env.user.company_id.validate_invoice is True:
                 bill_id.sudo().with_company(company_partner)._post()
 
-            self.inter_transfer_id.update({
+            self.inter_company_transfer.update({
                 'purchase_id': purchase_order.id or False,
                 'currency_id': purchase_order.currency_id.id or False,
                 'invoice_id': [(4, bill_id.id, 0)]
             })
-            if not self.inter_transfer_id.to_warehouse.id:
+            if not self.inter_company_transfer.to_warehouse.id:
                 if company_partner and not company_partner.intercompany_warehouse_id:
                     raise ValidationError(_(f'Please Select Intercompany Warehouse On  {company_partner.name}.'))
-                self.inter_transfer_id.update({'to_warehouse': company_partner.intercompany_warehouse_id.id})
+                self.inter_company_transfer.update({'to_warehouse': company_partner.intercompany_warehouse_id.id})
 
     def action_confirm(self):
         res = super(SaleOrder, self).action_confirm()
 
-        is_correct_group = self.env.user.has_group('bi_inter_company_transfer.group_ict_manager_access')
+        is_correct_group = self.env.user.has_group('inter_company_transfer.group_ict_manager_access')
         company_partner_id = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         if company_partner_id.id and is_correct_group and self.env.user.company_id.allow_intercompany_transactions:
-            trans_cls = self.env['inter.transfer.company']
+            trans_cls = self.env['inter.company.transfer']
             inter_lines = []
 
             for picking in self.picking_ids:
                 for move in picking.move_ids_without_package:
                     if self.env.user.company_id.validate_picking:
                         move.write({'quantity': move.product_uom_qty})
-                    if self.inter_transfer_id.id == False and self.client_order_ref == False:
-                        inter_lines += self.env['inter.transfer.company.line'].create_from_move(move)
+                    if self.inter_company_transfer.id == False and self.client_order_ref == False:
+                        inter_lines += self.env['inter.company.transfer.line'].create_from_move(move)
 
                 if self.env.user.company_id.validate_picking:
                     picking._action_done()
@@ -170,8 +170,8 @@ class SaleOrder(models.Model):
                 if self.env.user.company_id.validate_invoice:
                     invoice._post()
 
-            if self.inter_transfer_id.id == False and self.client_order_ref == False:
-                self.inter_transfer_id = trans_cls.create({
+            if self.inter_company_transfer.id == False and self.client_order_ref == False:
+                self.inter_company_transfer = trans_cls.create({
                     'sale_id': self.id,
                     'invoice_id': [(6, 0, self.invoice_ids.ids)],
                     'state': 'process',
@@ -180,18 +180,18 @@ class SaleOrder(models.Model):
                     'pricelist_id': self.pricelist_id.id,
                 })
             else:
-                self.inter_transfer_id.write({
+                self.inter_company_transfer.write({
                     'sale_id': self.id or False,
                     'pricelist_id': self.pricelist_id.id or False,
                 })
-                if not self.inter_transfer_id.from_warehouse.id:
-                    self.inter_transfer_id.write({'from_warehouse': self.warehouse_id.id})
+                if not self.inter_company_transfer.from_warehouse.id:
+                    self.inter_company_transfer.write({'from_warehouse': self.warehouse_id.id})
                 if self.invoice_ids:
-                    self.inter_transfer_id.write({'invoice_id': [(6, 0, self.invoice_ids.ids)]})
+                    self.inter_company_transfer.write({'invoice_id': [(6, 0, self.invoice_ids.ids)]})
 
             for inter_line in inter_lines:
-                inter_line.update({'inter_transfer_id': self.inter_transfer_id.id})
+                inter_line.update({'inter_company_transfer': self.inter_company_transfer.id})
 
-            if self.client_order_ref == False and self._context.get('stop_po') != True:
+            if self.client_order_ref == False:
                 self._create_purchase_order_from_sale_order()
         return res

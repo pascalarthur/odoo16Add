@@ -327,7 +327,7 @@ class MetaSaleOrder(models.Model):
 
     def _attach_sale_and_purchase_to_truck_route(self, sale_order):
         sale_order.truck_route_id.sale_id = sale_order
-        sale_order.truck_route_id.purchase_id = sale_order.inter_transfer_id.purchase_id
+        sale_order.truck_route_id.purchase_id = sale_order.inter_company_transfer.purchase_id
 
     def create_sale_order_on_truck_load(self, truck_route_id):
         sale_order_id = self.env['sale.order'].create({

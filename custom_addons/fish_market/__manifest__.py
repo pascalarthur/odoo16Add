@@ -6,7 +6,7 @@
     'depends': [
         'base', 'purchase', 'web', 'fleet', 'stock', 'sale_management', 'hy_currency_rate', 'pos_absolute_discount',
         'pos_multi_currency_cash', 'pos_receipt_extend', 'pos_closing_transaction', 'pos_invoice_automate',
-        'bi_inter_company_transfer', 'cash_exchange'
+        'cash_exchange'
     ],
     'author':
     "Ludwig Gräf",
@@ -24,7 +24,6 @@
         'data/email_template_logistics.xml',
         'data/form_templates.xml',
         'data/sequences.xml',
-
         'views/res_partner_views.xml',
         'views/truck_redistribution_wizard.xml',
         'views/pricelist_wizard.xml',

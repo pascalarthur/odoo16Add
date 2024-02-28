@@ -2,10 +2,10 @@ from odoo import api, fields, models, _
 
 
 class IntercompanyTransferLines(models.Model):
-    _name = 'inter.transfer.company.line'
+    _name = 'inter.company.transfer.line'
     _description = "Intercompany Transfer Lines"
 
-    inter_transfer_id = fields.Many2one('inter.transfer.company')
+    inter_company_transfer = fields.Many2one('inter.company.transfer')
     product_id = fields.Many2one('product.product', required=True)
     price_unit = fields.Float('Price')
     quantity = fields.Integer('Quantity', default=1, required=True)
@@ -26,14 +26,14 @@ class IntercompanyTransferLines(models.Model):
 
 
 class IntercompanyTransfer(models.Model):
-    _name = 'inter.transfer.company'
+    _name = 'inter.company.transfer'
     _description = "Intercompany Transfer"
     _order = 'create_date desc, id desc'
 
     name = fields.Char("Name", readonly=True, copy=False)
-    sale_id = fields.Many2one("sale.order", string="Sale Order", copy=False)
+    sale_id = fields.Many2one("sale.order", string="Sale", copy=False)
     invoice_id = fields.Many2many("account.move", string='Invoice', related="sale_id.invoice_ids", copy=False)
-    purchase_id = fields.Many2one("purchase.order", string="Purchase Order", copy=False)
+    purchase_id = fields.Many2one("purchase.order", string="Purchase", copy=False)
     bill_id = fields.Many2many("account.move", string='Bills', related="purchase_id.invoice_ids", copy=False)
     state = fields.Selection([('draft', 'Draft'), ('process', 'Process'), ('return', 'Return')], string="State",
                              default='draft', readonly=True)
@@ -46,32 +46,32 @@ class IntercompanyTransfer(models.Model):
     apply_type = fields.Selection([('sale', 'Sale Order'), ('purchase', 'Purchase Order'),
                                    ('sale_purchase', 'Sale and Purchase Order')], default="sale_purchase",
                                   string="Apply Type")
-    product_lines = fields.One2many('inter.transfer.company.line', 'inter_transfer_id', string="lines")
+    product_lines = fields.One2many('inter.company.transfer.line', 'inter_company_transfer', string="lines")
 
-    inter_company_transfer_id = fields.Many2one("inter.transfer.company", string='Inter Company Transfer', copy=False)
-    inter_company_transfer_return_id = fields.Many2one("inter.transfer.company", string='Return', copy=False)
+    inter_company_transfer = fields.Many2one("inter.company.transfer", string='Inter Company Transfer', copy=False)
+    inter_company_transfer_return = fields.Many2one("inter.company.transfer", string='Return', copy=False)
     is_return = fields.Boolean('Is Return', compute='_compute_is_return', default=False, store=True)
 
-    @api.depends('inter_company_transfer_return_id')
+    @api.depends('inter_company_transfer_return')
     def _compute_is_return(self):
         for rec in self:
-            rec.is_return = bool(rec.inter_company_transfer_id)
+            rec.is_return = bool(rec.inter_company_transfer)
 
     def action_view_internal(self):
         return {
             'name': _('Internal Transfer'),
             'type': 'ir.actions.act_window',
-            'res_model': 'inter.transfer.company',
+            'res_model': 'inter.company.transfer',
             'view_mode': 'form',
-            'view_id': self.env.ref('bi_inter_company_transfer.view_inter_company_transfer_form').id,
+            'view_id': self.env.ref('inter_company_transfer.view_inter_company_transfer_form').id,
             'res_id': self.id,
         }
 
     def action_view_return_internal(self):
-        if self.inter_company_transfer_return_id:
-            return self.inter_company_transfer_return_id.action_view_internal()
+        if self.inter_company_transfer_return:
+            return self.inter_company_transfer_return.action_view_internal()
         else:
-            return self.inter_company_transfer_id.action_view_internal()
+            return self.inter_company_transfer.action_view_internal()
 
     def action_view_invoice_internal(self):
         return self.sale_id.action_view_invoice(self.invoice_id)
@@ -105,13 +105,13 @@ class IntercompanyTransfer(models.Model):
         '''
         Find sale order and create inverse purchase -> Purchase order, Invoice and Bill are then automatically created
         '''
-        self.inter_company_transfer_id.write({'state': 'return'})
+        self.inter_company_transfer.write({'state': 'return'})
 
         self.purchase_id = self.env['purchase.order'].create({
             'partner_id': sale_order.partner_id.id,
             'company_id': sale_order.company_id.id,
             'currency_id': sale_order.currency_id.id,
-            'inter_transfer_id': self.id
+            'inter_company_transfer': self.id
         })
         for line in sale_order.order_line:
             self.env['purchase.order.line'].create({
@@ -125,21 +125,21 @@ class IntercompanyTransfer(models.Model):
 
     @api.model
     def create(self, vals):
-        if 'inter_company_transfer_id' in vals:
-            vals['name'] = self.env['ir.sequence'].next_by_code('return.inter.transfer.company')
+        if 'inter_company_transfer' in vals:
+            vals['name'] = self.env['ir.sequence'].next_by_code('return.inter.company.transfer')
 
             res = super(IntercompanyTransfer, self).create(vals)
 
-            sale_order = self.env['inter.transfer.company'].browse(vals['inter_company_transfer_id']).sale_id
+            sale_order = self.env['inter.company.transfer'].browse(vals['inter_company_transfer']).sale_id
             res.process_return(sale_order)
 
-            if 'inter_company_transfer_id' in vals:
-                inter_transfer = self.env['inter.transfer.company'].search([('id', '=',
-                                                                             vals['inter_company_transfer_id'])])
-                inter_transfer.write({'inter_company_transfer_return_id': res.id})
+            if 'inter_company_transfer' in vals:
+                inter_transfer = self.env['inter.company.transfer'].search([('id', '=', vals['inter_company_transfer'])
+                                                                            ])
+                inter_transfer.write({'inter_company_transfer_return': res.id})
             return res
         else:
-            vals['name'] = self.env['ir.sequence'].next_by_code('inter.transfer.company')
+            vals['name'] = self.env['ir.sequence'].next_by_code('inter.company.transfer')
             return super(IntercompanyTransfer, self).create(vals)
 
     @api.onchange('from_warehouse')
@@ -159,12 +159,12 @@ class IntercompanyTransfer(models.Model):
         return {
             'name': _('Return'),
             'type': 'ir.actions.act_window',
-            'res_model': 'inter.transfer.company',
+            'res_model': 'inter.company.transfer',
             'view_mode': 'form',
-            'view_id': self.env.ref('bi_inter_company_transfer.view_inter_company_transfer_form').id,
+            'view_id': self.env.ref('inter_company_transfer.view_inter_company_transfer_form').id,
             'target': 'new',
             'context': {
-                'default_inter_company_transfer_id': self.id,
+                'default_inter_company_transfer': self.id,
                 'default_from_warehouse': self.to_warehouse.id,
                 'default_to_warehouse': self.from_warehouse.id,
                 'default_pricelist_id': self.pricelist_id.id,

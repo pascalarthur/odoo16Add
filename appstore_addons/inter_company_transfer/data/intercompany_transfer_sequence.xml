@@ -18,7 +18,7 @@
 
 	<record id="seq_inter_transfer" model="ir.sequence">
 		<field name="name">Intercompany Transfer</field>
-		<field name="code">inter.transfer.company</field>
+		<field name="code">inter.company.transfer</field>
 		<field name="prefix">INT/%(year)s/</field>
 		<field name="padding">5</field>
 		<field name="company_id" eval="False"/>
@@ -26,7 +26,7 @@
 
 	<record id="seq_return_inter_transfer" model="ir.sequence">
 		<field name="name">Return Intercompany Transfer</field>
-		<field name="code">return.inter.transfer.company</field>
+		<field name="code">return.inter.company.transfer</field>
 		<field name="prefix">RINT/%(year)s/</field>
 		<field name="padding">5</field>
 		<field name="company_id" eval="False"/>
