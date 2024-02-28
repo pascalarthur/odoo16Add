@@ -179,8 +179,18 @@ class TruckDetail(models.Model):
         if not self.seal_number:
             raise exceptions.UserError(_("Please enter the seal number before creating an invoice."))
 
-        sale_order_id = self.meta_sale_order_id.create_sale_order_for_truck(self)
+        sale_order_id = self.meta_sale_order_id.create_sale_order_on_truck_load(self)
         self.meta_sale_order_id.create_invoice(sale_order_id)
+
+        if self.env.company.id != self.env['res.company'].search([('partner_id', '=', self.partner_id.id)]).id:
+            # Create bill for trucks belonging to other company
+            truck_route_purchase = self.meta_sale_order_id.create_purchase_order_for_truck_route(self)
+            self.meta_sale_order_id.create_bill(truck_route_purchase)
+        else:
+            # Create expense for own trucks
+            # TODO
+            pass
+
         self.state = 'done'
 
     def action_handle_overload(self):

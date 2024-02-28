@@ -141,6 +141,9 @@
                             <page string="Invoices" name="invoice_page">
                                 <field name="invoice_ids" string=""/>
                             </page>
+                            <page string="Truck Purchases" name="truck_purchase_page">
+                                <field name="truck_purchase_ids" string=""/>
+                            </page>
                         </notebook>
                     </div>
                 </sheet>

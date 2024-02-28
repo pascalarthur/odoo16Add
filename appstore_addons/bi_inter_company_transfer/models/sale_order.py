@@ -5,23 +5,6 @@ from odoo.exceptions import ValidationError
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    @api.depends('move_ids.state', 'move_ids.scrapped', 'move_ids.product_uom_qty', 'move_ids.product_uom')
-    def _compute_qty_delivered(self):
-        super(SaleOrderLine, self)._compute_qty_delivered()
-
-        for line in self.filtered(lambda line: line.qty_delivered_method == 'stock_move'):
-            qty = 0.0
-            for move in line.move_ids.filtered(
-                    lambda r: r.state == 'done' and not r.scrapped and line.product_id == r.product_id):
-                if move.location_dest_id.usage == "customer":
-                    if not move.origin_returned_move_id or (move.origin_returned_move_id and move.to_refund):
-                        qty += move.product_uom._compute_quantity(move.product_uom_qty, line.product_uom)
-                elif move.location_dest_id.usage != "customer" and move.to_refund:
-                    qty -= move.product_uom._compute_quantity(move.product_uom_qty, line.product_uom)
-                else:
-                    qty -= move.product_uom._compute_quantity(move.product_uom_qty, line.product_uom)
-            line.qty_delivered = qty
-
     @api.model
     def create_from_purchase_order_line(self, line, company, sale_order, allowed_company_ids: list):
         fpos = line.order_id.fiscal_position_id or line.order_id.partner_id.property_account_position_id
@@ -43,6 +26,22 @@ class SaleOrderLine(models.Model):
             'company_id': company.id
         }
         return self.with_context(allowed_company_ids=allowed_company_ids).sudo().create(vals)
+
+    @api.depends('move_ids.state', 'move_ids.scrapped', 'move_ids.product_uom_qty', 'move_ids.product_uom')
+    def _compute_qty_delivered(self):
+        super(SaleOrderLine, self)._compute_qty_delivered()
+
+        for line in self.filtered(lambda line: line.qty_delivered_method == 'stock_move'):
+            quantity = 0.0
+            for move in line.move_ids:
+                move_qty = move.product_uom._compute_quantity(move.product_uom_qty, line.product_uom)
+                if move.state == 'done' and not move.scrapped and line.product_id == move.product_id:
+                    if move.location_dest_id.usage == "customer" and not move.origin_returned_move_id or (
+                            move.origin_returned_move_id and move.to_refund):
+                        quantity += move_qty
+                else:
+                    quantity -= move_qty
+            line.qty_delivered = quantity
 
 
 class SaleOrder(models.Model):

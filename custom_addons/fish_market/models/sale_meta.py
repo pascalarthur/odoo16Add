@@ -12,6 +12,8 @@ META_SALE_STATES = [
     ('done', 'Done'),
 ]
 
+TRUCK_AVERAGE_LOAD = 35_000
+
 
 class MetaSaleOrderLine(models.Model):
     _name = 'meta.sale.order.line'
@@ -82,6 +84,8 @@ class MetaSaleOrder(models.Model):
     invoice_ids = fields.Many2many('account.move', string='Invoices', compute='_compute_invoice_ids', store=True,
                                    readonly=True)
 
+    truck_purchase_ids = fields.One2many('purchase.order', 'meta_sale_order_id', string='Purchase Orders')
+
     date_start = fields.Date(string='Start Date', required=True)
     date_end = fields.Date(string='End Date', required=True)
 
@@ -111,7 +115,7 @@ class MetaSaleOrder(models.Model):
     def _compute_container_demand(self):
         for record in self:
             total_weight = sum(line.quantity * line.product_id.box_weight for line in record.order_line_ids)
-            record.container_demand = -(-total_weight // 35000)  # ceil
+            record.container_demand = -(-total_weight // TRUCK_AVERAGE_LOAD)  # ceil
 
     @api.depends('transport_pricelist_item_ids')
     def _compute_transport_pricelist_item_ids_no_backload(self):
@@ -325,7 +329,7 @@ class MetaSaleOrder(models.Model):
         sale_order.truck_route_id.sale_id = sale_order
         sale_order.truck_route_id.purchase_id = sale_order.inter_transfer_id.purchase_id
 
-    def create_sale_order_for_truck(self, truck_route_id):
+    def create_sale_order_on_truck_load(self, truck_route_id):
         sale_order_id = self.env['sale.order'].create({
             'meta_sale_order_id': self.id,
             'partner_id': self.partner_id.id,
@@ -360,11 +364,39 @@ class MetaSaleOrder(models.Model):
         sale_order_id.state = 'sent'
         return sale_order_id
 
+    def create_purchase_order_for_truck_route(self, truck_route):
+        purchase_order = self.env['purchase.order'].create({
+            'meta_sale_order_id': self.id,
+            'partner_id': truck_route.partner_id.id,
+            'truck_route_id': truck_route.id,
+            'currency_id': self.pricelist_id.currency_id.id,
+        })
+
+        if self.transport_product_id.sh_is_bundle:
+            total_price = sum(self.transport_product_id.sh_bundle_product_ids.mapped('sh_price_unit'))
+            for sh_bundle_product_id in self.transport_product_id.sh_bundle_product_ids:
+                proportional_price = truck_route.price * (sh_bundle_product_id.sh_price_unit / total_price)
+                self.env['purchase.order.line'].create({
+                    'order_id': purchase_order.id,
+                    'product_id': sh_bundle_product_id.sh_product_id.id,
+                    'price_unit': proportional_price,
+                    'product_qty': sh_bundle_product_id.sh_qty,
+                })
+        else:
+            raise exceptions.UserError("Please select a transport route that is a bundle.")
+
+        purchase_order.button_confirm()
+        return purchase_order
+
     def action_send_order_confirmation(self):
-        for truck_route_id in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
+        for truck_route in self.truck_route_ids_no_backload.filtered(lambda t: len(t.load_line_ids) > 0):
             # Check that we do not have created the invoice yet
-            if truck_route_id.id not in self.sale_order_ids.mapped('truck_route_id').ids:
-                self.create_sale_order_for_truck(truck_route_id)
+            if truck_route.id not in self.sale_order_ids.mapped('truck_route_id').ids:
+                self.create_sale_order_on_truck_load(truck_route)
+
+            if truck_route.id not in self.truck_purchase_ids.mapped('truck_route_id').ids:
+                self.create_purchase_order_for_truck_route(truck_route)
+
         self.state = 'seal_trucks'
 
     def action_confirm_seals(self):
@@ -387,10 +419,21 @@ class MetaSaleOrder(models.Model):
                 })
         self._attach_sale_and_purchase_to_truck_route(sale_id)
 
+    def create_bill(self, purchase_id) -> None:
+        if purchase_id.state in ['draft', 'sent']:
+            purchase_id.button_confirm()
+            if purchase_id.invoice_status != 'invoiced':
+                for purchase_order_line in self.purchase_id:
+                    purchase_order_line.qty_to_invoice = purchase_order_line.product_qty
+                invoice_id = purchase_id.action_create_invoice()
+                invoice_id.action_post()
+
     def action_send_invoice(self):
         self.ensure_one()
         for sale_id in self.sale_order_ids:
             self.create_invoice(sale_id)
+        for purchase_id in self.truck_purchase_ids:
+            self.create_bill(purchase_id)
         self.state = 'handle_overload'
 
     def action_set_done(self):

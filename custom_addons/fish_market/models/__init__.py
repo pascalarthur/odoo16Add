@@ -3,7 +3,7 @@
 
 from . import pricelist
 from . import res_partner
-from . import custom_purchase
+from . import purchase
 from . import product
 from . import stock
 from . import sale_order
