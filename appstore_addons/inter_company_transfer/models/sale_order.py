@@ -6,24 +6,17 @@ class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     @api.model
-    def create_from_purchase_order_line(self, line, company, sale_order, allowed_company_ids: list):
-        fpos = line.order_id.fiscal_position_id or line.order_id.partner_id.property_account_position_id
-        taxes = line.product_id.taxes_id.filtered(lambda r: not line.company_id or r.company_id == company)
-        tax_ids = fpos.map_tax(taxes) if fpos else taxes
-        quantity = line.product_uom._compute_quantity(line.product_qty, line.product_id.uom_id)
-
-        price = line.price_unit or 0.0
-        price = line.product_uom._compute_price(price, line.product_id.uom_id)
+    def create_from_purchase_order_line(self, line, partner_company, sale_order, allowed_company_ids: list):
         vals = {
-            'name': line.name,
-            'customer_lead': line.product_id and line.product_id.sale_delay or 0.0,
-            'tax_id': [(6, 0, tax_ids.ids)],
             'order_id': sale_order.id,
-            'product_uom_qty': quantity,
-            'product_id': line.product_id and line.product_id.id or False,
-            'product_uom': line.product_id and line.product_id.uom_id.id or line.product_uom.id,
-            'price_unit': price,
-            'company_id': company.id
+            'name': line.name,
+            'customer_lead': line.product_id.sale_delay,
+            'product_uom_qty': line.product_uom_qty,
+            'product_id': line.product_id.id,
+            'product_uom': line.product_uom.id,
+            'price_unit': line.price_unit,
+            'tax_id': line.taxes_id.map_tax_ids(partner_company),
+            'company_id': partner_company.id
         }
         return self.with_context(allowed_company_ids=allowed_company_ids).sudo().create(vals)
 

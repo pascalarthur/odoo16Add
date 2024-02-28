@@ -6,23 +6,16 @@ class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
     @api.model
-    def create_from_sale_order_line(self, line, purchase_order, company):
-        fpos = line.order_id.fiscal_position_id or line.order_id.partner_id.property_account_position_id
-        taxes = line.product_id.taxes_id.filtered(lambda r: not line.company_id or r.company_id == company)
-        tax_ids = fpos.map_tax(taxes) if fpos else taxes
-        price = line.price_unit - (line.price_unit * (line.discount / 100))
-        quantity = line.product_uom._compute_quantity(line.product_uom_qty,
-                                                      line.product_id.uom_po_id) or line.product_uom_qty
-        price = line.product_uom._compute_price(price, line.product_id.uom_po_id) or price
+    def create_from_sale_order_line(self, line, purchase_order, partner_company):
         return self.sudo().create({
+            'order_id': purchase_order.id,
             'name': line.name,
             'date_planned': line.order_id.expected_date,
-            'taxes_id': [(6, 0, tax_ids.ids)],
-            'order_id': purchase_order.id,
-            'product_qty': quantity,
-            'product_id': line.product_id and line.product_id.id or False,
-            'product_uom': line.product_id and line.product_id.uom_po_id.id or line.product_uom.id,
-            'price_unit': price or 0.0,
+            'product_qty': line.product_uom_qty,
+            'product_id': line.product_id.id,
+            'product_uom': line.product_uom.id,
+            'price_unit': line.price_unit,
+            'taxes_id': line.tax_id.map_tax_ids(partner_company).ids,
         })
 
 
@@ -35,10 +28,10 @@ class PurchaseOrder(models.Model):
         return self.inter_company_transfer.action_view_internal()
 
     @api.model
-    def create_from_sale_order(self, sale_order, company_partner, current_company):
+    def create_from_sale_order(self, sale_order, partner_company, current_company):
         currency_id = sale_order.inter_company_transfer.currency_id.id if sale_order.inter_company_transfer.id and sale_order.inter_company_transfer.currency_id.id else sale_order.currency_id.id
         vals = {
-            'name': self.env['ir.sequence'].sudo().with_company(company_partner).next_by_code('purchase.order'),
+            'name': self.env['ir.sequence'].sudo().with_company(partner_company).next_by_code('purchase.order'),
             'origin': sale_order.name,
             'fiscal_position_id': current_company.partner_id.property_account_position_id.id,
             'payment_term_id': current_company.partner_id.property_supplier_payment_term_id.id,
@@ -48,19 +41,19 @@ class PurchaseOrder(models.Model):
             'partner_id': current_company.partner_id.id,
             'inter_company_transfer': sale_order.inter_company_transfer.id,
             'date_order': sale_order.date_order,
-            'company_id': company_partner.id,
+            'company_id': partner_company.id,
         }
         purchase_order = self.sudo().create(vals)
         for order_line in sale_order.order_line:
             self.env['purchase.order.line'].sudo().create_from_sale_order_line(order_line, purchase_order,
-                                                                               company_partner)
+                                                                               partner_company)
         return purchase_order
 
     def _create_sale_order_from_purchase_order(self):
-        company_partner = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
-        allowed_company_ids = [company_partner.id, self.env.company.id]
+        partner_company = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
+        allowed_company_ids = [partner_company.id, self.env.company.id]
         sale_order = self.env['sale.order'].sudo().create_from_purchase_order(
-            self, company_partner, self.env.company.intercompany_warehouse_id.partner_id, allowed_company_ids)
+            self, partner_company, self.env.company.intercompany_warehouse_id.partner_id, allowed_company_ids)
         if sale_order.client_order_ref:
             sale_order.client_order_ref = self.name
         sale_order.with_context(allowed_company_ids=allowed_company_ids).action_confirm()
@@ -182,9 +175,9 @@ class PurchaseOrder(models.Model):
 
     def button_confirm(self):
         res = super(PurchaseOrder, self).button_confirm()
-        company_partner = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
+        partner_company = self.env['res.company'].search([('partner_id', '=', self.partner_id.id)])
         is_correct_group = self.env.user.has_group('inter_company_transfer.group_ict_manager_access')
-        if company_partner.id and is_correct_group and self.env.company.allow_intercompany_transactions:
+        if partner_company.id and is_correct_group and self.env.company.allow_intercompany_transactions:
             if not self.env['sale.order'].search([('client_order_ref', '=', self.name)]).id:
                 self._create_inter_company_purchase()
         return res
