@@ -426,6 +426,7 @@ class MetaSaleOrder(models.Model):
         self.ensure_one()
         for sale_id in self.sale_order_ids:
             self.create_invoice(sale_id)
+            sale_id.truck_route_id.state = 'done'
         for purchase_id in self.truck_purchase_ids:
             self.create_bill(purchase_id)
         self.state = 'handle_overload'
