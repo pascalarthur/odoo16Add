@@ -49,7 +49,7 @@ class MetaSaleOrder(models.Model):
     state = fields.Selection(META_SALE_STATES, string='Status', readonly=True, index=True, copy=False,
                              default='transport')
     partner_id = fields.Many2one('res.partner', string='Customer')
-    pricelist_id = fields.Many2one('product.pricelist', string='Pricelist', required=True)
+    pricelist_id = fields.Many2one('product.pricelist', string='Pricelist')
     partner_bank_id = fields.Many2one(
         'res.partner.bank',
         string='Recipient Bank',
@@ -62,8 +62,8 @@ class MetaSaleOrder(models.Model):
     )
 
     transport_product_id = fields.Many2one('product.template', string='Transport Route',
-                                           domain=[('type', '=', 'transport')], required=True)
-    transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist', required=True)
+                                           domain=[('type', '=', 'transport')])
+    transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist')
     transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id',
                                                    string='Transport Bids with Backloads')
     transport_pricelist_item_ids_no_backload = fields.One2many(
@@ -86,8 +86,8 @@ class MetaSaleOrder(models.Model):
 
     truck_purchase_ids = fields.One2many('purchase.order', 'meta_sale_order_id', string='Purchase Orders')
 
-    date_start = fields.Date(string='Start Date', required=True)
-    date_end = fields.Date(string='End Date', required=True)
+    date_start = fields.Date(string='Start Date')
+    date_end = fields.Date(string='End Date')
 
     @api.depends('sale_order_ids')
     def _compute_sale_order_count(self):
@@ -137,12 +137,6 @@ class MetaSaleOrder(models.Model):
                 else:
                     one_way_variant_id = record.transport_product_id.product_variant_ids[0]
                     record.extra_products_on_truck_ids = [(4, one_way_variant_id.id)]
-
-    def set_transport_state(self):
-        self.ensure_one()
-        if not self.partner_id:
-            raise exceptions.UserError("Please select a customer first.")
-        self.state = 'transport'
 
     def action_find_transporters(self):
         # Logic to find transporters

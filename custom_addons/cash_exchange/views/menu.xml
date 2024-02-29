@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-	<menuitem id="action_cash_dasboard_menu" name="Cash Exchange" parent="account.menu_finance" sequence="20"/>
+	<menuitem id="action_cash_dasboard_menu" name="Cash Exchange" action="action_cash_dasboard" parent="account.menu_finance" sequence="10"/>
 </odoo>

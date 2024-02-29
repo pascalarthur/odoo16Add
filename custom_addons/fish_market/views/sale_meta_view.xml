@@ -6,7 +6,6 @@
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="set_transport_state" string="Transport" type="object" class="oe_highlight" invisible="state not in ['draft']"/>
                     <button name="action_send_confirmations" string="Send Confirmations" type="object" class="oe_highlight" invisible="state not in ['transport', 'allocated']"/>
                     <button name="action_confirm_seals" string="Confirm Seals" type="object" class="oe_highlight" invisible="state not in ['seal_trucks']"/>
                     <button name="action_send_invoice" string="Invoice" type="object" class="oe_highlight" invisible="state not in ['send_invoice']"/>
@@ -33,16 +32,16 @@
                         <group col="2">
                             <group col="1">
                                 <field name="company_id" invisible="1"/>
-                                <field name="partner_id" readonly="state not in ['draft', 'transport']"/>
-                                <field name="pricelist_id" readonly="state not in ['draft', 'transport']"/>
+                                <field name="partner_id" required="state != 'draft'" readonly="state not in ['draft', 'transport']"/>
+                                <field name="pricelist_id" required="state != 'draft'" readonly="state not in ['draft', 'transport']"/>
                                 <field name="partner_bank_id" readonly="state not in ['draft', 'transport']"/>
                                 <field name="container_demand" readonly="1"/>
                             </group>
                             <group col="1">
-                                <field name="transport_product_id" readonly="state not in ['draft', 'transport']"/>
-                                <field name="transport_pricelist_id" readonly="state not in ['draft', 'transport']"/>
-                                <field name="date_start" widget="date" readonly="state not in ['draft', 'transport']"/>
-                                <field name="date_end" widget="date" readonly="state not in ['draft', 'transport']"/>
+                                <field name="transport_product_id" required="state != 'draft'" readonly="state not in ['draft', 'transport']"/>
+                                <field name="transport_pricelist_id" required="state != 'draft'" readonly="state not in ['draft', 'transport']"/>
+                                <field name="date_start" widget="date" required="state != 'draft'" readonly="state not in ['draft', 'transport']"/>
+                                <field name="date_end" widget="date" required="state != 'draft'" readonly="state not in ['draft', 'transport']"/>
                             </group>
                         </group>
                         <field name="order_line_ids">
