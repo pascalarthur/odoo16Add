@@ -3,10 +3,10 @@ from odoo.exceptions import UserError
 from dateutil.relativedelta import relativedelta
 
 
-class HrEmployee(models.Model):
-    _inherit = "hr.employee"
+class HrEmployeePublic(models.Model):
+    _inherit = "hr.employee.public"
 
-    currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.company.currency_id)
+    currency_id = fields.Many2one('res.currency', string='Currency', related='company_id.currency_id')
     turnover_last_month_pos = fields.Monetary(string="Turnover POS", compute="_compute_last_month_pos",
                                               currency_field='currency_id')
     turnover_last_month_sales = fields.Monetary(string="Turnover Sales", compute="_compute_turnover_last_month_sales",
@@ -44,3 +44,4 @@ class HrEmployee(models.Model):
                 "default_employee_id": self.id,
             },
         }
+

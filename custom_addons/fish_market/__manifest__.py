@@ -6,7 +6,7 @@
     'depends': [
         'base', 'purchase', 'web', 'fleet', 'stock', 'sale_management', 'hy_currency_rate', 'pos_absolute_discount',
         'pos_multi_currency_cash', 'pos_receipt_extend', 'pos_closing_transaction', 'pos_invoice_automate',
-        'pos_payment_screen_summary', 'sh_product_bundle', 'product_damaged'
+        'pos_payment_screen_summary', 'sh_product_bundle', 'product_damaged', 'hr_expense'
     ],
     'author':
     "Ludwig Gräf",
