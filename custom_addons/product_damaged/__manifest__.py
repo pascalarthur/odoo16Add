@@ -1,11 +1,16 @@
 {
-    'name': "Inventory Damaged Products",
-    'version': '1.0',
+    'name':
+    "Inventory Damaged Products",
+    'version':
+    '17.0.0.0.0',
     'depends': ['base', 'product', 'sale_management', 'purchase', 'stock', 'account', 'sale_stock'],
-    'author': "Ludwig Gräf",
-    'category': 'Inventory/Inventory',
-    'description': """
-    Convert products to damaged products.
+    'author':
+    "Ludwig Gräf",
+    'category':
+    'Warehouse',
+    'description':
+    """
+    Convert Damaged Products
     """,
     # data files always loaded at installation
     'data': [
@@ -16,7 +21,10 @@
         'views/stock_quant.xml',
         'views/menu.xml',
     ],
-    'installable': True,
-    'application': True,
-    'license': 'LGPL-3'
+    'installable':
+    True,
+    'application':
+    True,
+    'license':
+    'LGPL-3'
 }

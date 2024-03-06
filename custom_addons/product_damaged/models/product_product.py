@@ -14,6 +14,9 @@ class ProductProduct(models.Model):
                 _(f"'Quality'-attribute on product {self.product_tmpl_id.name} not found. \nGo to product template 'Attributes & Variants' and add attribute 'Quality'. Add then 'OK' and 'Damaged' as possible values."
                   ))
 
+        if self.combination_indices == '':
+            raise exceptions.UserError(_(f'Product {self.name} has no attributes. Check product as it is probably archived.'))
+
         attributes = list(map(int, self.combination_indices.split(',')))
         # Replace the value of 'OK' with 'Damaged' in the set of attributes
         replace = lambda lst, x, y: [y if ii == x else ii for ii in lst]
