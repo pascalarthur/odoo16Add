@@ -6,6 +6,10 @@
     'depends': ['base', 'product', 'sale_management', 'purchase', 'stock', 'account', 'sale_stock'],
     'author':
     "Ludwig Gräf",
+    'price':
+    35.0,
+    'currency':
+    'USD',
     'category':
     'Warehouse',
     'description':
@@ -26,5 +30,6 @@
     'application':
     True,
     'license':
-    'LGPL-3'
+    'OPL-1',
+    'images': ['static/description/cover.png'],
 }
