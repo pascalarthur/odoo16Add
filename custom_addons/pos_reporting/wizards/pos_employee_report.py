@@ -17,15 +17,8 @@ class POSEmployeeReportWizard(models.TransientModel):
     excel_file = fields.Binary(string='Excel File', readonly=True)
     file_name = fields.Char(string='File Name', readonly=True)
 
-    def _write_order_line(self, worksheet, row, order, name):
-        worksheet.write(row, 0, name)
-        worksheet.write(row, 1, str(order.date_order))
-        worksheet.write(row, 2, order.name)
-        worksheet.write(row, 3, order.amount_total)
-        worksheet.write(row, 4, order.currency_id.name)
-
-    def _create_sales_report(self, workbook):
-        worksheet = workbook.add_worksheet('Sales')
+    def _create_worksheet(self, workbook, name):
+        worksheet = workbook.add_worksheet(name)
         bold_format = workbook.add_format({'bold': True})
 
         worksheet.write('A1', 'User', bold_format)
@@ -34,8 +27,41 @@ class POSEmployeeReportWizard(models.TransientModel):
         worksheet.write('D1', 'Total', bold_format)
         worksheet.write('E1', 'Currency', bold_format)
 
+        return worksheet
+
+    def _write_order_line(self, worksheet, row, order, name):
+        worksheet.write(row, 0, name)
+        worksheet.write(row, 1, str(order.date_order))
+        worksheet.write(row, 2, order.name)
+        worksheet.write(row, 3, order.amount_total)
+        worksheet.write(row, 4, order.currency_id.name)
+
+    def _create_pos_sales_report(self, workbook):
+        worksheet = self._create_worksheet(workbook, 'POS Sales')
+
+        pos_orders = self.env['pos.order'].search([
+            ('date_order', '>=', self.start_date),
+            ('date_order', '<=', self.end_date),
+            ('employee_id', '=', self.employee_id.id),
+        ])
+        for row, order in enumerate(pos_orders):
+            self._write_order_line(worksheet, row + 1, order, order.employee_id.user_id.name)
+
+    def _create_sale_sales_report(self, workbook):
+        worksheet = self._create_worksheet(workbook, 'Sale Sales')
         row = 1
 
+        # Fetch Sales orders
+        sales_orders = self.env['sale.order'].search([('date_order', '>=', self.start_date),
+                                                      ('date_order', '<=', self.end_date),
+                                                      ('user_id', '=', self.employee_id.user_id.id)])
+        for row, order in enumerate(sales_orders):
+            self._write_order_line(worksheet, row + 1, order, order.user_id.name)
+
+    def _create_sales_report(self, workbook):
+        worksheet = self._create_worksheet(workbook, 'Sales')
+
+        row = 1
         # Fetch POS orders
         pos_orders = self.env['pos.order'].search([
             ('date_order', '>=', self.start_date),
@@ -113,6 +139,8 @@ class POSEmployeeReportWizard(models.TransientModel):
         workbook = xlsxwriter.Workbook(output, {'in_memory': True})
 
         self._create_sales_report(workbook)
+        self._create_sale_sales_report(workbook)
+        self._create_pos_sales_report(workbook)
         self._create_sales_report_by_product(workbook)
 
         workbook.close()
