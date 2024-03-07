@@ -1,0 +1,2 @@
+id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
+stock_picking_check_your_location.access_stock_picking_check_location_wizard,access_stock_picking_check_location_wizard,stock_picking_check_your_location.model_stock_picking_check_location_wizard,base.group_user,1,1,1,1

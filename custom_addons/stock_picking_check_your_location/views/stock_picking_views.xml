@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="view_picking_form_inherit" model="ir.ui.view">
+            <field name="name">stock.picking.form.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//button[@name='button_validate'][1]" position="attributes">
+                    <attribute name="name">button_validate_check_location_wizard</attribute>
+                </xpath>
+                <xpath expr="//button[@name='button_validate'][1]" position="attributes">
+                    <!-- We need to access the [1] element again -> The previous xpath overrides the name^^ -->
+                    <attribute name="name">button_validate_check_location_wizard</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_stock_picking_check_location_wizard" model="ir.ui.view">
+        <field name="name">stock.picking.check.location.wizard</field>
+        <field name="model">stock.picking.check.location.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Check Location">
+                <p>Please validate the Source and Destination Locations:</p>
+                <group>
+                    <field name="picking_id" invisible="1"/>
+                    <field name="location_id"/>
+                    <field name="location_dest_id"/>
+                </group>
+                <footer>
+                    <button name="button_confirm" string="Validate" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
