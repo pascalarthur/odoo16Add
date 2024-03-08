@@ -31,7 +31,9 @@ class StockPicking(models.Model):
         if self.picking_type_code == 'incoming':
             res = super(StockPicking, self).button_validate()
 
-        if sum(self.move_ids_without_package.mapped('quantity_damaged')) > 0:
+        created_damaged_ops_already = self.damaged_stock_picking_ids_count > 0
+
+        if sum(self.move_ids_without_package.mapped('quantity_damaged')) > 0 and not created_damaged_ops_already:
             stock_picking_return_id = self.create({
                 'picking_type_id': self.picking_type_id.return_picking_type_id.id,
                 'location_id': self.location_dest_id.id,
@@ -48,8 +50,9 @@ class StockPicking(models.Model):
             })
 
             for line in self.move_ids_without_package.filtered(lambda x: x.quantity_damaged > 0):
+                name = self.env['ir.sequence'].next_by_code('product.damages')
                 stock_move_return_id = self.env['stock.move'].create({
-                    'name': self.env['ir.sequence'].next_by_code('product.damages'),
+                    'name': name,
                     'product_id': line.product_id.id,
                     'product_uom_qty': line.quantity_damaged,
                     'quantity': line.quantity_damaged,
@@ -61,8 +64,9 @@ class StockPicking(models.Model):
                 })
 
                 damaged_product_id = line.product_id.compute_product_as_damaged()
+                name = self.env['ir.sequence'].next_by_code('product.damages')
                 stock_move_damaged_id = self.env['stock.move'].create({
-                    'name': self.env['ir.sequence'].next_by_code('product.damages'),
+                    'name': name,
                     'product_id': damaged_product_id.id,
                     'product_uom_qty': line.quantity_damaged,
                     'quantity': line.quantity_damaged,
