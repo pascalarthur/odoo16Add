@@ -96,18 +96,14 @@ class ResCompany(models.Model):
 
     def get_rate(self, curr1, curr2, date):
         base_urls_arr = [
-            "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/",
-            "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/",
+            "https://open.er-api.com/v6/latest",
         ]
-        suffix_arr = [".min.json", ".json"]
-        curr1, curr2 = curr1.lower(), curr2.lower()
 
         for base_url in base_urls_arr:
-            for suff in suffix_arr:
-                url = f"{base_url}{date}/currencies/{curr1}/{curr2}{suff}"
-                rate = requests.get(url)
-                if rate.status_code == 200:
-                    return rate.json()[curr2]
+            url = f"{base_url}/{curr1}"
+            rate = requests.get(url)
+            if rate.status_code == 200:
+                return rate.json()['rates'][curr2]
         return "Not found"
 
     def get_today_rate(self, curr1, curr2):
