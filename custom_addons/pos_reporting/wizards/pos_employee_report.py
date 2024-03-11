@@ -26,6 +26,8 @@ class POSEmployeeReportWizard(models.TransientModel):
         worksheet.write('C1', 'Order ID', bold_format)
         worksheet.write('D1', 'Total', bold_format)
         worksheet.write('E1', 'Currency', bold_format)
+        worksheet.write('F1', 'Customer', bold_format)
+        worksheet.write('G1', 'Payment Method', bold_format)
 
         return worksheet
 
@@ -35,6 +37,10 @@ class POSEmployeeReportWizard(models.TransientModel):
         worksheet.write(row, 2, order.name)
         worksheet.write(row, 3, order.amount_total)
         worksheet.write(row, 4, order.currency_id.name)
+        if order.partner_id:
+            worksheet.write(row, 5, order.partner_id.name)
+        if "payment_ids" in order and order.payment_ids:
+            worksheet.write(row, 6, order.payment_ids.payment_method_id.name)
 
     def _create_pos_sales_report(self, workbook):
         worksheet = self._create_worksheet(workbook, 'POS Sales')
