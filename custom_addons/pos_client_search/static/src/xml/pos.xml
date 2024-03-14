@@ -12,7 +12,7 @@
 
             <div t-if="this.pos.customer_search_results" class="search-more-button d-flex flex-wrap justify-content-center">
                 <t t-foreach="this.pos.customer_search_results" t-as="customer" t-key="customer.id">
-                    <t t-if="this.pos.selectedOrder.partner.id == customer.id">
+                    <t t-if="this.pos.selectedOrder.partner and this.pos.selectedOrder.partner.id == customer.id">
                         <button class="btn btn-primary" style="font-size: 0.8em; margin: 2px;" t-esc="customer.name" t-on-click="() => select_customer(this.pos, customer)"/>
                     </t>
                     <t t-else="">
