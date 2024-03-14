@@ -10,7 +10,6 @@ patch(ProductsWidget.prototype, {
 		if (query.length >= 2) {
 			this.pos.customer_search_results = this.pos.partners.filter(partner => partner.name.includes(query));
 		}
-		console.log(this.pos.customer_search_results);
 	},
 
 	select_customer(pos, customer) {
