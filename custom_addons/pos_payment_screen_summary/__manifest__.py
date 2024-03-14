@@ -7,10 +7,10 @@
     """,
     'price': 5.0,
     'currency': 'USD',
-    'category': 'Accounting',
+    'category': 'Point of Sale',
     'version':'17.0.0.0.0',
-
     'installable': True,
+
     'assets': {
         'point_of_sale._assets_pos': [
             'pos_payment_screen_summary/static/src/xml/**/*',

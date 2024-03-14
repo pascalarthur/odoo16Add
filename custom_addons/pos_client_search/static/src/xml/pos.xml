@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template">
+    <t t-inherit="point_of_sale.ProductsWidget" t-inherit-mode="extension">
+        <xpath expr="//div[contains(@class, 'products-widget-control')]" position="inside">
+            <Input tModel="[pos, 'searchCustomerWord']"
+                    callback.bind="(value) =>  this.updatePartnerSearch(value)"
+                    class="'p-2'"
+                    isSmall="ui.isSmall"
+                    placeholder="'Search customer...'"
+                    icon="{type: 'fa', value: 'fa-search'}"
+                    debounceMillis="100"/>
+
+            <div t-if="this.pos.customer_search_results" class="search-more-button d-flex flex-wrap justify-content-center">
+                <t t-foreach="this.pos.customer_search_results" t-as="customer" t-key="customer.id">
+                    <t t-if="this.pos.selectedOrder.partner.id == customer.id">
+                        <button class="btn btn-primary" style="font-size: 0.8em; margin: 2px;" t-esc="customer.name" t-on-click="() => select_customer(this.pos, customer)"/>
+                    </t>
+                    <t t-else="">
+                        <button class="btn btn-secondary" style="font-size: 0.8em; margin: 2px;" t-esc="customer.name" t-on-click="() => select_customer(this.pos, customer)"/>
+                    </t>
+                </t>
+            </div>
+        </xpath>
+    </t>
+</templates>
