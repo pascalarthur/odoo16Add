@@ -3,7 +3,7 @@
     <t t-inherit="point_of_sale.ProductsWidget" t-inherit-mode="extension">
         <xpath expr="//div[contains(@class, 'products-widget-control')]" position="inside">
             <Input tModel="[pos, 'searchCustomerWord']"
-                    callback.bind="(value) =>  this.updatePartnerSearch(value)"
+                    callback.bind="(value) =>  this.search_partner(value)"
                     class="'p-2'"
                     isSmall="ui.isSmall"
                     placeholder="'Search customer...'"

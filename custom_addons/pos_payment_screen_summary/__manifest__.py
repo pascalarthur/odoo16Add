@@ -16,5 +16,5 @@
             'pos_payment_screen_summary/static/src/xml/**/*',
         ],
     },
-    'license': 'LGPL-3',
+    'license': 'OPL-1',
 }

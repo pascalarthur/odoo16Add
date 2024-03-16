@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_pos_session_inherit_form_view" model="ir.ui.view">
+        <field name="name">pos.session.inherit.form.view</field>
+        <field name="model">pos.session</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_session_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <!-- <button name="sh_session_cancel" string="Cancel / Delete" type="object" attrs="{'invisible': [('state', '!=', 'closed')]}" groups="sh_pos_session_cancel.sh_group_sh_pos_session_cancel_delete"></button> -->
+                <button name="sh_session_cancel" string="Cancel / Delete" type="object" invisible = "state != 'closed'" groups="sh_pos_session_cancel.sh_group_sh_pos_session_cancel_delete"></button>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="sh_pos_session_cancel_action" model="ir.actions.server">
+        <field name="name">Cancel Session</field>
+        <field name="model_id" ref="model_pos_session"/>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_session"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            records.sh_mass_session_cancel()
+        </field>
+    </record>
+      <record id="sh_pos_session_delete_action" model="ir.actions.server">
+        <field name="name">Delete Session</field>
+        <field name="model_id" ref="model_pos_session"/>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_session"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            records.sh_mass_session_delete()
+        </field>
+    </record>
+</odoo>

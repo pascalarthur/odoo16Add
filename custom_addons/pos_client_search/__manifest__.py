@@ -1,8 +1,8 @@
 {
-    'name': 'Point of Sale (POS) - Customer Search',
+    'name': 'Point of Sale (POS) - Client/Customer Search',
     'depends': ['point_of_sale'],
     'author': "Ludwig Gräf",
-    'description': "Allows you to select customer from Product Screen.",
+    'description': "Select customers directly from the Product Screen.",
     'price': 30,
     'currency': 'EUR',
     'category': 'Point of Sale',

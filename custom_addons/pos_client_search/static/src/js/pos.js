@@ -5,7 +5,7 @@ import { patch } from "@web/core/utils/patch";
 
 
 patch(ProductsWidget.prototype, {
-	updatePartnerSearch(query) {
+	search_partner(query) {
 		this.pos.customer_search_results = [];
 		if (query.length >= 2) {
 			this.pos.customer_search_results = this.pos.partners.filter(partner => partner.name.includes(query));

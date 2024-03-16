@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_group_sh_pos_session_cancel_delete" model="res.groups">
+        <field name="name">POS Session Delete &amp; Cancel Feature</field>
+    </record>
+</odoo>
