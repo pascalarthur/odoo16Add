@@ -42,7 +42,7 @@ class PricelistWizard(models.TransientModel):
             token_record = self.env['access.token'].create([{
                 'partner_id': partner_id.id,
                 'pricelist_id': self.pricelist_id.id,
-                'expiry_date': fields.Datetime.add(datetime.now(), days=1),  # example for 1 day validity
+                'expiry_date': fields.Datetime.add(datetime.now(), days=4),
                 'detailed_type': self.detailed_type,
             }])
 

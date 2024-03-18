@@ -34,4 +34,34 @@
             </form>
         </field>
     </record>
+    <record id="view_pricelist_customer_wizard_form" model="ir.ui.view">
+        <field name="name">customer.price.wizard.wizard.form</field>
+        <field name="model">customer.price.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button string="Compute Email" type="object" name="compute_email_body" class="btn-primary"/>
+                </header>
+                <group>
+                    <field name="pricelist_id"/>
+                    <field name="location_id"/>
+                    <field name="email_body"/>
+                </group>
+                <notebook>
+                    <page string="Partners">
+                        <field name="customer_partner_ids">
+                            <tree>
+                                <field name="name"/>
+                                <field name="email"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+                <footer>
+                    <button string="Confirm" type="object" name="confirm_selection" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
 </odoo>

@@ -20,4 +20,16 @@
             </xpath>
         </field>
     </record>
+    <record id="view_partner_customer_tree" model="ir.ui.view">
+        <field name="name">res.partner.tree.form.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="inside">
+                <header>
+                    <button string="Email - Customers" class="oe_highlight" type="object" name="send_action_email_customers"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
 </odoo>

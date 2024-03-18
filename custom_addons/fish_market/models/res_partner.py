@@ -23,6 +23,17 @@ class CustomPartner(models.Model):
             else:
                 record.delivery_score = 100.0
 
+    def action_view_trucks(self):
+        return {
+            'name': 'Trucks',
+            'type': 'ir.actions.act_window',
+            'res_model': 'truck.route',
+            'view_mode': 'tree,form',
+            'views': [(False, 'tree'), (False, 'form')],
+            'domain': [('partner_id', '=', self.id)],
+            'target': 'current',
+        }
+
     def send_action_email_bid_suppliers(self, pricelist_id=None):
         return {
             'name': 'Pricelist Wizard',
@@ -38,13 +49,17 @@ class CustomPartner(models.Model):
             }
         }
 
-    def action_view_trucks(self):
+    def send_action_email_customers(self):
         return {
-            'name': 'Trucks',
+            'name': 'Pricelist Wizard',
             'type': 'ir.actions.act_window',
-            'res_model': 'truck.route',
-            'view_mode': 'tree,form',
-            'views': [(False, 'tree'), (False, 'form')],
-            'domain': [('partner_id', '=', self.id)],
-            'target': 'current',
+            'views': [(False, 'form')],
+            'view_id': self.env.ref('fish_market.view_pricelist_customer_wizard_form').id,
+            'view_mode': 'form',
+            'res_model': 'customer.price.wizard',
+            'target': 'new',
+            'context': {
+                'default_customer_partner_ids': self.ids,
+                'default_pricelist_id': self.env['product.pricelist'].search([], limit=1).id
+            }
         }
