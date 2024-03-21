@@ -48,6 +48,16 @@
                     <field name="email_body"/>
                 </group>
                 <notebook>
+                    <page string="Products">
+                        <field name="product_ids">
+                            <tree editable="bottom">
+                                <field name="currency_id" column_invisible="1"/>
+                                <field name="name"/>
+                                <field name="quantity"/>
+                                <field name="price" widget="monetary"/>
+                            </tree>
+                        </field>
+                    </page>
                     <page string="Partners">
                         <field name="customer_partner_ids">
                             <tree>
