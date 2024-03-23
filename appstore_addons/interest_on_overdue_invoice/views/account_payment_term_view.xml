@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<odoo>
+    <data>
+        <record id="view_payment_term_form_inherited" model="ir.ui.view">
+            <field name="name">view.payment.term.form.inherited</field>
+            <field name="model">account.payment.term</field>
+            <field name="inherit_id" ref="account.view_payment_term_form"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <group>
+                        <field name="interest_type" style="width:40%%"/>
+                        <field name="interest_percentage" visible="interest_type" invisible="not interest_type"/>
+                        <field name="account_id" visible="interest_type" invisible="not interest_type" required="interest_type"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+
+        <record id="invoice_form_inherited" model="ir.ui.view">
+            <field name="name">invoice.form.inherited</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='tax_totals']" position="after">
+                    <field name="show_intrest" invisible="1"/>
+                    <span invisible="move_type != 'out_invoice'">
+                        <label for="interest" string="Interest" invisible="not show_intrest"/>
+                        <field name="interest" readonly="1" colspan="2" nolabel="1" widget="monetary"
+                            options="{'currency_field': 'currency_id'}"
+                            invisible="not show_intrest"/>
+
+                        <button name="button_add_interest" string="Update"
+                                type="object" help="button_add_interest"
+                                visible="show_intrest or state == 'draft'"
+                                invisible="not show_intrest or state != 'draft'"/>
+
+                        <button name="action_interest_update_cancel" string="Update"
+                                type="object" help="button_update_interest"
+                                visible="show_intrest or state == 'posted'"
+                                invisible="not show_intrest or state != 'posted' or payment_state == 'paid'"/>
+
+                        <button name="button_reset_interest" string="Reset"
+                                groups="sales_team.group_sale_manager"
+                                type="object" help="button_reset_taxes"
+                                visible="show_intrest or state == 'draft'"
+                                invisible="not show_intrest or state != 'draft'"/>
+                    </span>
+                </xpath>
+                <xpath expr="//field[@name='invoice_line_ids']/tree/field[@name='product_id']" position="before">
+                    <field name="interest_line" column_invisible="1"/>
+                </xpath>
+                <xpath expr="//field[@name='line_ids']/tree/field[@name='tax_tag_ids']" position="after">
+                    <field name="interest_line" column_invisible="1"/>
+                </xpath>
+            </field>
+        </record>
+
+
+        <!--showing on top -->
+        <record id="view_account_move_line_interest_line" model="ir.ui.view">
+            <field name="name">account.move.line.interest.line.inherit</field>
+            <field name="model">account.move</field>
+            <field name="inherit_id" ref="account.view_move_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page/field[@name='invoice_line_ids']/tree" position="attributes" readonly="state == 'draft'">
+                    <attribute name="default_order">id desc</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
