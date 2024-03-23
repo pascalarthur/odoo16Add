@@ -6,11 +6,11 @@
             <field name="model">account.payment.term</field>
             <field name="inherit_id" ref="account.view_payment_term_form"/>
             <field name="arch" type="xml">
-                <field name="name" position="after">
+                <field name="company_id" position="before">
                     <group>
-                        <field name="interest_type" style="width:40%%"/>
-                        <field name="interest_percentage" visible="interest_type" invisible="not interest_type"/>
-                        <field name="account_id" visible="interest_type" invisible="not interest_type" required="interest_type"/>
+                        <field name="interest_type"/>
+                        <field name="interest_percentage" invisible="not interest_type"/>
+                        <field name="account_id" invisible="not interest_type" required="interest_type"/>
                     </group>
                 </field>
             </field>
@@ -56,7 +56,6 @@
         </record>
 
 
-        <!--showing on top -->
         <record id="view_account_move_line_interest_line" model="ir.ui.view">
             <field name="name">account.move.line.interest.line.inherit</field>
             <field name="model">account.move</field>

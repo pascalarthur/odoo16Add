@@ -34,6 +34,7 @@ class account_invoice(models.Model):
     )
     show_intrest = fields.Boolean('is_intrest', default=False, copy=False)
     interest = fields.Float(string="Interest", readonly=True, copy=False)
+    interest_company_currency = fields.Float(string="Company Currency Interest", readonly=True, copy=False)
     no_overtime_periods = fields.Integer(string='No. of Overtime Periods', copy=False)
 
     @api.model_create_multi
@@ -41,6 +42,11 @@ class account_invoice(models.Model):
         res = super(account_invoice, self).create(vals)
         res._onchange_date_due()
         return res
+
+    @api.onchange('interest', 'interest_company_currency')
+    def _onchange_interest_company_currency(self):
+        self.interest_company_currency = self.currency_id._convert(self.interest, self.company_id.currency_id,
+                                                                   self.company_id, self.invoice_date)
 
     @api.onchange('invoice_date_due', 'invoice_date', 'invoice_line_ids')
     def _onchange_date_due(self):
@@ -54,6 +60,7 @@ class account_invoice(models.Model):
                  'partner_id', 'currency_id', 'interest')
     def _compute_tax_totals(self):
         super()._compute_tax_totals()
+        self._onchange_interest_company_currency()
         for record in self:
             tax_totals = record.tax_totals
             if tax_totals and tax_totals.get('amount_total'):
