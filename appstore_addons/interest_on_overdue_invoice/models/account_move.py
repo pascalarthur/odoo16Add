@@ -14,7 +14,6 @@ class account_payment_term(models.Model):
         ('monthly', 'Monthly'),
     ], 'Interest Type')
     interest_percentage = fields.Float('Interest Percentage', digits=(16, 6))
-    account_id = fields.Many2one('account.account', 'Account')
 
 
 class account_move_line(models.Model):
@@ -28,6 +27,7 @@ class account_invoice(models.Model):
 
     invoice_line_ids = fields.One2many('account.move.line', 'move_id', string='Invoice lines', copy=False,
                                        readonly=True, domain=new_domain)
+    interest_account_id = fields.Many2one('account.account', 'Account')
     interest_account_move_line = fields.Many2one(
         'account.move.line',
         string='Interest Account Move Line',
@@ -87,7 +87,7 @@ class account_invoice(models.Model):
                     elif self.invoice_payment_term_id.interest_type == 'monthly':
                         no_overtime_periods = maturity_in_months
 
-                    int_per = (self.amount_untaxed + self.amount_tax) * (
+                    int_per = ((self.amount_untaxed - self.interest) + self.amount_tax) * (
                         self.invoice_payment_term_id.interest_percentage / 100) * (no_overtime_periods)
                     self.update({
                         'interest': int_per,
@@ -103,7 +103,7 @@ class account_invoice(models.Model):
             'name': 'Interest Entry',
             'move_id': self.id,
             'price_unit': self.interest,
-            'account_id': self.invoice_payment_term_id.account_id.id,
+            'account_id': self.interest_account_id.id,
             'amount_currency': -self.interest,
             'interest_line': True,
             'quantity': 1,
