@@ -40,7 +40,7 @@ class POSEmployeeReportWizard(models.TransientModel):
         if order.partner_id:
             worksheet.write(row, 5, order.partner_id.name)
         if "payment_ids" in order and order.payment_ids:
-            worksheet.write(row, 6, order.payment_ids.payment_method_id.name)
+            worksheet.write(row, 6, ", ".join(order.payment_ids.mapped("payment_method_id").mapped("name")))
 
     def _create_pos_sales_report(self, workbook):
         worksheet = self._create_worksheet(workbook, 'POS Sales')
