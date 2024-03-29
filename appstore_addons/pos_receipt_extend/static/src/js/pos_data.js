@@ -9,6 +9,8 @@ patch(PosStore.prototype, {
 		await super._processData(loadedData);
 		this.invoice_auto_check = loadedData['invoice_auto_check'];
 
+        console.log(this);
+
 		this.customer_details = loadedData['customer_details'];
         this.mobile = loadedData['customer_mobile'];
         this.phone = loadedData['customer_phone'];

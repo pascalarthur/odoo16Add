@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--To add the customer details in the settings page-->
 <templates id="template" xml:space="preserve">
+    <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        <xpath expr="//Orderline" position="before">
+            <div style="font-weight:bold; text-align:center;">
+                <t t-esc="props.data.date"/>
+            </div>
+        </xpath>
+    </t>
     <t t-name="OrderReceipt" t-inherit="point_of_sale.ReceiptHeader"
        t-inherit-mode="extension" owl="1">
         <xpath expr="//div[hasclass('pos-receipt-contact')]" position="inside">
