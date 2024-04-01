@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+	<record id="inventory_valuation_paperformat" model="report.paperformat">
+		<field name="name">Inventory Valuation Report</field>
+		<field name="default" eval="True" />
+		<field name="orientation">Landscape</field>
+	</record>
+
+	<record id="action_inventory_valuation_template" model="ir.actions.report">
+		<field name="name">Inventory Valuation Report</field>
+		<field name="report_type">qweb-pdf</field>
+		<field name="report_name">eq_inventory_valuation_report.inventory_valuation_report</field>
+		<field name="report_file">eq_inventory_valuation_report.inventory_valuation_report</field>
+		<field name="model">wizard.inventory.valuation</field>
+		<field name="paperformat_id" ref="inventory_valuation_paperformat" />
+	</record>
+
+</odoo>
