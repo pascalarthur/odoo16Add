@@ -91,9 +91,17 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
             return end_dt.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
         return userdate.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
 
+    def _filter_purchased_product_qty(self, product_ids):
+        domain = [
+            ('order_id.state', 'in', ['purchase', 'done']),
+            ('product_id', 'in', product_ids.ids),
+        ]
+        purchased_products = self.env['purchase.order.line'].search(domain).mapped("product_id").ids
+        return product_ids.filtered(lambda product_id: product_id.id in purchased_products)
+
     def _get_products(self, record):
         product_product_obj = self.env['product.product']
-        domain = [('type', '=', 'product')]
+        domain = [('type', '=', 'product'), ('purchased_product_qty', '>', 0)]
         product_ids = False
         if record.category_ids:
             domain.append(('categ_id', 'in', record.category_ids.ids))
@@ -102,7 +110,7 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
             product_ids = record.product_ids
         if not product_ids:
             product_ids = product_product_obj.search(domain)
-        return product_ids
+        return self._filter_purchased_product_qty(product_ids)
 
     def _get_beginning_inventory(self, record, product, warehouse, location=None):
         locations = location if location else self.get_location(record, warehouse)
