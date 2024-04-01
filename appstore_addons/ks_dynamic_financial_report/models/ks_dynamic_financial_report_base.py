@@ -76,8 +76,16 @@ class ks_dynamic_financial_base(models.Model):
 
     def ks_set_aged_type(self):
         return [
-            {'id': 'ks_payable', 'name': 'Payable', 'selected': False},
-            {'id': 'ks_receivable', 'name': 'Receivable', 'selected': False},
+            {
+                'id': 'ks_payable',
+                'name': 'Payable',
+                'selected': False
+            },
+            {
+                'id': 'ks_receivable',
+                'name': 'Receivable',
+                'selected': False
+            },
         ]
 
     @property
@@ -122,30 +130,26 @@ class ks_dynamic_financial_base(models.Model):
     ks_summary_tax_report = property(ks_set_tax_report_filter, ks_get_tax_report_filter)
 
     # fields required for reports
-    ks_report_menu_id = fields.Many2one(
-        string='Report Menu', comodel_name='ir.ui.menu', copy=False,
-        help="Menu item for the report"
-    )
+    ks_report_menu_id = fields.Many2one(string='Report Menu', comodel_name='ir.ui.menu', copy=False,
+                                        help="Menu item for the report")
     ks_menu_parent_id = fields.Many2one('ir.ui.menu', related='ks_report_menu_id.parent_id', readonly=False)
     ks_company_id = fields.Many2one('res.company', default=ks_default_company)
 
     # fields for filters
-    ks_intervals = fields.Boolean('Interval Filter',
-                                  help='specify if the report use ks_intervals or single date', default=True)
-    ks_differentiation = fields.Boolean('Compare Among Intervals',
-                                        help='display the differentiation filter')
+    ks_intervals = fields.Boolean('Interval Filter', help='specify if the report use ks_intervals or single date',
+                                  default=True)
+    ks_differentiation = fields.Boolean('Compare Among Intervals', help='display the differentiation filter')
     ks_date_fil_visibility = fields.Boolean('Date Filter Visible', default=True)
-    ks_analytic_account_visibility = fields.Boolean('Analytic Filter',
-                                                    help='display the analytic filters')
-    ks_journal_filter_visiblity = fields.Boolean('Journal Filter',
-                                                 help='display the journal filter in the report', default=False)
-    ks_account_filter_visiblity = fields.Boolean('account Filter',
-                                                 help='display the account filter in the report', default=False)
-    ks_generic_tax_filter = fields.Boolean('Tax Report Filter',
-                                           help='display tax report filter in tax report')
+    ks_analytic_account_visibility = fields.Boolean('Analytic Filter', help='display the analytic filters')
+    ks_journal_filter_visiblity = fields.Boolean('Journal Filter', help='display the journal filter in the report',
+                                                 default=False)
+    ks_account_filter_visiblity = fields.Boolean('account Filter', help='display the account filter in the report',
+                                                 default=False)
+    ks_generic_tax_filter = fields.Boolean('Tax Report Filter', help='display tax report filter in tax report')
     ks_unfold_all_lines = fields.Boolean('Unfold Lines Filter', help='display the unfold all options in report')
     partner_category_ids = fields.Many2many(
-        'res.partner.category', string='Partner Tag',
+        'res.partner.category',
+        string='Partner Tag',
     )
     ks_new_com = fields.Boolean('Comparison Intervals', default=False)
     ks_partner_filter = fields.Boolean("Partner Filter", help='display the partner filter in the report')
@@ -157,11 +161,8 @@ class ks_dynamic_financial_base(models.Model):
 
     ks_label_filter = fields.Char('label', default="Comparison Period")
 
-    type = fields.Selection(
-        [('receivable', 'Receivable Only'),
-         ('payable', 'Payable only')],
-        string='Account Type', required=False
-    )
+    type = fields.Selection([('receivable', 'Receivable Only'), ('payable', 'Payable only')], string='Account Type',
+                            required=False)
     ks_email_report_value = fields.Many2one('ks.dynamic.financial.reports')
     ks_as_on_date = fields.Date(string='As on date', required=True, default=fields.Date.today())
     ks_due_bucket_1 = fields.Integer(string='ks_due_bucket 1', required=True, default=30)
@@ -169,8 +170,8 @@ class ks_dynamic_financial_base(models.Model):
     ks_due_bucket_3 = fields.Integer(string='ks_due_bucket 3', required=True, default=90)
     ks_due_bucket_4 = fields.Integer(string='ks_due_bucket 4', required=True, default=120)
     ks_due_bucket_5 = fields.Integer(string='ks_due_bucket 5', required=True, default=180)
-    ks_partner_type = fields.Selection([('customer', 'Customer Only'),
-                                        ('supplier', 'Supplier Only')], string='Partner Type')
+    ks_partner_type = fields.Selection([('customer', 'Customer Only'), ('supplier', 'Supplier Only')],
+                                       string='Partner Type')
 
     ks_posted_entries = fields.Boolean('Posted Entries', default=True)
     ks_unposted_entries = fields.Boolean('UnPosted Entries', default=True)
@@ -186,8 +187,7 @@ class ks_dynamic_financial_base(models.Model):
             ks_res[ks_report.id] = dict((fn, 0.0) for fn in ks_fields)
             if ks_report.ks_df_report_account_type == 'accounts':
                 ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(
-                    ks_report.sudo().ks_df_report_account_ids,
-                    ks_df_informations, ks_report=ks_report)
+                    ks_report.sudo().ks_df_report_account_ids, ks_df_informations, ks_report=ks_report)
                 for ks_value in ks_res[ks_report.id]['account'].values():
                     for field in ks_fields:
                         ks_res[ks_report.id][field] += ks_value.get(field)
@@ -198,79 +198,77 @@ class ks_dynamic_financial_base(models.Model):
                         'ks_dynamic_financial_report.ks_df_report_cash_flow0'):
                     ks_accounts = []
                     for account_type in ks_report.ks_dfr_account_type_ids:
-                        ks_acc_id = self.env['account.account'].sudo().search(
-                            [('account_type', '=', account_type.ks_account_type)])
+                        ks_acc_id = self.env['account.account'].sudo().search([('account_type', '=',
+                                                                                account_type.ks_account_type)])
                         if ks_acc_id:
                             ks_accounts.append(ks_acc_id)
                     if ks_report == self.env.ref('ks_dynamic_financial_report.ks_df_bs_pre_year_unallocate_earnings'):
                         ks_accounts = []
                         for account_type in ks_report.ks_dfr_account_type_ids:
-                            ks_acc_id = self.env['account.account'].sudo().search(
-                                ["|", "|", ('account_type', '=', account_type.ks_account_type),
-                                 ('account_type', 'ilike', 'income'),
-                                 ('account_type', 'ilike', 'expense')])
+                            ks_acc_id = self.env['account.account'].sudo().search([
+                                "|", "|", ('account_type', '=', account_type.ks_account_type),
+                                ('account_type', 'ilike', 'income'), ('account_type', 'ilike', 'expense')
+                            ])
                             if ks_acc_id:
                                 ks_accounts.append(ks_acc_id)
                         if self._context.get('date_from', False):
                             prv_year_dates = {
-                                'date_from': datetime.date(fields.Date.from_string(self._context['date_from']).year - 1,
-                                                           1, 1),
-                                'date_to': datetime.date(fields.Date.from_string(self._context['date_to']).year - 1, 12,
-                                                         31)
+                                'date_from':
+                                datetime.date(fields.Date.from_string(self._context['date_from']).year - 1, 1, 1),
+                                'date_to':
+                                datetime.date(fields.Date.from_string(self._context['date_to']).year - 1, 12, 31)
                             }
                         else:
                             prv_year_dates = {
                                 'date_from': False,
-                                'date_to': datetime.date(fields.Date.from_string(self._context['date_to']).year - 1, 12,
-                                                         31)
+                                'date_to':
+                                datetime.date(fields.Date.from_string(self._context['date_to']).year - 1, 12, 31)
                             }
-                        ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(ks_accounts,
-                                                                                                  ks_df_informations,
-                                                                                                  prv_year_dates,
-                                                                                                  ks_report=ks_report)
+                        ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(
+                            ks_accounts, ks_df_informations, prv_year_dates, ks_report=ks_report)
 
                     elif ks_report == self.env.ref(
                             'ks_dynamic_financial_report.ks_dynamic_financial_balancesheet_current_year_earnings'):
                         if self._context.get('date_from', False):
                             prv_year_dates = {
-                                'date_from': datetime.date(fields.Date.from_string(self._context['date_from']).year,
-                                                           fields.Date.from_string(self._context['date_from']).month,
-                                                           fields.Date.from_string(self._context['date_from']).day),
-                                'date_to': datetime.date(fields.Date.from_string(self._context['date_to']).year,
-                                                         fields.Date.from_string(self._context['date_to']).month,
-                                                         fields.Date.from_string(self._context['date_to']).day)
+                                'date_from':
+                                datetime.date(
+                                    fields.Date.from_string(self._context['date_from']).year,
+                                    fields.Date.from_string(self._context['date_from']).month,
+                                    fields.Date.from_string(self._context['date_from']).day),
+                                'date_to':
+                                datetime.date(
+                                    fields.Date.from_string(self._context['date_to']).year,
+                                    fields.Date.from_string(self._context['date_to']).month,
+                                    fields.Date.from_string(self._context['date_to']).day)
                             }
                         else:
                             prv_year_dates = {
-                                'date_from': datetime.date(fields.Date.from_string(self._context['date_to']).year,
-                                                           1,
-                                                           1),
-                                'date_to': datetime.date(fields.Date.from_string(self._context['date_to']).year,
-                                                         fields.Date.from_string(self._context['date_to']).month,
-                                                         fields.Date.from_string(self._context['date_to']).day)
+                                'date_from':
+                                datetime.date(fields.Date.from_string(self._context['date_to']).year, 1, 1),
+                                'date_to':
+                                datetime.date(
+                                    fields.Date.from_string(self._context['date_to']).year,
+                                    fields.Date.from_string(self._context['date_to']).month,
+                                    fields.Date.from_string(self._context['date_to']).day)
                             }
-                        ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(ks_accounts,
-                                                                                                  ks_df_informations,
-                                                                                                  prv_year_dates,
-                                                                                                  current_year=True,
-                                                                                                  ks_report=ks_report)
+                        ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(
+                            ks_accounts, ks_df_informations, prv_year_dates, current_year=True, ks_report=ks_report)
                     else:
-                        ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(ks_accounts,
-                                                                                                  ks_df_informations,
-                                                                                                  ks_report=ks_report)
+                        ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(
+                            ks_accounts, ks_df_informations, ks_report=ks_report)
                     for ks_value in ks_res[ks_report.id]['account'].values():
                         for field in ks_fields:
                             ks_res[ks_report.id][field] += ks_value.get(field)
                 else:
                     ks_accounts = []
                     for account_type in ks_report.ks_dfr_account_type_ids:
-                        ks_acc_id = self.env['account.account'].sudo().search(
-                            [('account_type', '=', account_type.ks_account_type)])
+                        ks_acc_id = self.env['account.account'].sudo().search([('account_type', '=',
+                                                                                account_type.ks_account_type)])
                         if ks_acc_id:
                             ks_accounts.append(ks_acc_id)
-                    ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(ks_accounts,
-                                                                                              ks_df_informations,
-                                                                                              ks_report=ks_report)
+                    ks_res[ks_report.id]['account'] = self.sudo()._ks_compute_account_balance(
+                        ks_accounts, ks_df_informations, ks_report=ks_report)
                     for ks_value in ks_res[ks_report.id]['account'].values():
                         for field in ks_fields:
                             ks_res[ks_report.id][field] += ks_value.get(field)
@@ -308,11 +306,12 @@ class ks_dynamic_financial_base(models.Model):
                 else:
                     ks_accounts = ks_report.ks_df_report_account_ids
                     if ks_report == self.env.ref('ks_dynamic_financial_report.ks_df_report_cash_flow0'):
-                        ks_accounts = self.env['account.account'].sudo().search(
-                            [('company_id', 'in', ks_df_informations.get('company_ids')),
-                             ('ks_cash_flow_category', 'not in', [0])])
-                    ks_res[ks_report.id]['account'] = self._ks_compute_account_balance(ks_accounts, ks_df_informations,
-                                                                                       ks_report=ks_report)
+                        ks_accounts = self.env['account.account'].sudo().search([
+                            ('company_id', 'in', ks_df_informations.get('company_ids')),
+                            ('ks_cash_flow_category', 'not in', [0])
+                        ])
+                    ks_res[ks_report.id]['account'] = self._ks_compute_account_balance(
+                        ks_accounts, ks_df_informations, ks_report=ks_report)
                     for ks_values in ks_res[ks_report.id]['account'].values():
                         for field in ks_fields:
                             [ks_report.id][field] = ks_values.get(field) - [ks_report.id][field]
@@ -352,25 +351,17 @@ class ks_dynamic_financial_base(models.Model):
                 if ks_context.get('date_from'):
                     ks_where_params[1] = str(prv_year_dates['date_from'])
 
-            if self._context.get('analytic_account_ids', False):
-                context_data = self._context
-                analytic_distribution_filter = ks_build_analytic_distribution_filter(context_data)
-                request = "SELECT account_id as id, " + ', '.join(ks_mapping.values()) + \
-                          " FROM " + ks_tables + \
-                          " WHERE account_id IN %s " \
-                          + ks_filters + analytic_distribution_filter \
-                          + " GROUP BY account_id"
-            else:
-                request = "SELECT account_id as id, " + ', '.join(ks_mapping.values()) + \
-                          " FROM " + ks_tables + \
-                          " WHERE account_id IN %s " \
-                          + ks_filters + \
-                          " GROUP BY account_id"
-            account_ids = []
-            for account in accounts:
-                for rec in account:
-                    account_ids.append(rec.id)
-            ks_params = (tuple(account_ids),) + tuple(ks_where_params)
+            analytic_distribution_filter = ks_build_analytic_distribution_filter(self._context) if self._context.get(
+                'analytic_account_ids', False) else ""
+
+            request = "SELECT account_id as id, " + ', '.join(ks_mapping.values()) + \
+                        " FROM " + ks_tables + \
+                        " WHERE account_id IN %s " \
+                        + ks_filters + analytic_distribution_filter \
+                        + " GROUP BY account_id"
+
+            account_ids = [rec.id for account in accounts for rec in account]
+            ks_params = (tuple(account_ids), ) + tuple(ks_where_params)
             self.env.cr.execute(request, ks_params)
             for row in self.env.cr.dictfetchall():
                 # row['balance'] = 0 - row['balance']
@@ -396,16 +387,13 @@ class ks_dynamic_financial_base(models.Model):
                 elif self.ks_name == _('Profit and Loss') or self.ks_name == 'Profit and Loss' or self.ks_name == _(
                         'Cash Flow Statement') or self.ks_name == 'Cash Flow Statement':
                     print(ks_report.ks_name)
-                    account_type_record = self.env['ks.dynamic.financial.reports.account'].search(
-                        [('ks_name', 'in', ['Bank and Cash', 'Expenses', 'Cost of Revenue'])])
+                    account_type_record = self.env['ks.dynamic.financial.reports.account'].search([
+                        ('ks_name', 'in', ['Bank and Cash', 'Expenses', 'Cost of Revenue'])
+                    ])
                     for ks_acc_ids in account_type_record:
-
-                        # if ks_report.ks_df_report_account_type_ids.id in account_type_record.ids:
-                        if ks_acc_ids.id in ks_report.ks_dfr_account_type_ids.ids:
-                            ks_res[row['id']] = row
-                        else:
+                        if not ks_acc_ids.id in ks_report.ks_dfr_account_type_ids.ids:
                             row['balance'] = 0 - row['balance']
-                            ks_res[row['id']] = row
+                        ks_res[row['id']] = row
                 else:
                     row['balance'] = 0 - row['balance']
                     ks_res[row['id']] = row
@@ -422,7 +410,8 @@ class ks_dynamic_financial_base(models.Model):
 
         if self.id == self.env.ref('ks_dynamic_financial_report.ks_df_partner_ledger0').id:
             ks_df_informations.update({
-                'ks_title': self.env.ref('ks_dynamic_financial_report.ks_df_partner_ledger0').display_name,
+                'ks_title':
+                self.env.ref('ks_dynamic_financial_report.ks_df_partner_ledger0').display_name,
             })
             return self.ks_partner_process_data(ks_df_informations)
 
@@ -481,22 +470,20 @@ class ks_dynamic_financial_base(models.Model):
 
                 ks_df_informations['ks_diff_filter_context'] = ks_comp_filter_context
                 ks_comparison_res = self.with_context(
-                    ks_df_informations.get('ks_diff_filter_context'))._ks_calculate_report_balance(ks_child_reports,
-                                                                                                   ks_df_informations)
+                    ks_df_informations.get('ks_diff_filter_context'))._ks_calculate_report_balance(
+                        ks_child_reports, ks_df_informations)
                 ks_main_res['comp_bal_' + rec['ks_string']] = res
                 ks_main_cmp_res['comp_bal_' + rec['ks_string']] = ks_comparison_res
 
                 if self.ks_differentiation:
                     for ks_report_id, ks_value in ks_main_cmp_res['comp_bal_' + rec['ks_string']].items():
-                        ks_main_res['comp_bal_'
-                                    + rec['ks_string']][ks_report_id]['comp_bal_' + rec['ks_string']] = ks_value[
-                            'balance']
-                        ks_report_acc = ks_main_res['comp_bal_'
-                                                    + rec['ks_string']][ks_report_id].get('account')
+                        ks_main_res['comp_bal_' +
+                                    rec['ks_string']][ks_report_id]['comp_bal_' +
+                                                                    rec['ks_string']] = ks_value['balance']
+                        ks_report_acc = ks_main_res['comp_bal_' + rec['ks_string']][ks_report_id].get('account')
                         if ks_report_acc:
-                            for account_id, val in ks_main_cmp_res['comp_bal_'
-                                                                   + rec['ks_string']][ks_report_id].get(
-                                'account').items():
+                            for account_id, val in ks_main_cmp_res['comp_bal_' + rec['ks_string']][ks_report_id].get(
+                                    'account').items():
                                 ks_report_acc[account_id]['comp_bal_' + rec['ks_string']] = val['balance']
         return self.sudo().ks_df_account_report_lines(ks_child_reports, ks_df_informations, res, ks_main_res)
 
@@ -512,20 +499,32 @@ class ks_dynamic_financial_base(models.Model):
             company_id = self.env['res.company'].sudo().browse(ks_df_informations.get('company_id'))
             currency_id = company_id.currency_id
             ks_vals = {
-                'ks_name': report.ks_name,
-                'balance': res[report.id]['balance'] * int(report.ks_report_line_sign) or 0.0,
-                'parent': report.ks_parent_id.id if report.ks_parent_id.ks_df_report_account_type in ['accounts',
-                                                                                                      'ks_coa_type'] else 0,
-                'self_id': report.id,
-                'ks_df_report_account_type': 'report',
-                'style_type': 'main',
-                'precision': currency_id.decimal_places,
-                'symbol': currency_id.symbol,
-                'position': currency_id.position,
+                'ks_name':
+                report.ks_name,
+                'balance':
+                res[report.id]['balance'] * int(report.ks_report_line_sign) or 0.0,
+                'parent':
+                report.ks_parent_id.id
+                if report.ks_parent_id.ks_df_report_account_type in ['accounts', 'ks_coa_type'] else 0,
+                'self_id':
+                report.id,
+                'ks_df_report_account_type':
+                'report',
+                'style_type':
+                'main',
+                'precision':
+                currency_id.decimal_places,
+                'symbol':
+                currency_id.symbol,
+                'position':
+                currency_id.position,
                 'list_len': [a for a in range(0, report.ks_level)],
-                'ks_level': report.ks_level,
-                'company_currency_id': company_id.currency_id.id,
-                'account_type': report.ks_df_report_account_type or False,
+                'ks_level':
+                report.ks_level,
+                'company_currency_id':
+                company_id.currency_id.id,
+                'account_type':
+                report.ks_df_report_account_type or False,
                 # used to underline the financial report balances
             }
             if hasattr(ks_df_informations, 'debit_credit') and ks_df_informations['debit_credit']:
@@ -533,10 +532,10 @@ class ks_dynamic_financial_base(models.Model):
                 ks_vals['credit'] = res[report.id]['credit']
 
             if self.ks_differentiation:
-                ks_vals['balance_cmp'] = {id: ks_main_res[id][report.id][id] * int(report.ks_report_line_sign) for
-                                          (id, ks_value)
-                                          in
-                                          ks_main_res.items()}
+                ks_vals['balance_cmp'] = {
+                    id: ks_main_res[id][report.id][id] * int(report.ks_report_line_sign)
+                    for (id, ks_value) in ks_main_res.items()
+                }
             ks_lines.append(ks_vals)
             if report.ks_display_detail == 'no_detail':
                 continue
@@ -590,20 +589,32 @@ class ks_dynamic_financial_base(models.Model):
             company_id = self.env['res.company'].sudo().browse(ks_df_informations.get('company_id'))
             currency_id = company_id.currency_id
             ks_vals = {
-                'ks_name': _(report.ks_name),
-                'balance': res[report.id]['balance'] * int(report.ks_report_line_sign) or 0.0,
-                'parent': report.ks_parent_id.id if report.ks_parent_id.ks_df_report_account_type in ['accounts',
-                                                                                                      'ks_coa_type'] else 0,
-                'self_id': report.id,
-                'ks_df_report_account_type': 'report',
-                'style_type': 'main',
-                'precision': currency_id.decimal_places,
-                'symbol': currency_id.symbol,
-                'position': currency_id.position,
+                'ks_name':
+                _(report.ks_name),
+                'balance':
+                res[report.id]['balance'] * int(report.ks_report_line_sign) or 0.0,
+                'parent':
+                report.ks_parent_id.id
+                if report.ks_parent_id.ks_df_report_account_type in ['accounts', 'ks_coa_type'] else 0,
+                'self_id':
+                report.id,
+                'ks_df_report_account_type':
+                'report',
+                'style_type':
+                'main',
+                'precision':
+                currency_id.decimal_places,
+                'symbol':
+                currency_id.symbol,
+                'position':
+                currency_id.position,
                 'list_len': [a for a in range(0, report.ks_level)],
-                'ks_level': report.ks_level,
-                'company_currency_id': company_id.currency_id.id,
-                'account_type': report.ks_df_report_account_type or False,
+                'ks_level':
+                report.ks_level,
+                'company_currency_id':
+                company_id.currency_id.id,
+                'account_type':
+                report.ks_df_report_account_type or False,
                 # used to underline the financial report balances
             }
             if hasattr(ks_df_informations, 'debit_credit') and ks_df_informations['debit_credit']:
@@ -611,10 +622,10 @@ class ks_dynamic_financial_base(models.Model):
                 ks_vals['credit'] = res[report.id]['credit']
 
             if self.ks_differentiation:
-                ks_vals['balance_cmp'] = {id: ks_main_res[id][report.id][id] * int(report.ks_report_line_sign) for
-                                          (id, ks_value)
-                                          in
-                                          ks_main_res.items()}
+                ks_vals['balance_cmp'] = {
+                    id: ks_main_res[id][report.id][id] * int(report.ks_report_line_sign)
+                    for (id, ks_value) in ks_main_res.items()
+                }
 
             if ks_vals['balance'] < 0 and report.ks_parent_id and \
                     "Earnings" not in report.ks_parent_id.display_name and report.ks_name != 'EQUITY' \
@@ -697,7 +708,8 @@ class ks_dynamic_financial_base(models.Model):
                             or self.env['account.account']
         ks_filter_context['account_ids'] = ks_added_accounts
 
-        if self.ks_analytic_account_visibility and self.sudo().ks_analytic_filter and self.display_name != 'Executive Summary':
+        if self.ks_analytic_account_visibility and self.sudo(
+        ).ks_analytic_filter and self.display_name != 'Executive Summary':
             if ks_df_informations.get('analytic_accounts', False):
                 ks_analytic_account_ids = [int(acc) for acc in ks_df_informations['analytic_accounts']]
                 ks_added_analytic_accounts = ks_analytic_account_ids \
@@ -739,7 +751,8 @@ class ks_dynamic_financial_base(models.Model):
                 'company_currency_position': 'after',
                 'id': x.id,
                 'lines': []
-            } for x in sorted(ks_account_ids, key=lambda a: a.code)
+            }
+            for x in sorted(ks_account_ids, key=lambda a: a.code)
         }  # base for accounts to display
         for ks_account in ks_account_ids:
             ks_company_id = self.env['res.company'].sudo().browse(ks_df_informations.get('company_id'))
@@ -761,14 +774,14 @@ class ks_dynamic_financial_base(models.Model):
                 KS_ORDER_BY_CURRENT = 'j.code, p.name, l.move_id'
             if ks_df_informations.get('initial_balance'):
                 sql = ('''
-                    SELECT 
-                        COALESCE(SUM(l.debit),0) AS debit, 
-                        COALESCE(SUM(l.credit),0) AS credit, 
+                    SELECT
+                        COALESCE(SUM(l.debit),0) AS debit,
+                        COALESCE(SUM(l.credit),0) AS credit,
                         COALESCE(SUM(l.debit - l.credit),0) AS balance
                     FROM account_move_line l
                     JOIN account_move m ON (l.move_id=m.id)
                     JOIN account_account a ON (l.account_id=a.id)
-                   
+
                     LEFT JOIN res_currency c ON (l.currency_id=c.id)
                     LEFT JOIN res_partner p ON (l.partner_id=p.id)
                     JOIN account_journal j ON (l.journal_id=j.id)
@@ -804,7 +817,7 @@ class ks_dynamic_financial_base(models.Model):
                 FROM account_move_line l
                 JOIN account_move m ON (l.move_id=m.id)
                 JOIN account_account a ON (l.account_id=a.id)
-           
+
                 LEFT JOIN res_currency c ON (l.currency_id=c.id)
                 LEFT JOIN res_currency cc ON (l.company_currency_id=cc.id)
                 LEFT JOIN res_partner p ON (l.partner_id=p.id)
@@ -836,17 +849,17 @@ class ks_dynamic_financial_base(models.Model):
             # KS_WHERE_FULL += " AND a.id = %s" % ks_account.id
             KS_WHERE_FULL += " AND a.code = %s" % "\'" + ks_account.code + '\''
             sql = ('''
-                SELECT 
-                    COALESCE(SUM(l.debit),0) AS debit, 
-                    COALESCE(SUM(l.credit),0) AS credit, 
+                SELECT
+                    COALESCE(SUM(l.debit),0) AS debit,
+                    COALESCE(SUM(l.credit),0) AS credit,
                     COALESCE(SUM(l.debit - l.credit),0) AS balance
                 FROM account_move_line l
                 JOIN account_move m ON (l.move_id=m.id)
                 JOIN account_account a ON (l.account_id=a.id)
-            
+
                 LEFT JOIN res_currency c ON (l.currency_id=c.id)
                 LEFT JOIN res_partner p ON (l.partner_id=p.id)
-                JOIN account_journal j ON (l.journal_id=j.id) 
+                JOIN account_journal j ON (l.journal_id=j.id)
                 WHERE %s
             ''') % KS_WHERE_FULL
 
@@ -857,17 +870,17 @@ class ks_dynamic_financial_base(models.Model):
                 KS_INIT_BAL_WHERE_FULL = WHERE + " AND l.date < '%s'" % ks_df_informations['date'].get('ks_start_date')
                 KS_INIT_BAL_WHERE_FULL += " AND a.code = %s" % "\'" + ks_account.code + '\''
                 ks_init_bal_sql = ('''
-                                    SELECT 
-                                        COALESCE(SUM(l.debit),0) AS debit, 
-                                        COALESCE(SUM(l.credit),0) AS credit, 
+                                    SELECT
+                                        COALESCE(SUM(l.debit),0) AS debit,
+                                        COALESCE(SUM(l.credit),0) AS credit,
                                         COALESCE(SUM(l.debit - l.credit),0) AS initial_balance
                                     FROM account_move_line l
                                     JOIN account_move m ON (l.move_id=m.id)
                                     JOIN account_account a ON (l.account_id=a.id)
-                                   
+
                                     LEFT JOIN res_currency c ON (l.currency_id=c.id)
                                     LEFT JOIN res_partner p ON (l.partner_id=p.id)
-                                    JOIN account_journal j ON (l.journal_id=j.id) 
+                                    JOIN account_journal j ON (l.journal_id=j.id)
                                     WHERE %s
                                 ''') % KS_INIT_BAL_WHERE_FULL
                 cr.execute(ks_init_bal_sql)
@@ -885,8 +898,8 @@ class ks_dynamic_financial_base(models.Model):
                         if len(initial_bal_data) > 0 else 0.0
                     ks_move_lines[ks_account.code]['debit'] = ks_row['debit']
                     ks_move_lines[ks_account.code]['credit'] = ks_row['credit']
-                    ks_move_lines[ks_account.code]['balance'] = ks_row['balance'] + ks_move_lines[ks_account.code][
-                        'initial_balance']
+                    ks_move_lines[ks_account.code]['balance'] = ks_row['balance'] + ks_move_lines[
+                        ks_account.code]['initial_balance']
                     ks_move_lines[ks_account.code]['company_currency_id'] = ks_currency.id
                     ks_move_lines[ks_account.code]['company_currency_symbol'] = ks_symbol
                     ks_move_lines[ks_account.code]['company_currency_precision'] = ks_rounding
@@ -900,7 +913,8 @@ class ks_dynamic_financial_base(models.Model):
                         lang_id = self.env['res.lang'].search([('code', '=', lang)])['date_format'].replace('/', '-')
                         if ks_move_lines[ks_account.code]['lines'][i].get('ldate') != None:
                             ks_move_lines[ks_account.code]['lines'][i]['ldate'] = datetime.datetime.strptime(
-                                (ks_move_lines[ks_account.code]['lines'][i]['ldate']).strftime(lang_id), lang_id).date()
+                                (ks_move_lines[ks_account.code]['lines'][i]['ldate']).strftime(lang_id),
+                                lang_id).date()
 
         return ks_move_lines, 0.0, 0.0, 0.0
 
@@ -956,17 +970,16 @@ class ks_dynamic_financial_base(models.Model):
                     select COALESCE(SUM(l.debit),0) AS debit,
                     COALESCE(SUM(l.credit),0) AS credit,
                     COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
-                    where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card') AND id in (%s)) and l.debit > 0.0 and move_id in 
+                    where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card') AND id in (%s)) and l.debit > 0.0 and move_id in
                     ( select id from account_move
-                ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (
-                ids)
+                ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (ids)
 
         else:
             sql = ('''
                     select COALESCE(SUM(l.debit),0) AS debit,
                     COALESCE(SUM(l.credit),0) AS credit,
                     COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
-                    where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card')) and l.debit > 0.0 and move_id in 
+                    where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card')) and l.debit > 0.0 and move_id in
                     ( select id from account_move
                 ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''')
 
@@ -986,16 +999,15 @@ class ks_dynamic_financial_base(models.Model):
                            select COALESCE(SUM(l.debit),0) AS debit,
                            COALESCE(SUM(l.credit),0) AS credit,
                            COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
-                           where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card') AND id in (%s)) and l.debit > 0.0 and move_id 
+                           where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card') AND id in (%s)) and l.debit > 0.0 and move_id
                            in ( select id from account_move
-                       ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (
-                        ids)
+                       ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (ids)
                 else:
                     sql = ('''
                            select COALESCE(SUM(l.debit),0) AS debit,
                            COALESCE(SUM(l.credit),0) AS credit,
                            COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
-                           where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card')) and l.debit > 0.0 and move_id in 
+                           where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card')) and l.debit > 0.0 and move_id in
                            ( select id from account_move
                        ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''')
                 cr.execute(sql)
@@ -1054,8 +1066,7 @@ class ks_dynamic_financial_base(models.Model):
                                                COALESCE(SUM(l.credit),0) AS credit,
                                                COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
                                                where account_id in (select id from account_account where account_type in ('asset_cash','liability_credit_card') AND id in (%s)) and l.credit > 0.0 and move_id in ( select id from account_move
-                                               ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (
-                        ids)
+                                               ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (ids)
                 else:
                     sql = ('''
                                            select COALESCE(SUM(l.debit),0) AS debit,
@@ -1155,8 +1166,7 @@ class ks_dynamic_financial_base(models.Model):
                         COALESCE(SUM(l.credit),0) AS credit,
                         COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
                         where account_id in (select id from account_account where account_type ='asset_receivable' AND id in (%s)) and move_id in ( select id from account_move
-                        ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (
-                ids)
+                        ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (ids)
         else:
             sql = ('''
                                     select COALESCE(SUM(l.debit),0) AS debit,
@@ -1179,8 +1189,7 @@ class ks_dynamic_financial_base(models.Model):
                                 COALESCE(SUM(l.credit),0) AS credit,
                                 COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
                                 where account_id in (select id from account_account where account_type ='asset_receivable' AND id in (%s)) and move_id in ( select id from account_move
-                                ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (
-                        ids)
+                                ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (ids)
                 else:
                     sql = ('''
                                             select COALESCE(SUM(l.debit),0) AS debit,
@@ -1204,8 +1213,7 @@ class ks_dynamic_financial_base(models.Model):
                         COALESCE(SUM(l.credit),0) AS credit,
                         COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
                         where account_id in (select id from account_account where account_type ='liability_payable' AND id in (%s)) and move_id in ( select id from account_move
-                        ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (
-                ids)
+                        ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (ids)
         else:
             sql = ('''
                                     select COALESCE(SUM(l.debit),0) AS debit,
@@ -1228,8 +1236,7 @@ class ks_dynamic_financial_base(models.Model):
                                                COALESCE(SUM(l.credit),0) AS credit,
                                                COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) AS balance from account_move_line l
                                                where account_id in (select id from account_account where account_type ='liability_payable' AND id in (%s)) and move_id in ( select id from account_move
-                                               ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (
-                        ids)
+                                               ''' + ks_move_where + ''')''' + ''' ''' + KS_WHERE_INIT + '''''') % (ids)
                 else:
                     sql = ('''
                                                            select COALESCE(SUM(l.debit),0) AS debit,
@@ -1257,11 +1264,13 @@ class ks_dynamic_financial_base(models.Model):
                 if len(ks_df_informations['ks_differ']['ks_intervals']):
                     for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
                         if 'comp_bal_' + rec_inter['ks_string'] not in ks_net_assets:
-                            ks_net_assets['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                                'comp_bal_' + rec_inter['ks_string']]
+                            ks_net_assets['comp_bal_' +
+                                          rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                       rec_inter['ks_string']]
                         else:
-                            ks_net_assets['comp_bal_' + rec_inter['ks_string']] -= rec['balance_cmp'][
-                                'comp_bal_' + rec_inter['ks_string']]
+                            ks_net_assets['comp_bal_' +
+                                          rec_inter['ks_string']] -= rec['balance_cmp']['comp_bal_' +
+                                                                                        rec_inter['ks_string']]
         return ks_net_assets
 
     def ks_profit_loss_data(self, ks_df_informations, ks_cash_move_line):
@@ -1276,8 +1285,9 @@ class ks_dynamic_financial_base(models.Model):
 
                 if len(ks_df_informations['ks_differ']['ks_intervals']):
                     for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                        ks_total_income['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                            'comp_bal_' + rec_inter['ks_string']]
+                        ks_total_income['comp_bal_' +
+                                        rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                     rec_inter['ks_string']]
 
                 break
 
@@ -1300,8 +1310,8 @@ class ks_dynamic_financial_base(models.Model):
 
                 if len(ks_df_informations['ks_differ']['ks_intervals']):
                     for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                        cost_of_rev['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                            'comp_bal_' + rec_inter['ks_string']]
+                        cost_of_rev['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                               rec_inter['ks_string']]
 
                 break
 
@@ -1324,8 +1334,9 @@ class ks_dynamic_financial_base(models.Model):
 
                 if len(ks_df_informations['ks_differ']['ks_intervals']):
                     for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                        ks_gross_profit['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                            'comp_bal_' + rec_inter['ks_string']]
+                        ks_gross_profit['comp_bal_' +
+                                        rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                     rec_inter['ks_string']]
 
                 break
 
@@ -1348,8 +1359,9 @@ class ks_dynamic_financial_base(models.Model):
 
                 if len(ks_df_informations['ks_differ']['ks_intervals']):
                     for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                        expense_profit['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                            'comp_bal_' + rec_inter['ks_string']]
+                        expense_profit['comp_bal_' +
+                                       rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                    rec_inter['ks_string']]
                 break
 
         ks_expense_without_cor = {}
@@ -1367,8 +1379,9 @@ class ks_dynamic_financial_base(models.Model):
                                                                                                    'date']['ks_string']]
                 if len(ks_df_informations['ks_differ']['ks_intervals']):
                     for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                        ks_expense_without_cor['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                            'comp_bal_' + rec_inter['ks_string']]
+                        ks_expense_without_cor['comp_bal_' +
+                                               rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                            rec_inter['ks_string']]
                         ks_expense_wo_cor['comp_bal_' + rec_inter['ks_string']] = \
                             expense_profit['comp_bal_' + rec_inter['ks_string']] - \
                             ks_expense_without_cor['comp_bal_' + rec_inter['ks_string']]
@@ -1393,8 +1406,8 @@ class ks_dynamic_financial_base(models.Model):
 
                 if len(ks_df_informations['ks_differ']['ks_intervals']):
                     for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                        net_profit['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                            'comp_bal_' + rec_inter['ks_string']]
+                        net_profit['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                              rec_inter['ks_string']]
                 break
 
         ks_operate_income = {}
@@ -1404,8 +1417,9 @@ class ks_dynamic_financial_base(models.Model):
 
                 if len(ks_df_informations['ks_differ']['ks_intervals']):
                     for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                        ks_operate_income['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                            'comp_bal_' + rec_inter['ks_string']]
+                        ks_operate_income['comp_bal_' +
+                                          rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                       rec_inter['ks_string']]
                 break
 
         ks_cash_move_line.append({
@@ -1453,9 +1467,18 @@ class ks_dynamic_financial_base(models.Model):
 
             ks_cash_move_line.append({
                 'ks_name': _('Cash received'),
-                'debit': {rec_cash: cash_received[rec_cash]['debit'] for rec_cash in cash_received},
-                'credit': {rec_cash: cash_received[rec_cash]['credit'] for rec_cash in cash_received},
-                'balance': {rec_cash: cash_received[rec_cash]['balance'] for rec_cash in cash_received},
+                'debit': {
+                    rec_cash: cash_received[rec_cash]['debit']
+                    for rec_cash in cash_received
+                },
+                'credit': {
+                    rec_cash: cash_received[rec_cash]['credit']
+                    for rec_cash in cash_received
+                },
+                'balance': {
+                    rec_cash: cash_received[rec_cash]['balance']
+                    for rec_cash in cash_received
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1468,9 +1491,18 @@ class ks_dynamic_financial_base(models.Model):
             cash_spent = self.ks_cash_spent(ks_df_informations)
             ks_cash_move_line.append({
                 'ks_name': _('Cash spent'),
-                'debit': {rec_cash: cash_spent[rec_cash]['debit'] for rec_cash in cash_spent},
-                'credit': {rec_cash: cash_spent[rec_cash]['credit'] for rec_cash in cash_spent},
-                'balance': {rec_cash: cash_spent[rec_cash]['balance'] for rec_cash in cash_spent},
+                'debit': {
+                    rec_cash: cash_spent[rec_cash]['debit']
+                    for rec_cash in cash_spent
+                },
+                'credit': {
+                    rec_cash: cash_spent[rec_cash]['credit']
+                    for rec_cash in cash_spent
+                },
+                'balance': {
+                    rec_cash: cash_spent[rec_cash]['balance']
+                    for rec_cash in cash_spent
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1482,9 +1514,18 @@ class ks_dynamic_financial_base(models.Model):
 
             ks_cash_move_line.append({
                 'ks_name': _('Cash surplus'),
-                'debit': {i: cash_received[i]['debit'] + cash_spent[i]['debit'] for i in cash_received},
-                'credit': {i: cash_received[i]['credit'] + cash_spent[i]['credit'] for i in cash_received},
-                'balance': {i: cash_received[i]['balance'] + cash_spent[i]['balance'] for i in cash_received},
+                'debit': {
+                    i: cash_received[i]['debit'] + cash_spent[i]['debit']
+                    for i in cash_received
+                },
+                'credit': {
+                    i: cash_received[i]['credit'] + cash_spent[i]['credit']
+                    for i in cash_received
+                },
+                'balance': {
+                    i: cash_received[i]['balance'] + cash_spent[i]['balance']
+                    for i in cash_received
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1496,11 +1537,18 @@ class ks_dynamic_financial_base(models.Model):
             cash_closing_bank = self.ks_cash_closing_bank(ks_df_informations)
             ks_cash_move_line.append({
                 'ks_name': _('Closing bank balance'),
-                'debit': {i: 0 + cash_closing_bank[i]['debit'] for i in cash_closing_bank},
-                'credit': {i: 0 + cash_closing_bank[i]['credit'] for i in
-                           cash_closing_bank},
-                'balance': {i: 0 + cash_closing_bank[i]['balance'] for i in
-                            cash_closing_bank},
+                'debit': {
+                    i: 0 + cash_closing_bank[i]['debit']
+                    for i in cash_closing_bank
+                },
+                'credit': {
+                    i: 0 + cash_closing_bank[i]['credit']
+                    for i in cash_closing_bank
+                },
+                'balance': {
+                    i: 0 + cash_closing_bank[i]['balance']
+                    for i in cash_closing_bank
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1524,9 +1572,18 @@ class ks_dynamic_financial_base(models.Model):
             ks_cash_receivables, ks_cash_payable = self.ks_df_cash_receivables(ks_df_informations)
             ks_cash_move_line.append({
                 'ks_name': _('Receivables'),
-                'debit': {i: ks_cash_receivables[i]['debit'] for i in ks_cash_receivables},
-                'credit': {i: ks_cash_receivables[i]['credit'] for i in ks_cash_receivables},
-                'balance': {i: ks_cash_receivables[i]['balance'] for i in ks_cash_receivables},
+                'debit': {
+                    i: ks_cash_receivables[i]['debit']
+                    for i in ks_cash_receivables
+                },
+                'credit': {
+                    i: ks_cash_receivables[i]['credit']
+                    for i in ks_cash_receivables
+                },
+                'balance': {
+                    i: ks_cash_receivables[i]['balance']
+                    for i in ks_cash_receivables
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1538,9 +1595,18 @@ class ks_dynamic_financial_base(models.Model):
 
             ks_cash_move_line.append({
                 'ks_name': _('Payable'),
-                'debit': {i: ks_cash_payable[i]['debit'] for i in ks_cash_payable},
-                'credit': {i: ks_cash_payable[i]['credit'] for i in ks_cash_payable},
-                'balance': {i: ks_cash_payable[i]['balance'] for i in ks_cash_payable},
+                'debit': {
+                    i: ks_cash_payable[i]['debit']
+                    for i in ks_cash_payable
+                },
+                'credit': {
+                    i: ks_cash_payable[i]['credit']
+                    for i in ks_cash_payable
+                },
+                'balance': {
+                    i: ks_cash_payable[i]['balance']
+                    for i in ks_cash_payable
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1568,8 +1634,8 @@ class ks_dynamic_financial_base(models.Model):
 
                     if len(ks_df_informations['ks_differ']['ks_intervals']):
                         for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                            ks_assets['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                                'comp_bal_' + rec_inter['ks_string']]
+                            ks_assets['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                                 rec_inter['ks_string']]
                     break
 
             ks_curr_assets = {}
@@ -1579,8 +1645,9 @@ class ks_dynamic_financial_base(models.Model):
 
                     if len(ks_df_informations['ks_differ']['ks_intervals']):
                         for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                            ks_curr_assets['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                                'comp_bal_' + rec_inter['ks_string']]
+                            ks_curr_assets['comp_bal_' +
+                                           rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                        rec_inter['ks_string']]
                     break
 
             ks_curr_liab = {}
@@ -1590,8 +1657,9 @@ class ks_dynamic_financial_base(models.Model):
 
                     if len(ks_df_informations['ks_differ']['ks_intervals']):
                         for rec_inter in ks_df_informations['ks_differ']['ks_intervals']:
-                            ks_curr_liab['comp_bal_' + rec_inter['ks_string']] = rec['balance_cmp'][
-                                'comp_bal_' + rec_inter['ks_string']]
+                            ks_curr_liab['comp_bal_' +
+                                         rec_inter['ks_string']] = rec['balance_cmp']['comp_bal_' +
+                                                                                      rec_inter['ks_string']]
                     break
 
             ks_cash_move_line.append({
@@ -1638,10 +1706,11 @@ class ks_dynamic_financial_base(models.Model):
             ks_cash_move_line.append({
                 'ks_name': _('Average debtors days'),
                 'balance': {
-                    rec: round(ks_cash_receivables[rec]['balance'] / ks_operate_income[rec] * 364,
-                               2) if ks_operate_income.get(
-                        rec, False) else 0.0
-                    for rec in ks_cash_receivables},
+                    rec:
+                    round(ks_cash_receivables[rec]['balance'] / ks_operate_income[rec] *
+                          364, 2) if ks_operate_income.get(rec, False) else 0.0
+                    for rec in ks_cash_receivables
+                },
                 'style_type': 'main',
                 'precision': False,
                 'symbol': False,
@@ -1654,11 +1723,11 @@ class ks_dynamic_financial_base(models.Model):
             ks_cash_move_line.append({
                 'ks_name': _('Average creditors days'),
                 'balance': {
-                    rec: round(-ks_cash_payable[rec]['balance'] / ks_operate_income[rec] * 364,
-                               2) if ks_operate_income.get(rec,
-                                                           False) else 0.0
-                    for
-                    rec in ks_cash_payable},
+                    rec:
+                    round(-ks_cash_payable[rec]['balance'] / ks_operate_income[rec] *
+                          364, 2) if ks_operate_income.get(rec, False) else 0.0
+                    for rec in ks_cash_payable
+                },
                 'style_type': 'main',
                 'precision': False,
                 'symbol': False,
@@ -1670,8 +1739,10 @@ class ks_dynamic_financial_base(models.Model):
 
             ks_cash_move_line.append({
                 'ks_name': _('Short term cash forecast'),
-                'balance': {i: ks_cash_payable[i]['balance'] + ks_cash_receivables[i]['balance'] for i in
-                            ks_cash_payable},
+                'balance': {
+                    i: ks_cash_payable[i]['balance'] + ks_cash_receivables[i]['balance']
+                    for i in ks_cash_payable
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1683,8 +1754,10 @@ class ks_dynamic_financial_base(models.Model):
 
             ks_cash_move_line.append({
                 'ks_name': _('Current Assets to Liabilities'),
-                'balance': {rec: (ks_curr_assets[rec] / ks_curr_liab[rec]) if ks_curr_liab[rec] else ks_curr_liab[rec]
-                            for rec in ks_curr_assets},
+                'balance': {
+                    rec: (ks_curr_assets[rec] / ks_curr_liab[rec]) if ks_curr_liab[rec] else ks_curr_liab[rec]
+                    for rec in ks_curr_assets
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1708,11 +1781,11 @@ class ks_dynamic_financial_base(models.Model):
 
             ks_cash_move_line.append({
                 'ks_name': _('Gross profit margin (gross profit / operating income)'),
-
                 'balance': {
-                    rec: (ks_gross_profit[rec] / ks_operate_income[rec]) * 100 if ks_operate_income.get(rec, False) else
-                    ks_operate_income[rec]
-                    for rec in ks_operate_income},
+                    rec: (ks_gross_profit[rec] / ks_operate_income[rec]) *
+                    100 if ks_operate_income.get(rec, False) else ks_operate_income[rec]
+                    for rec in ks_operate_income
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
@@ -1726,9 +1799,10 @@ class ks_dynamic_financial_base(models.Model):
             ks_cash_move_line.append({
                 'ks_name': _('Net profit margin (net profit /income)'),
                 'balance': {
-                    rec: (net_profit[rec] / ks_total_income[rec]) * 100 if ks_total_income[rec] else ks_total_income[
-                        rec]
-                    for rec in ks_total_income},
+                    rec:
+                    (net_profit[rec] / ks_total_income[rec]) * 100 if ks_total_income[rec] else ks_total_income[rec]
+                    for rec in ks_total_income
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': '%',
@@ -1742,10 +1816,10 @@ class ks_dynamic_financial_base(models.Model):
             ks_cash_move_line.append({
                 'ks_name': _('Return on Investments (net profit /assets)'),
                 'balance': {
-                    rec: (net_profit[rec] / ks_assets[rec]) * 100 if ks_assets.get(rec, False) and net_profit.get(rec,
-                                                                                                                  False) else 0.0
-                    for rec
-                    in ks_assets},
+                    rec: (net_profit[rec] / ks_assets[rec]) *
+                    100 if ks_assets.get(rec, False) and net_profit.get(rec, False) else 0.0
+                    for rec in ks_assets
+                },
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': '%',
@@ -1801,30 +1875,44 @@ class ks_dynamic_financial_base(models.Model):
             ks_company_id = self.env['res.company'].sudo().browse(ks_df_informations.get('company_id'))
             ks_company_currency_id = ks_company_id.currency_id
 
-            ks_move_lines = {x.code: {'name': x.name, 'code': x.code, 'id': x.id,
-                                      'initial_debit': 0.0, 'initial_credit': 0.0, 'initial_balance': 0.0,
-                                      'debit': 0.0, 'credit': 0.0, 'balance': 0.0,
-                                      'ending_credit': 0.0, 'ending_debit': 0.0, 'ending_balance': 0.0,
-                                      'company_currency_id': ks_company_currency_id.id} for x in
-                             ks_account_ids}  # base for accounts to display
+            ks_move_lines = {
+                x.code: {
+                    'name': x.name,
+                    'code': x.code,
+                    'id': x.id,
+                    'initial_debit': 0.0,
+                    'initial_credit': 0.0,
+                    'initial_balance': 0.0,
+                    'debit': 0.0,
+                    'credit': 0.0,
+                    'balance': 0.0,
+                    'ending_credit': 0.0,
+                    'ending_debit': 0.0,
+                    'ending_balance': 0.0,
+                    'company_currency_id': ks_company_currency_id.id
+                }
+                for x in ks_account_ids
+            }  # base for accounts to display
 
             ks_account_type_id = self.env['account.account'].search(
                 [('account_type', 'ilike', 'Current Year Earnings')], limit=1)
             ks_initial_account_code = []
             if ks_account_type_id.id:
-                ks_initial_account_line = {'name': ks_account_type_id.name,
-                                           'code': ks_account_type_id.code,
-                                           'id': ks_account_type_id.id,
-                                           'initial_debit': 0.0,
-                                           'initial_credit': 0.0,
-                                           'initial_balance': 0.0,
-                                           'debit': 0.0,
-                                           'credit': 0.0,
-                                           'balance': 0.0,
-                                           'ending_credit': 0.0,
-                                           'ending_debit': 0.0,
-                                           'ending_balance': 0.0,
-                                           'company_currency_id': ks_company_currency_id.id}
+                ks_initial_account_line = {
+                    'name': ks_account_type_id.name,
+                    'code': ks_account_type_id.code,
+                    'id': ks_account_type_id.id,
+                    'initial_debit': 0.0,
+                    'initial_credit': 0.0,
+                    'initial_balance': 0.0,
+                    'debit': 0.0,
+                    'credit': 0.0,
+                    'balance': 0.0,
+                    'ending_credit': 0.0,
+                    'ending_debit': 0.0,
+                    'ending_balance': 0.0,
+                    'company_currency_id': ks_company_currency_id.id
+                }
 
             ks_retained = {}
             ks_total_deb = 0.0
@@ -1876,7 +1964,7 @@ class ks_dynamic_financial_base(models.Model):
                         if self.ks_date_filter.get('ks_process') == 'range':
                             KS_WHERE_CURRENT = WHERE + " AND l.date >= '%s'" % ks_df_informations['ks_differ'].get(
                                 'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['ks_differ'].get(
-                                'ks_end_date')
+                                    'ks_end_date')
                         else:
                             KS_WHERE_CURRENT = WHERE + " AND l.date <= '%s'" % ks_df_informations['ks_differ'].get(
                                 'ks_end_date')
@@ -1890,7 +1978,7 @@ class ks_dynamic_financial_base(models.Model):
                                     FROM account_move_line l
                                     JOIN account_move m ON (l.move_id=m.id)
                                     JOIN account_account a ON (l.account_id=a.id)
-                            
+
 
                                     LEFT JOIN res_currency c ON (l.currency_id=c.id)
                                     LEFT JOIN res_partner p ON (l.partner_id=p.id)
@@ -1921,20 +2009,20 @@ class ks_dynamic_financial_base(models.Model):
                             ks_initial_account_code.append(ks_account.code)
                         if ks_account_type_id.id:
                             ks_initial_account_line['initial_debit'] += ks_move_lines[ks_account.code]['initial_debit']
-                            ks_initial_account_line['initial_credit'] += ks_move_lines[ks_account.code][
-                                'initial_credit']
+                            ks_initial_account_line['initial_credit'] += ks_move_lines[
+                                ks_account.code]['initial_credit']
 
-                            ks_initial_account_line['ending_balance'] += ks_move_lines[ks_account.code][
-                                'initial_balance']
+                            ks_initial_account_line['ending_balance'] += ks_move_lines[
+                                ks_account.code]['initial_balance']
                             ks_initial_account_line['ending_credit'] += ks_move_lines[ks_account.code]['initial_credit']
                             ks_initial_account_line['ending_debit'] += ks_move_lines[ks_account.code]['initial_debit']
 
-                            ks_move_lines[ks_account.code]['ending_balance'] -= ks_move_lines[ks_account.code][
-                                'initial_balance']
-                            ks_move_lines[ks_account.code]['ending_credit'] -= ks_move_lines[ks_account.code][
-                                'initial_credit']
-                            ks_move_lines[ks_account.code]['ending_debit'] -= ks_move_lines[ks_account.code][
-                                'initial_debit']
+                            ks_move_lines[ks_account.code]['ending_balance'] -= ks_move_lines[
+                                ks_account.code]['initial_balance']
+                            ks_move_lines[ks_account.code]['ending_credit'] -= ks_move_lines[
+                                ks_account.code]['initial_credit']
+                            ks_move_lines[ks_account.code]['ending_debit'] -= ks_move_lines[
+                                ks_account.code]['initial_debit']
                         else:
                             ks_total_init_deb -= ks_move_lines[ks_account.code]['initial_debit']
                             ks_total_init_cre -= ks_move_lines[ks_account.code]['initial_credit']
@@ -1970,20 +2058,23 @@ class ks_dynamic_financial_base(models.Model):
                     if ks_move_lines.get(acc_id.code, False):
                         ks_move_lines.pop(acc_id.code)
 
-            ks_subtotal = {'SUBTOTAL': {
-                'name': 'Total',
-                'code': '',
-                'id': 'SUB',
-                'initial_credit': ks_company_currency_id.round(ks_total_init_cre),
-                'initial_debit': ks_company_currency_id.round(ks_total_init_deb),
-                'initial_balance': ks_company_currency_id.round(ks_total_init_bal),
-                'credit': ks_company_currency_id.round(ks_total_cre),
-                'debit': ks_company_currency_id.round(ks_total_deb),
-                'balance': ks_company_currency_id.round(ks_total_bln),
-                'ending_credit': ks_company_currency_id.round(ks_total_init_cre + ks_total_cre),
-                'ending_debit': ks_company_currency_id.round(ks_total_init_deb + ks_total_deb),
-                'ending_balance': ks_company_currency_id.round(ks_total_init_bal + ks_total_bln),
-                'company_currency_id': ks_company_currency_id.id}}
+            ks_subtotal = {
+                'SUBTOTAL': {
+                    'name': 'Total',
+                    'code': '',
+                    'id': 'SUB',
+                    'initial_credit': ks_company_currency_id.round(ks_total_init_cre),
+                    'initial_debit': ks_company_currency_id.round(ks_total_init_deb),
+                    'initial_balance': ks_company_currency_id.round(ks_total_init_bal),
+                    'credit': ks_company_currency_id.round(ks_total_cre),
+                    'debit': ks_company_currency_id.round(ks_total_deb),
+                    'balance': ks_company_currency_id.round(ks_total_bln),
+                    'ending_credit': ks_company_currency_id.round(ks_total_init_cre + ks_total_cre),
+                    'ending_debit': ks_company_currency_id.round(ks_total_init_deb + ks_total_deb),
+                    'ending_balance': ks_company_currency_id.round(ks_total_init_bal + ks_total_bln),
+                    'company_currency_id': ks_company_currency_id.id
+                }
+            }
 
             return ks_move_lines, ks_retained, ks_subtotal
 
@@ -2009,7 +2100,11 @@ class ks_dynamic_financial_base(models.Model):
                 'ks_name': _('Sales'),
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
-                'balance_cmp': tuple(zip([{'ks_com_net': ''}], [{'ks_com_tax': ''}])),
+                'balance_cmp': tuple(zip([{
+                    'ks_com_net': ''
+                }], [{
+                    'ks_com_tax': ''
+                }])),
                 'symbol': ks_company_currency_id.symbol,
                 'position': ks_company_currency_id.position,
                 'list_len': [0],
@@ -2020,31 +2115,51 @@ class ks_dynamic_financial_base(models.Model):
             ks_bal_cmp_net = []
             ks_bal_cmp_tax = []
             for ks_sale_rec in range(1, index):
-                ks_bal_cmp_net = [ks_data[ks_sale_rec]['columns'][n]['name'] for n in
-                                  range(0, len(ks_data[ks_sale_rec]['columns']))][0::2]
-                ks_bal_cmp_tax = [ks_data[ks_sale_rec]['columns'][n]['name'] for n in
-                                  range(0, len(ks_data[ks_sale_rec]['columns']))][1::2]
+                ks_bal_cmp_net = [
+                    ks_data[ks_sale_rec]['columns'][n]['name'] for n in range(0, len(ks_data[ks_sale_rec]['columns']))
+                ][0::2]
+                ks_bal_cmp_tax = [
+                    ks_data[ks_sale_rec]['columns'][n]['name'] for n in range(0, len(ks_data[ks_sale_rec]['columns']))
+                ][1::2]
 
                 ks_tax_line.append({
-                    'id': ks_data[ks_sale_rec]['id'],
-                    'ks_name': ks_data[ks_sale_rec]['name'],
-                    'ks_net_amount': ks_data[ks_sale_rec]['columns'][0]['name'],
-                    'tax': ks_data[ks_sale_rec]['columns'][1]['name'],
-                    'balance_cmp': tuple(
-                        zip([{'ks_com_net': k} for k in ks_bal_cmp_net], [{'ks_com_tax': k} for k in ks_bal_cmp_tax])),
-                    'style_type': 'main',
-                    'precision': ks_company_currency_id.decimal_places,
-                    'symbol': ks_company_currency_id.symbol,
-                    'position': ks_company_currency_id.position,
+                    'id':
+                    ks_data[ks_sale_rec]['id'],
+                    'ks_name':
+                    ks_data[ks_sale_rec]['name'],
+                    'ks_net_amount':
+                    ks_data[ks_sale_rec]['columns'][0]['name'],
+                    'tax':
+                    ks_data[ks_sale_rec]['columns'][1]['name'],
+                    'balance_cmp':
+                    tuple(zip([{
+                        'ks_com_net': k
+                    } for k in ks_bal_cmp_net], [{
+                        'ks_com_tax': k
+                    } for k in ks_bal_cmp_tax])),
+                    'style_type':
+                    'main',
+                    'precision':
+                    ks_company_currency_id.decimal_places,
+                    'symbol':
+                    ks_company_currency_id.symbol,
+                    'position':
+                    ks_company_currency_id.position,
                     'list_len': [0, 1],
-                    'ks_level': 2,
-                    'company_currency_id': ks_company_id.currency_id.id
+                    'ks_level':
+                    2,
+                    'company_currency_id':
+                    ks_company_id.currency_id.id
                 })
             ks_tax_line.append({
                 'id': 'purchase',
                 'ks_name': _('Purchases'),
                 'style_type': 'main',
-                'balance_cmp': tuple(zip([{'ks_com_net': ''}], [{'ks_com_tax': ''}])),
+                'balance_cmp': tuple(zip([{
+                    'ks_com_net': ''
+                }], [{
+                    'ks_com_tax': ''
+                }])),
                 'precision': ks_company_currency_id.decimal_places,
                 'symbol': ks_company_currency_id.symbol,
                 'position': ks_company_currency_id.position,
@@ -2053,25 +2168,43 @@ class ks_dynamic_financial_base(models.Model):
                 'company_currency_id': ks_company_id.currency_id.id
             })
             for ks_purchase_rec in range(index + 1, len(ks_data)):
-                ks_bal_cmp_net = [ks_data[ks_purchase_rec]['columns'][n]['name'] for n in
-                                  range(0, len(ks_data[ks_purchase_rec]['columns']))][0::2]
-                ks_bal_cmp_tax = [ks_data[ks_purchase_rec]['columns'][n]['name'] for n in
-                                  range(0, len(ks_data[ks_purchase_rec]['columns']))][1::2]
+                ks_bal_cmp_net = [
+                    ks_data[ks_purchase_rec]['columns'][n]['name']
+                    for n in range(0, len(ks_data[ks_purchase_rec]['columns']))
+                ][0::2]
+                ks_bal_cmp_tax = [
+                    ks_data[ks_purchase_rec]['columns'][n]['name']
+                    for n in range(0, len(ks_data[ks_purchase_rec]['columns']))
+                ][1::2]
 
                 ks_tax_line.append({
-                    'id': ks_data[ks_purchase_rec]['id'],
-                    'ks_name': ks_data[ks_purchase_rec]['name'],
-                    'ks_net_amount': ks_data[ks_purchase_rec]['columns'][0]['name'],
-                    'tax': ks_data[ks_purchase_rec]['columns'][1]['name'],
-                    'balance_cmp': tuple(
-                        zip([{'ks_com_net': k} for k in ks_bal_cmp_net], [{'ks_com_tax': k} for k in ks_bal_cmp_tax])),
-                    'style_type': 'main',
-                    'precision': ks_company_currency_id.decimal_places,
-                    'symbol': ks_company_currency_id.symbol,
-                    'position': ks_company_currency_id.position,
+                    'id':
+                    ks_data[ks_purchase_rec]['id'],
+                    'ks_name':
+                    ks_data[ks_purchase_rec]['name'],
+                    'ks_net_amount':
+                    ks_data[ks_purchase_rec]['columns'][0]['name'],
+                    'tax':
+                    ks_data[ks_purchase_rec]['columns'][1]['name'],
+                    'balance_cmp':
+                    tuple(zip([{
+                        'ks_com_net': k
+                    } for k in ks_bal_cmp_net], [{
+                        'ks_com_tax': k
+                    } for k in ks_bal_cmp_tax])),
+                    'style_type':
+                    'main',
+                    'precision':
+                    ks_company_currency_id.decimal_places,
+                    'symbol':
+                    ks_company_currency_id.symbol,
+                    'position':
+                    ks_company_currency_id.position,
                     'list_len': [0, 1],
-                    'ks_level': 2,
-                    'company_currency_id': ks_company_id.currency_id.id
+                    'ks_level':
+                    2,
+                    'company_currency_id':
+                    ks_company_id.currency_id.id
                 })
 
             def build_dict(seq, key):
@@ -2117,7 +2250,11 @@ class ks_dynamic_financial_base(models.Model):
                         sales_ks_com_tax[rec] += ks_tax_line[i]['balance_cmp'][rec][1]['ks_com_tax']
 
                 ks_tax_line[sale_info['index']]['balance_cmp'] = tuple(
-                    zip([{'ks_com_net': k} for k in sales_ks_com_net], [{'ks_com_tax': k} for k in sales_ks_com_tax]))
+                    zip([{
+                        'ks_com_net': k
+                    } for k in sales_ks_com_net], [{
+                        'ks_com_tax': k
+                    } for k in sales_ks_com_tax]))
 
                 # creating purchase differentiation
                 purchase_ks_com_net = [0 for rec in range(0, len(ks_tax_line[value_count]['balance_cmp']))]
@@ -2128,13 +2265,21 @@ class ks_dynamic_financial_base(models.Model):
                         purchase_ks_com_tax[rec] += ks_tax_line[i]['balance_cmp'][rec][1]['ks_com_tax']
 
             ks_tax_line[purchase_info['index']]['balance_cmp'] = tuple(
-                zip([{'ks_com_net': k} for k in purchase_ks_com_net], [{'ks_com_tax': k} for k in purchase_ks_com_tax]))
+                zip([{
+                    'ks_com_net': k
+                } for k in purchase_ks_com_net], [{
+                    'ks_com_tax': k
+                } for k in purchase_ks_com_tax]))
 
             ks_tax_line.append({
                 'ks_name': _('Total (Sales + Purchase)'),
                 'style_type': 'main',
                 'precision': ks_company_currency_id.decimal_places,
-                'balance_cmp': tuple(zip([{'ks_com_net': ''}], [{'ks_com_tax': ''}])),
+                'balance_cmp': tuple(zip([{
+                    'ks_com_net': ''
+                }], [{
+                    'ks_com_tax': ''
+                }])),
                 'symbol': ks_company_currency_id.symbol,
                 'position': ks_company_currency_id.position,
                 'list_len': [0],
@@ -2146,10 +2291,12 @@ class ks_dynamic_financial_base(models.Model):
                                                ks_tax_line[purchase_info['index']]['ks_net_amount']
             ks_tax_line[-1]['tax'] = ks_tax_line[sale_info['index']]['tax'] + ks_tax_line[purchase_info['index']]['tax']
             ks_tax_line[-1]['balance_cmp'] = tuple(
-                zip([{'ks_com_net': purchase_ks_com_net[i] + sales_ks_com_net[i]} for i in
-                     range(0, len(purchase_ks_com_net))],
-                    [{'ks_com_tax': purchase_ks_com_tax[i] + sales_ks_com_tax[i]} for i in
-                     range(0, len(purchase_ks_com_tax))]))
+                zip([{
+                    'ks_com_net': purchase_ks_com_net[i] + sales_ks_com_net[i]
+                } for i in range(0, len(purchase_ks_com_net))],
+                    [{
+                        'ks_com_tax': purchase_ks_com_tax[i] + sales_ks_com_tax[i]
+                    } for i in range(0, len(purchase_ks_com_tax))]))
 
             if self.env['ir.config_parameter'].sudo().get_param('ks_enable_net_tax', False):
                 ks_tax_line.append({
@@ -2190,8 +2337,9 @@ class ks_dynamic_financial_base(models.Model):
             for ks_line in self.env['account.tax.report'].sudo().browse(ks_df_informations['tax_report']).line_ids:
                 yield ks_line
         else:
-            for ks_tax in self.env['account.tax'].sudo().with_context(active_test=False).search(
-                    [('company_id', 'in', ks_df_informations.get('company_ids'))]):
+            for ks_tax in self.env['account.tax'].sudo().with_context(active_test=False).search([
+                ('company_id', 'in', ks_df_informations.get('company_ids'))
+            ]):
                 yield ks_tax
 
     def ks_get_lines_by_tax(self, ks_df_informations, ks_line_id, taxes):
@@ -2243,7 +2391,11 @@ class ks_dynamic_financial_base(models.Model):
                 if ks_tax['show']:
                     ks_columns = []
                     for period in ks_tax['periods']:
-                        ks_columns += [{'name': period['net'] * ks_sign}, {'name': period['tax'] * ks_sign, }]
+                        ks_columns += [{
+                            'name': period['net'] * ks_sign
+                        }, {
+                            'name': period['tax'] * ks_sign,
+                        }]
 
                     if ks_tax['obj'].amount_type == 'group':
                         ks_report_line_name = ks_tax['obj'].name
@@ -2306,12 +2458,12 @@ class ks_dynamic_financial_base(models.Model):
         """
         WHERE = ' '
         ks_tables, ks_where_clause, ks_where_params = self.with_context(
-            ks_df_informations.get('ks_filter_context'))._query_get(
-            ks_df_informations)
+            ks_df_informations.get('ks_filter_context'))._query_get(ks_df_informations)
         sql = """SELECT account_tax_report_line_tags_rel.account_tax_report_line_id,
                         SUM(coalesce(account_move_line.balance, 0) * CASE WHEN acc_tag.tax_negate THEN -1 ELSE 1 END
                                                  * CASE WHEN account_move.tax_cash_basis_rec_id IS NULL AND account_journal.type = 'sale' THEN -1 ELSE 1 END
-                                                 * CASE WHEN """ + self.ks_get_grids_refund_sql_condition() + """ THEN -1 ELSE 1 END)
+                                                 * CASE WHEN """ + self.ks_get_grids_refund_sql_condition(
+        ) + """ THEN -1 ELSE 1 END)
                         AS balance
                  FROM """ + ks_tables + """
                  JOIN account_move
@@ -2485,11 +2637,9 @@ class ks_dynamic_financial_base(models.Model):
         if ks_df_informations['date']['ks_process'] == 'range':
             KS_WHERE_INIT = KS_WHERE_INIT + " AND l.date < '%s'" % ks_df_informations['date'].get('ks_start_date')
             KS_WHERE_CURRENT = WHERE + " AND l.date >= '%s'" % ks_df_informations['date'].get(
-                'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                'ks_end_date')
+                'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
         else:
-            KS_WHERE_CURRENT = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                'ks_end_date')
+            KS_WHERE_CURRENT = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
 
         KS_WHERE_INIT += " AND l.account_id = %s" % ks_account
         # KS_WHERE_INIT += WHERE
@@ -2502,8 +2652,7 @@ class ks_dynamic_financial_base(models.Model):
             # KS_WHERE_INIT += WHERE
         else:
             KS_WHERE_FULL = WHERE + " AND l.date >= '%s'" % ks_df_informations['date'].get(
-                'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                'ks_end_date')
+                'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
         KS_WHERE_FULL += " AND a.id = %s" % ks_account
 
         if ks_df_informations.get('sort_accounts_by') == 'date':
@@ -2514,7 +2663,7 @@ class ks_dynamic_financial_base(models.Model):
         ks_move_lines = []
         if ks_df_informations.get('initial_balance'):
             sql = ('''
-                    SELECT 
+                    SELECT
                         COALESCE(SUM(l.debit - l.credit),0) AS balance
                     FROM account_move_line l
                     JOIN account_move m ON (l.move_id=m.id)
@@ -2529,7 +2678,7 @@ class ks_dynamic_financial_base(models.Model):
             ks_opening_balance += row.get('balance')
 
         sql = ('''
-            SELECT 
+            SELECT
                 COALESCE(SUM(l.debit - l.credit),0) AS balance
             FROM account_move_line l
             JOIN account_move m ON (l.move_id=m.id)
@@ -2644,14 +2793,14 @@ class ks_dynamic_financial_base(models.Model):
 
         if (int(ks_offset_count / fetch_range) == 0) and ks_df_informations.get('initial_balance'):
             sql = ('''
-                    SELECT 
-                        COALESCE(SUM(l.debit),0) AS debit, 
-                        COALESCE(SUM(l.credit),0) AS credit, 
+                    SELECT
+                        COALESCE(SUM(l.debit),0) AS debit,
+                        COALESCE(SUM(l.credit),0) AS credit,
                         COALESCE(SUM(l.debit - l.credit),0) AS balance
                     FROM account_move_line l
                     JOIN account_move m ON (l.move_id=m.id)
                     JOIN account_account a ON (l.account_id=a.id)
-      
+
                     LEFT JOIN res_currency c ON (l.currency_id=c.id)
                     LEFT JOIN res_partner p ON (l.partner_id=p.id)
                     JOIN account_journal j ON (l.journal_id=j.id)
@@ -2689,7 +2838,7 @@ class ks_dynamic_financial_base(models.Model):
                 FROM account_move_line l
                 JOIN account_move m ON (l.move_id=m.id)
                 JOIN account_account a ON (l.account_id=a.id)
-      
+
                 LEFT JOIN res_currency c ON (l.currency_id=c.id)
                 LEFT JOIN res_currency cc ON (l.company_currency_id=cc.id)
                 LEFT JOIN res_partner p ON (l.partner_id=p.id)
@@ -2715,14 +2864,14 @@ class ks_dynamic_financial_base(models.Model):
 
         if ((count - ks_offset_count) <= fetch_range) and ks_df_informations.get('initial_balance'):
             sql = ('''
-                    SELECT 
-                        COALESCE(SUM(l.debit),0) AS debit, 
-                        COALESCE(SUM(l.credit),0) AS credit, 
+                    SELECT
+                        COALESCE(SUM(l.debit),0) AS debit,
+                        COALESCE(SUM(l.credit),0) AS credit,
                         COALESCE(SUM(l.debit - l.credit),0) AS balance
                     FROM account_move_line l
                     JOIN account_move m ON (l.move_id=m.id)
                     JOIN account_account a ON (l.account_id=a.id)
-                   
+
                     LEFT JOIN res_currency c ON (l.currency_id=c.id)
                     LEFT JOIN res_partner p ON (l.partner_id=p.id)
                     JOIN account_journal j ON (l.journal_id=j.id)
@@ -2845,9 +2994,9 @@ class ks_dynamic_financial_base(models.Model):
         initial_bal_data = []
         WHERE = self.ks_build_where_clause(ks_df_informations, partner_ledger=True)
         ks_company_id = self.env['res.company'].sudo().browse(ks_df_informations.get('company_id'))
-        ks_df_partner_company_domain = ['|', ('parent_id', '=', False),
-                                        ('company_id', '=', ks_company_id.id),
-                                        ('company_id', '=', False)]
+        ks_df_partner_company_domain = [
+            '|', ('parent_id', '=', False), ('company_id', '=', ks_company_id.id), ('company_id', '=', False)
+        ]
         if ks_df_informations.get('ks_posted_entries') and not ks_df_informations.get('ks_unposted_entries'):
             WHERE += " AND m.state = 'posted'"
         elif ks_df_informations.get('ks_unposted_entries') and not ks_df_informations.get('ks_posted_entries'):
@@ -2860,7 +3009,8 @@ class ks_dynamic_financial_base(models.Model):
 
         if ks_df_informations.get('ks_partner_ids', []):
             ks_partner_ids = ks_df_informations.get('ks_partner_ids', [])
-            ks_partner_ids = self.env['account.move'].sudo().search([('partner_id', 'in', ks_partner_ids)]).mapped('partner_id')
+            ks_partner_ids = self.env['account.move'].sudo().search([('partner_id', 'in', ks_partner_ids)
+                                                                     ]).mapped('partner_id')
         else:
             ks_partner_ids = self.ks_build_aging_where_clause(ks_df_informations)[0]
 
@@ -2874,7 +3024,8 @@ class ks_dynamic_financial_base(models.Model):
                 'company_currency_position': 'after',
                 'id': x.id,
                 'lines': []
-            } for x in ks_partner_ids
+            }
+            for x in ks_partner_ids
         }
         for ks_partner in ks_partner_ids:
             ks_currency = ks_partner.company_id.currency_id or ks_company_id.currency_id
@@ -2913,11 +3064,9 @@ class ks_dynamic_financial_base(models.Model):
                     ks_move_lines[ks_partner.id]['lines'].append(ks_row)
             if self.ks_date_filter.get('ks_process') == 'range':
                 KS_WHERE_CURRENT = WHERE + " AND l.date >= '%s'" % ks_df_informations['date'].get(
-                    'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                    'ks_end_date')
+                    'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
             else:
-                KS_WHERE_CURRENT = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                    'ks_end_date')
+                KS_WHERE_CURRENT = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
             KS_WHERE_CURRENT += " AND p.id = %s" % ks_partner.id
             sql = ('''
                 SELECT
@@ -2960,11 +3109,9 @@ class ks_dynamic_financial_base(models.Model):
             else:
                 if self.ks_date_filter.get('ks_process') == 'range':
                     KS_WHERE_FULL = WHERE + " AND l.date >= '%s'" % ks_df_informations['date'].get(
-                        'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                        'ks_end_date')
+                        'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
                 else:
-                    KS_WHERE_FULL = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                        'ks_end_date')
+                    KS_WHERE_FULL = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
 
             KS_WHERE_FULL += " AND p.id = %s" % ks_partner.id
             sql = ('''
@@ -3009,10 +3156,10 @@ class ks_dynamic_financial_base(models.Model):
                     ks_move_lines[ks_partner.id]['lines'].append(ks_row)
                     ks_move_lines[ks_partner.id]['initial_balance'] = initial_bal_data[0].get('initial_balance', 0.0) \
                         if len(initial_bal_data) > 0 else 0.0
-                    ks_move_lines[ks_partner.id]['debit'] = ks_row['debit'] - (
-                        initial_bal_data[0].get('initial_debit', 0.0) if len(initial_bal_data) > 0 else 0.0)
-                    ks_move_lines[ks_partner.id]['credit'] = ks_row['credit'] - (
-                        initial_bal_data[0].get('initial_credit', 0.0) if len(initial_bal_data) > 0 else 0.0)
+                    ks_move_lines[ks_partner.id]['debit'] = ks_row['debit'] - (initial_bal_data[0].get(
+                        'initial_debit', 0.0) if len(initial_bal_data) > 0 else 0.0)
+                    ks_move_lines[ks_partner.id]['credit'] = ks_row['credit'] - (initial_bal_data[0].get(
+                        'initial_credit', 0.0) if len(initial_bal_data) > 0 else 0.0)
                     ks_move_lines[ks_partner.id]['balance'] = ks_row['balance']
                     ks_move_lines[ks_partner.id]['company_currency_id'] = ks_currency.id
                     ks_move_lines[ks_partner.id]['company_currency_symbol'] = ks_symbol
@@ -3099,11 +3246,9 @@ class ks_dynamic_financial_base(models.Model):
         KS_WHERE_INIT += " AND l.partner_id = %s" % partner
         if self.ks_date_filter.get('ks_process') == 'range':
             KS_WHERE_CURRENT = WHERE + " AND l.date >= '%s'" % ks_df_informations['date'].get(
-                'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                'ks_end_date')
+                'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
         else:
-            KS_WHERE_CURRENT = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                'ks_end_date')
+            KS_WHERE_CURRENT = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
         KS_WHERE_CURRENT += " AND p.id = %s" % partner
         if ks_df_informations.get('ks_posted_entries') and not ks_df_informations.get('ks_unposted_entries'):
             KS_WHERE_CURRENT += " AND m.state = 'posted'"
@@ -3120,11 +3265,9 @@ class ks_dynamic_financial_base(models.Model):
         else:
             if self.ks_date_filter.get('ks_process') == 'range':
                 KS_WHERE_FULL = WHERE + " AND l.date >= '%s'" % ks_df_informations['date'].get(
-                    'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                    'ks_end_date')
+                    'ks_start_date') + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
             else:
-                KS_WHERE_FULL = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get(
-                    'ks_end_date')
+                KS_WHERE_FULL = WHERE + " AND l.date <= '%s'" % ks_df_informations['date'].get('ks_end_date')
         KS_WHERE_FULL += " AND p.id = %s" % partner
 
         KS_ORDER_BY_CURRENT = 'l.date'
@@ -3431,8 +3574,8 @@ class ks_dynamic_financial_base(models.Model):
                     ks_where = " AND l.date <= '%s' AND l.partner_id = %s AND COALESCE(l.date_maturity,l.date) " % (
                         ks_as_on_date, ks_partner.id)
                     if ks_period_dict[ks_period].get('start') and ks_period_dict[ks_period].get('stop'):
-                        ks_where += " BETWEEN '%s' AND '%s'" % (
-                            ks_period_dict[ks_period].get('start'), ks_period_dict[ks_period].get('stop'))
+                        ks_where += " BETWEEN '%s' AND '%s'" % (ks_period_dict[ks_period].get('start'),
+                                                                ks_period_dict[ks_period].get('stop'))
                     elif not ks_period_dict[ks_period].get('start'):  # ie just
                         ks_where += " >= '%s'" % (ks_period_dict[ks_period].get('stop'))
                     else:
@@ -3443,7 +3586,7 @@ class ks_dynamic_financial_base(models.Model):
                             sum(l.balance) AS balance,
                             sum(COALESCE((SELECT SUM(amount)FROM account_partial_reconcile
                                 WHERE credit_move_id = l.id AND max_date <= '%s'), 0)) AS sum_debit,
-                            sum(COALESCE((SELECT SUM(amount) FROM account_partial_reconcile 
+                            sum(COALESCE((SELECT SUM(amount) FROM account_partial_reconcile
                                 WHERE debit_move_id = l.id AND max_date <= '%s'), 0)) AS sum_credit
                         FROM
                             account_move_line AS l
@@ -3455,7 +3598,7 @@ class ks_dynamic_financial_base(models.Model):
                             l.balance <> 0
                             %s
                             AND a.account_type = '%s'
-                            AND l.company_id in %s  
+                            AND l.company_id in %s
 
                     """ % (ks_as_on_date, ks_as_on_date, WHERE, ks_type, str(tuple(ks_company_ids) + tuple([0])))
                     amount = 0.0
@@ -3546,69 +3689,70 @@ class ks_dynamic_financial_base(models.Model):
             SELECT = """SELECT m.name AS move_name,
                                 m.id AS move_id,
                                 l.date AS date,
-                                l.date_maturity AS date_maturity, 
+                                l.date_maturity AS date_maturity,
                                 j.name AS journal_name,
                                 cc.id AS company_currency_id,
                                 a.name AS account_name, """
 
             for ks_period in ks_period_dict:
                 if ks_period_dict[ks_period].get('start') and ks_period_dict[ks_period].get('stop'):
-                    SELECT += """ CASE 
-                                    WHEN 
-                                        COALESCE(l.date_maturity,l.date) <= '%s' AND 
+                    SELECT += """ CASE
+                                    WHEN
+                                        COALESCE(l.date_maturity,l.date) <= '%s' AND
                                         COALESCE(l.date_maturity,l.date) >= '%s'
                                     THEN
                                         sum(l.balance) +sum(COALESCE((SELECT SUM(amount)
                                                 FROM account_partial_reconcile
                                                 WHERE credit_move_id = l.id AND max_date <= '%s'), 0
                                                 )) -
-                                        sum(COALESCE((SELECT SUM(amount) 
-                                                FROM account_partial_reconcile 
+                                        sum(COALESCE((SELECT SUM(amount)
+                                                FROM account_partial_reconcile
                                                 WHERE debit_move_id = l.id AND max_date <= '%s'), 0
                                                 ))
                                     ELSE
                                         0
-                                    END AS %s,""" % (ks_period_dict[ks_period].get('stop'),
-                                                     ks_period_dict[ks_period].get('start'),
-                                                     ks_as_on_date,
-                                                     ks_as_on_date,
-                                                     'range_' + str(ks_period),
-                                                     )
+                                    END AS %s,""" % (
+                        ks_period_dict[ks_period].get('stop'),
+                        ks_period_dict[ks_period].get('start'),
+                        ks_as_on_date,
+                        ks_as_on_date,
+                        'range_' + str(ks_period),
+                    )
                 elif not ks_period_dict[ks_period].get('start'):
-                    SELECT += """ CASE 
-                                    WHEN 
-                                        COALESCE(l.date_maturity,l.date) >= '%s' 
+                    SELECT += """ CASE
+                                    WHEN
+                                        COALESCE(l.date_maturity,l.date) >= '%s'
                                     THEN
                                         sum(l.balance) +
                                         sum(COALESCE(
                                                 (SELECT SUM(amount)
                                                 FROM account_partial_reconcile
                                                 WHERE credit_move_id = l.id AND max_date <= '%s'), 0)) -
-                                        sum(COALESCE((SELECT SUM(amount) 
-                                                FROM account_partial_reconcile 
+                                        sum(COALESCE((SELECT SUM(amount)
+                                                FROM account_partial_reconcile
                                                 WHERE debit_move_id = l.id AND max_date <= '%s'), 0
                                                 ))
                                     ELSE
                                         0
-                                    END AS %s,""" % (
-                        ks_period_dict[ks_period].get('stop'), ks_as_on_date, ks_as_on_date, 'range_' + str(ks_period))
+                                    END AS %s,""" % (ks_period_dict[ks_period].get('stop'), ks_as_on_date,
+                                                     ks_as_on_date, 'range_' + str(ks_period))
                 else:
                     SELECT += """ CASE
                                     WHEN
-                                        COALESCE(l.date_maturity,l.date) <= '%s' 
+                                        COALESCE(l.date_maturity,l.date) <= '%s'
                                     THEN sum(l.balance) +
                                         sum(COALESCE((SELECT SUM(amount)
                                                 FROM account_partial_reconcile
                                                 WHERE credit_move_id = l.id AND max_date <= '%s'), 0
                                                 )) -
-                                        sum(COALESCE((SELECT SUM(amount) 
-                                                FROM account_partial_reconcile 
+                                        sum(COALESCE((SELECT SUM(amount)
+                                                FROM account_partial_reconcile
                                                 WHERE debit_move_id = l.id AND max_date <= '%s'), 0
                                                 ))
                                     ELSE
                                         0
-                                    END AS %s """ % (
-                        ks_period_dict[ks_period].get('start'), ks_as_on_date, ks_as_on_date, 'range_' + str(ks_period))
+                                    END AS %s """ % (ks_period_dict[ks_period].get('start'), ks_as_on_date,
+                                                     ks_as_on_date, 'range_' + str(ks_period))
 
             sql = """
                     FROM
@@ -3619,7 +3763,7 @@ class ks_dynamic_financial_base(models.Model):
                         account_account AS a ON a.id = l.account_id
                     LEFT JOIN
                         account_journal AS j ON l.journal_id = j.id
-                    LEFT JOIN 
+                    LEFT JOIN
                         res_currency AS cc ON l.company_currency_id = cc.id
                     WHERE
                         l.balance <> 0
@@ -3632,16 +3776,15 @@ class ks_dynamic_financial_base(models.Model):
                         l.date, l.date_maturity, m.id, m.name, j.name, a.name, cc.id
                     OFFSET %s ROWS
                     FETCH FIRST %s ROWS ONLY
-                """ % (
-                WHERE, ks_type, ks_partner, ks_as_on_date, str(tuple(ks_company_ids) + tuple([0])), offset, fetch_range)
+                """ % (WHERE, ks_type, ks_partner, ks_as_on_date, str(tuple(ks_company_ids) + tuple([0])), offset,
+                       fetch_range)
             self.env.cr.execute(SELECT + sql)
             ks_final_list = self.env.cr.dictfetchall() or 0.0
             ks_move_lines = []
             if ks_final_list:
                 for ks_fn_lst in ks_final_list:
-                    if (ks_fn_lst['range_0'] or ks_fn_lst['range_1'] or ks_fn_lst['range_2'] or ks_fn_lst['range_3'] or
-                            ks_fn_lst['range_4'] or ks_fn_lst['range_5'] or ks_fn_lst[
-                                'range_6']):
+                    if (ks_fn_lst['range_0'] or ks_fn_lst['range_1'] or ks_fn_lst['range_2'] or ks_fn_lst['range_3']
+                            or ks_fn_lst['range_4'] or ks_fn_lst['range_5'] or ks_fn_lst['range_6']):
                         lang = self.env.user.lang
                         lang_id = self.env['res.lang'].search([('code', '=', lang)])['date_format'].replace('/', '-')
                         if ks_fn_lst['date_maturity']:
@@ -3659,8 +3802,9 @@ class ks_dynamic_financial_base(models.Model):
         ks_date_from = fields.Date.from_string(ks_as_on_date if ks_as_on_date else self.ks_as_on_date)
         lang = self.env.user.lang
         language_id = self.env['res.lang'].search([('code', '=', lang)])[0]
-        ks_due_bucket_list = [self.ks_due_bucket_1, self.ks_due_bucket_2, self.ks_due_bucket_3, self.ks_due_bucket_4,
-                              self.ks_due_bucket_5]
+        ks_due_bucket_list = [
+            self.ks_due_bucket_1, self.ks_due_bucket_2, self.ks_due_bucket_3, self.ks_due_bucket_4, self.ks_due_bucket_5
+        ]
         ks_start = False
         ks_stop = ks_date_from
         ks_bucket_name = 'Not Due'
@@ -3676,8 +3820,7 @@ class ks_dynamic_financial_base(models.Model):
             ks_stop = ks_start - relativedelta(days=1)
             ks_start = ks_date_from - relativedelta(days=ks_due_bucket_list[i])
             ks_bucket_name = '1 - ' + str(ks_due_bucket_list[0]) if i == 0 else str(
-                str(ks_due_bucket_list[i - 1] + 1)) + ' - ' + str(
-                ks_due_bucket_list[i])
+                str(ks_due_bucket_list[i - 1] + 1)) + ' - ' + str(ks_due_bucket_list[i])
             ks_final_date = ks_start
             ks_periods[i + 1] = {
                 'ks_due_bucket': ks_due_bucket_list[i],
@@ -3709,8 +3852,8 @@ class ks_dynamic_financial_base(models.Model):
 
     @api.model
     def ks_build_consolidate_query(self, ks_df_informations):
-        translate_value = self.env['ir.model.fields'].search(
-            [('model', '=', 'account.account'), ('name', '=', 'name')]).translate
+        translate_value = self.env['ir.model.fields'].search([('model', '=', 'account.account'),
+                                                              ('name', '=', 'name')]).translate
         if translate_value:
             lang = self.env.lang
             select = """
@@ -3757,7 +3900,7 @@ class ks_dynamic_financial_base(models.Model):
             ks_df_informations['ks_filter_context'], strict_range=True)._query_get()
         # 2.Fetch data from DB
         if translate_value:
-            select = select % (lang,lang,ks_tables, ks_where_clause)
+            select = select % (lang, lang, ks_tables, ks_where_clause)
         else:
             select = select % (ks_tables, ks_where_clause)
         self.env.cr.execute(select, ks_where_params)
@@ -3784,23 +3927,38 @@ class ks_dynamic_financial_base(models.Model):
             for ks_date in sorted(ks_dates_list):
                 ks_year, ks_month = ks_date.split('-')
                 ks_month_detail_line.append({
-                    'id': 'month_%s' % ks_date,
-                    'name': " %s" % (ks_date),
-                    'debit': sum([r['debit'] for r in ks_results if
-                                  (r['month'] == ks_month and r['yyyy'] == ks_year) and r[
-                                      'company_id'] == ks_company_id.id]),
-                    'credit': sum([r['credit'] for r in ks_results if
-                                   (r['month'] == ks_month and r['yyyy'] == ks_year) and r[
-                                       'company_id'] == ks_company_id.id]),
-                    'balance': sum([r['balance'] for r in ks_results if
-                                    (r['month'] == ks_month and r['yyyy'] == ks_year) and r[
-                                        'company_id'] == ks_company_id.id]),
-                    'company_currency_id': ks_currency.id,
-                    'company_currency_position': ks_position,
-                    'company_currency_symbol': ks_symbol,
-                    'count': len(ks_results),
-                    'pages': self.ks_fetch_page_list(len(ks_results)),
-                    'single_page': True if len(ks_results) <= FETCH_RANGE else False, })
+                    'id':
+                    'month_%s' % ks_date,
+                    'name':
+                    " %s" % (ks_date),
+                    'debit':
+                    sum([
+                        r['debit'] for r in ks_results
+                        if (r['month'] == ks_month and r['yyyy'] == ks_year) and r['company_id'] == ks_company_id.id
+                    ]),
+                    'credit':
+                    sum([
+                        r['credit'] for r in ks_results
+                        if (r['month'] == ks_month and r['yyyy'] == ks_year) and r['company_id'] == ks_company_id.id
+                    ]),
+                    'balance':
+                    sum([
+                        r['balance'] for r in ks_results
+                        if (r['month'] == ks_month and r['yyyy'] == ks_year) and r['company_id'] == ks_company_id.id
+                    ]),
+                    'company_currency_id':
+                    ks_currency.id,
+                    'company_currency_position':
+                    ks_position,
+                    'company_currency_symbol':
+                    ks_symbol,
+                    'count':
+                    len(ks_results),
+                    'pages':
+                    self.ks_fetch_page_list(len(ks_results)),
+                    'single_page':
+                    True if len(ks_results) <= FETCH_RANGE else False,
+                })
         return ks_month_detail_line
 
     @api.model
@@ -3818,22 +3976,31 @@ class ks_dynamic_financial_base(models.Model):
         for ks_values in ks_results:
             if ks_values['journal_id'] != ks_current_journal:
                 ks_current_journal = ks_values['journal_id']
-                ks_journal_line = {'id': ks_values['journal_id'],
-                                   'name': ks_values['journal_name'],
-                                   'debit': self.ks_compute_cons_jrnl_debit(ks_results, lambda x: x[
-                                                                                                      'journal_id'] == ks_current_journal),
-                                   'credit': self.ks_compute_cons_jrnl_credit(ks_results, lambda x: x[
-                                                                                                        'journal_id'] == ks_current_journal),
-                                   'balance': self.ks_compute_cons_jrnl_balance(ks_results, lambda x: x[
-                                                                                                          'journal_id'] == ks_current_journal),
-                                   'company_currency_id': ks_currency.id,
-                                   'company_currency_position': ks_position,
-                                   'company_currency_symbol': ks_symbol,
-                                   'count': len(ks_results),
-                                   'pages': self.ks_fetch_page_list(len(ks_results)),
-                                   'single_page': True if len(ks_results) <= FETCH_RANGE else False,
-                                   'lines': [i for i in ks_results if i['journal_id'] == ks_current_journal]
-                                   }
+                ks_journal_line = {
+                    'id':
+                    ks_values['journal_id'],
+                    'name':
+                    ks_values['journal_name'],
+                    'debit':
+                    self.ks_compute_cons_jrnl_debit(ks_results, lambda x: x['journal_id'] == ks_current_journal),
+                    'credit':
+                    self.ks_compute_cons_jrnl_credit(ks_results, lambda x: x['journal_id'] == ks_current_journal),
+                    'balance':
+                    self.ks_compute_cons_jrnl_balance(ks_results, lambda x: x['journal_id'] == ks_current_journal),
+                    'company_currency_id':
+                    ks_currency.id,
+                    'company_currency_position':
+                    ks_position,
+                    'company_currency_symbol':
+                    ks_symbol,
+                    'count':
+                    len(ks_results),
+                    'pages':
+                    self.ks_fetch_page_list(len(ks_results)),
+                    'single_page':
+                    True if len(ks_results) <= FETCH_RANGE else False,
+                    'lines': [i for i in ks_results if i['journal_id'] == ks_current_journal]
+                }
                 ks_line.append(ks_journal_line)
         ks_total_debit = []
         ks_total_credit = []
@@ -3843,30 +4010,32 @@ class ks_dynamic_financial_base(models.Model):
             ks_total_debit.append(ks_line_total['debit'])
             ks_total_credit.append(ks_line_total['credit'])
             ks_total_balance.append(ks_line_total['balance'])
-        ks_line.append({'id': 'total',
-                        'name': _('Total'),
-                        'debit': sum(ks_total_debit),
-                        'credit': sum(ks_total_credit),
-                        'balance': sum(ks_total_balance),
-                        'company_currency_id': ks_currency.id,
-                        'company_currency_position': ks_position,
-                        'company_currency_symbol': ks_symbol,
-                        'count': len(ks_results),
-                        'pages': self.ks_fetch_page_list(len(ks_results)),
-                        'single_page': True if len(ks_results) <= FETCH_RANGE else False,
-                        })
-        ks_line.append({'id': 'Details_',
-                        'name': "Details Per Month",
-                        'debit': '',
-                        'credit': '',
-                        'balance': '',
-                        'company_currency_id': ks_currency.id,
-                        'company_currency_position': ks_position,
-                        'company_currency_symbol': ks_symbol,
-                        'count': len(ks_results),
-                        'pages': self.ks_fetch_page_list(len(ks_results)),
-                        'single_page': True if len(ks_results) <= FETCH_RANGE else False,
-                        })
+        ks_line.append({
+            'id': 'total',
+            'name': _('Total'),
+            'debit': sum(ks_total_debit),
+            'credit': sum(ks_total_credit),
+            'balance': sum(ks_total_balance),
+            'company_currency_id': ks_currency.id,
+            'company_currency_position': ks_position,
+            'company_currency_symbol': ks_symbol,
+            'count': len(ks_results),
+            'pages': self.ks_fetch_page_list(len(ks_results)),
+            'single_page': True if len(ks_results) <= FETCH_RANGE else False,
+        })
+        ks_line.append({
+            'id': 'Details_',
+            'name': "Details Per Month",
+            'debit': '',
+            'credit': '',
+            'balance': '',
+            'company_currency_id': ks_currency.id,
+            'company_currency_position': ks_position,
+            'company_currency_symbol': ks_symbol,
+            'count': len(ks_results),
+            'pages': self.ks_fetch_page_list(len(ks_results)),
+            'single_page': True if len(ks_results) <= FETCH_RANGE else False,
+        })
         return ks_line
 
     def ks_consolidate_journals_details(self, ks_offset=0, ks_journal=0, ks_df_informations=None,
@@ -3881,24 +4050,35 @@ class ks_dynamic_financial_base(models.Model):
         ks_lines = []
         for ks_account_details in ks_results:
             if ks_journal == ks_account_details['journal_id']:
-                ks_account_lines = {'id': ks_account_details['account_id'],
-                                    'name': '%s %s' % (
-                                        ks_account_details['account_name'].get(lang) if isinstance(
-                                            ks_account_details['account_name'], dict) else ks_account_details[
-                                            'account_name'], ks_account_details['account_code']),
-                                    'journal': ks_account_details['journal_name'].get(lang) if isinstance(
-                                        ks_account_details['journal_name'], dict) else ks_account_details[
-                                        'journal_name'],
-                                    'debit': ks_account_details['debit'],
-                                    'credit': ks_account_details['credit'],
-                                    'balance': ks_account_details['balance'],
-                                    'company_currency_id': ks_currency.id,
-                                    'company_currency_position': ks_position,
-                                    'company_currency_symbol': ks_symbol,
-                                    'count': len(ks_results),
-                                    'pages': self.ks_fetch_page_list(len(ks_results)),
-                                    'single_page': True if len(ks_results) <= FETCH_RANGE else False,
-                                    }
+                ks_account_lines = {
+                    'id':
+                    ks_account_details['account_id'],
+                    'name':
+                    '%s %s' % (ks_account_details['account_name'].get(lang) if isinstance(
+                        ks_account_details['account_name'], dict) else ks_account_details['account_name'],
+                               ks_account_details['account_code']),
+                    'journal':
+                    ks_account_details['journal_name'].get(lang)
+                    if isinstance(ks_account_details['journal_name'], dict) else ks_account_details['journal_name'],
+                    'debit':
+                    ks_account_details['debit'],
+                    'credit':
+                    ks_account_details['credit'],
+                    'balance':
+                    ks_account_details['balance'],
+                    'company_currency_id':
+                    ks_currency.id,
+                    'company_currency_position':
+                    ks_position,
+                    'company_currency_symbol':
+                    ks_symbol,
+                    'count':
+                    len(ks_results),
+                    'pages':
+                    self.ks_fetch_page_list(len(ks_results)),
+                    'single_page':
+                    True if len(ks_results) <= FETCH_RANGE else False,
+                }
                 ks_lines.append(ks_account_lines)
         return ks_offset, ks_lines
 
@@ -3942,8 +4122,7 @@ class ks_dynamic_financial_base(models.Model):
             ks_period_list = [ks_period_dict[a]['name'] for a in ks_period_dict]
         elif self.id == self.env.ref('ks_dynamic_financial_report.ks_df_es0').id:
             ks_report_lines = self.with_context(
-                ks_df_informations.get('ks_filter_context')).ks_process_executive_summary(
-                ks_df_informations)
+                ks_df_informations.get('ks_filter_context')).ks_process_executive_summary(ks_df_informations)
         elif self.id == self.env.ref('ks_dynamic_financial_report.ks_df_tax_report').id:
             ks_report_lines = self.ks_process_tax_report(ks_df_informations)
         elif self.id == self.env.ref('ks_dynamic_financial_report.ks_df_cj0').id:
@@ -3953,33 +4132,52 @@ class ks_dynamic_financial_base(models.Model):
                 ks_df_informations)
         company_id = self.env.company
 
-        ks_searchview_dict = {'ks_df_informations': ks_df_informations, 'context': self.env.context,
-                              'ks_df_reports_ids': self.ks_df_report_account_report_ids}
-
-        info = {
-            'ks_df_reports_ids': self.ks_df_report_account_report_ids.ks_comparison_range,
-            'ks_enable_ledger_in_bal': self.env['ir.config_parameter'].sudo().get_param('ks_enable_ledger_in_bal',
-                                                                                        False),
+        ks_searchview_dict = {
             'ks_df_informations': ks_df_informations,
             'context': self.env.context,
-            'ks_searchview_html': self.env['ir.ui.view']._render_template('ks_dynamic_financial_report'
-                                                                          '.ks_searchview_filters',
-                                                                          values=ks_searchview_dict),
-            'ks_buttons': self.env['ir.ui.view']._render_template('ks_dynamic_financial_report.ks_repport_buttons'),
-            'ks_currency': company_id.currency_id.id,
-            'new_ks_df_reports_ids': self.ks_df_report_account_report_ids.ks_name,
-            'ks_report_lines': ks_report_lines,
-            'ks_initial_balance': ks_initial_balance or 0.0,
-            'ks_current_balance': ks_current_balance or 0.0,
-            'ks_ending_balance': ks_ending_balance or 0.0,
-            'ks_retained': ks_retained or False,
-            'ks_subtotal': ks_subtotal or False,
-            'ks_period_list': ks_period_list or False,
-            'ks_partner_dict': ks_partner_dict or False,
-            'ks_period_dict': ks_period_dict or False,
-            'ks_month_lines': ks_month_lines,
-            'ks_sub_lines': ks_sublines,
+            'ks_df_reports_ids': self.ks_df_report_account_report_ids
+        }
 
+        info = {
+            'ks_df_reports_ids':
+            self.ks_df_report_account_report_ids.ks_comparison_range,
+            'ks_enable_ledger_in_bal':
+            self.env['ir.config_parameter'].sudo().get_param('ks_enable_ledger_in_bal', False),
+            'ks_df_informations':
+            ks_df_informations,
+            'context':
+            self.env.context,
+            'ks_searchview_html':
+            self.env['ir.ui.view']._render_template('ks_dynamic_financial_report'
+                                                    '.ks_searchview_filters', values=ks_searchview_dict),
+            'ks_buttons':
+            self.env['ir.ui.view']._render_template('ks_dynamic_financial_report.ks_repport_buttons'),
+            'ks_currency':
+            company_id.currency_id.id,
+            'new_ks_df_reports_ids':
+            self.ks_df_report_account_report_ids.ks_name,
+            'ks_report_lines':
+            ks_report_lines,
+            'ks_initial_balance':
+            ks_initial_balance or 0.0,
+            'ks_current_balance':
+            ks_current_balance or 0.0,
+            'ks_ending_balance':
+            ks_ending_balance or 0.0,
+            'ks_retained':
+            ks_retained or False,
+            'ks_subtotal':
+            ks_subtotal or False,
+            'ks_period_list':
+            ks_period_list or False,
+            'ks_partner_dict':
+            ks_partner_dict or False,
+            'ks_period_dict':
+            ks_period_dict or False,
+            'ks_month_lines':
+            ks_month_lines,
+            'ks_sub_lines':
+            ks_sublines,
         }
         return info
 
@@ -4033,8 +4231,8 @@ class ks_dynamic_financial_base(models.Model):
         if self.ks_journals_filter is None:
             return
         if ks_earlier_informations and ks_earlier_informations.get('journals'):
-            ks_journal_plot = dict((opt['id'], opt['selected']) for opt in ks_earlier_informations['journals'] if
-                                   opt['id'] != 'divider' and 'selected' in opt)
+            ks_journal_plot = dict((opt['id'], opt['selected']) for opt in ks_earlier_informations['journals']
+                                   if opt['id'] != 'divider' and 'selected' in opt)
         else:
             ks_journal_plot = {}
         return ks_journal_plot
@@ -4046,8 +4244,8 @@ class ks_dynamic_financial_base(models.Model):
         if self.ks_account_filter is None:
             return
         if ks_earlier_informations and ks_earlier_informations.get('account'):
-            ks_account_plot = dict((opt['id'], opt['selected']) for opt in ks_earlier_informations['account'] if
-                                   opt['id'] != 'divider' and 'selected' in opt)
+            ks_account_plot = dict((opt['id'], opt['selected']) for opt in ks_earlier_informations['account']
+                                   if opt['id'] != 'divider' and 'selected' in opt)
         else:
             ks_account_plot = {}
         return ks_account_plot
@@ -4067,17 +4265,25 @@ class ks_dynamic_financial_base(models.Model):
                     ks_group_top_view = True
                     ks_df_informations['journals'] += [{'id': 'divider', 'name': _('Journal Groups')}]
                     ks_group_ids = ks_filtered_journal_ids
-                ks_df_informations['journals'] += [
-                    {'id': 'group', 'name': ks_filtered_group.name, 'ids': ks_filtered_journal_ids}]
+                ks_df_informations['journals'] += [{
+                    'id': 'group',
+                    'name': ks_filtered_group.name,
+                    'ids': ks_filtered_journal_ids
+                }]
 
         for ks_final_journal in self.ks_fetch_journal_filters():
             if ks_final_journal.company_id != ks_settled_company:
                 ks_df_informations['journals'] += [{'id': 'divider', 'name': ks_final_journal.company_id.name}]
                 ks_settled_company = ks_final_journal.company_id
             ks_df_informations['journals'] += [
-                {'id': ks_final_journal.id, 'name': ks_final_journal.name, 'code': ks_final_journal.code,
-                 'ks_df_report_account_type': ks_final_journal.type,
-                 'selected': ks_journal_plot.get(ks_final_journal.id, ks_final_journal.id in ks_group_ids)}, ]
+                {
+                    'id': ks_final_journal.id,
+                    'name': ks_final_journal.name,
+                    'code': ks_final_journal.code,
+                    'ks_df_report_account_type': ks_final_journal.type,
+                    'selected': ks_journal_plot.get(ks_final_journal.id, ks_final_journal.id in ks_group_ids)
+                },
+            ]
         for j in ks_df_informations['journals']:
             if j.get('selected'):
                 ks_j_name = ks_selected_journal_name.append(j['code'])
@@ -4091,8 +4297,13 @@ class ks_dynamic_financial_base(models.Model):
         ks_selected_account_name = []
         for ks_final_account in self.ks_fetch_account_filters():
             ks_df_informations['account'] += [
-                {'id': ks_final_account.id, 'name': ks_final_account.name, 'code': ks_final_account.code,
-                 'selected': ks_account_plot.get(ks_final_account.id, ks_final_account.id in ks_group_ids), }, ]
+                {
+                    'id': ks_final_account.id,
+                    'name': ks_final_account.name,
+                    'code': ks_final_account.code,
+                    'selected': ks_account_plot.get(ks_final_account.id, ks_final_account.id in ks_group_ids),
+                },
+            ]
         for a in ks_df_informations['account']:
             if a.get('selected'):
                 ks_a_name = ks_selected_account_name.append(a['code'])
@@ -4105,37 +4316,47 @@ class ks_dynamic_financial_base(models.Model):
 
     def _ks_get_df_informations(self, ks_earlier_informations=None):
         ks_df_informations = {
-            'unfolded_lines': ks_earlier_informations and ks_earlier_informations.get('unfolded_lines') or [],
-            'account_type': ks_earlier_informations and ks_earlier_informations.get(
-                'account_type') or self.ks_aged_filter,
-            'ks_posted_entries': ks_earlier_informations and ks_earlier_informations.get(
-                'ks_posted_entries') or False,
-            'ks_unposted_entries': ks_earlier_informations and ks_earlier_informations.get(
-                'ks_unposted_entries') or False,
-            'ks_reconciled': ks_earlier_informations and ks_earlier_informations.get(
-                'ks_reconciled') or False,
-            'ks_unreconciled': ks_earlier_informations and ks_earlier_informations.get(
-                'ks_unreconciled') or False,
-            'ks_diff_filter': ks_earlier_informations and ks_earlier_informations.get(
-                'ks_diff_filter') or {'ks_diff_filter_enablity': self.ks_dif_filter_bool,
-                                      'ks_debit_credit_visibility': self.ks_debit_credit,
-                                      'ks_label_filter': self.ks_label_filter
-
-                                      },
-            'ks_comparison_range': self.ks_comparison_range,
-
-            'ks_report_with_lines': ks_earlier_informations and ks_earlier_informations.get(
-                'ks_report_with_lines') or False,
-            'ks_journal_filter_visiblity': self.ks_journal_filter_visiblity,
-            'ks_account_filter_visiblity': self.ks_account_filter_visiblity,
-            'ks_partner_filter': self.ks_partner_filter,
-            'ks_partner_account_type_filter': self.ks_partner_account_type_filter,
-            'ks_analytic_account_visibility': self.ks_analytic_account_visibility,
-            'ks_intervals': self.ks_intervals,
-            'ks_differentiation': self.ks_differentiation,
-            'company_id': self.env.company.id,
-            'company_ids': self.env.context.get('allowed_company_ids', False) if self.env.context.get(
-                'allowed_company_ids', False) else [self.env.company.id],
+            'unfolded_lines':
+            ks_earlier_informations and ks_earlier_informations.get('unfolded_lines') or [],
+            'account_type':
+            ks_earlier_informations and ks_earlier_informations.get('account_type') or self.ks_aged_filter,
+            'ks_posted_entries':
+            ks_earlier_informations and ks_earlier_informations.get('ks_posted_entries') or False,
+            'ks_unposted_entries':
+            ks_earlier_informations and ks_earlier_informations.get('ks_unposted_entries') or False,
+            'ks_reconciled':
+            ks_earlier_informations and ks_earlier_informations.get('ks_reconciled') or False,
+            'ks_unreconciled':
+            ks_earlier_informations and ks_earlier_informations.get('ks_unreconciled') or False,
+            'ks_diff_filter':
+            ks_earlier_informations and ks_earlier_informations.get('ks_diff_filter') or {
+                'ks_diff_filter_enablity': self.ks_dif_filter_bool,
+                'ks_debit_credit_visibility': self.ks_debit_credit,
+                'ks_label_filter': self.ks_label_filter
+            },
+            'ks_comparison_range':
+            self.ks_comparison_range,
+            'ks_report_with_lines':
+            ks_earlier_informations and ks_earlier_informations.get('ks_report_with_lines') or False,
+            'ks_journal_filter_visiblity':
+            self.ks_journal_filter_visiblity,
+            'ks_account_filter_visiblity':
+            self.ks_account_filter_visiblity,
+            'ks_partner_filter':
+            self.ks_partner_filter,
+            'ks_partner_account_type_filter':
+            self.ks_partner_account_type_filter,
+            'ks_analytic_account_visibility':
+            self.ks_analytic_account_visibility,
+            'ks_intervals':
+            self.ks_intervals,
+            'ks_differentiation':
+            self.ks_differentiation,
+            'company_id':
+            self.env.company.id,
+            'company_ids':
+            self.env.context.get('allowed_company_ids', False)
+            if self.env.context.get('allowed_company_ids', False) else [self.env.company.id],
         }
 
         if ks_earlier_informations and ks_earlier_informations.get('account_ids', False):
@@ -4144,13 +4365,11 @@ class ks_dynamic_financial_base(models.Model):
         if self.ks_date_filter:
             self.ks_construct_date_filter(ks_df_informations, ks_earlier_informations)
         if self.ks_differentiation_filter:
-            self.ks_construct_differentiation_filter(ks_df_informations,
-                                                     ks_earlier_informations)
+            self.ks_construct_differentiation_filter(ks_df_informations, ks_earlier_informations)
 
         if self.ks_journals_filter:
             self.ks_construct_journal_filter(ks_df_informations, ks_earlier_informations)
-            self.ks_construct_journals_by_informations(ks_df_informations,
-                                                       ks_earlier_informations)
+            self.ks_construct_journals_by_informations(ks_df_informations, ks_earlier_informations)
 
         self._ks_construct_partner_filter(ks_df_informations, ks_earlier_informations=ks_earlier_informations)
         if self.ks_analytic_filter:
@@ -4158,8 +4377,7 @@ class ks_dynamic_financial_base(models.Model):
 
         if self.ks_account_filter:
             self.ks_construct_account_filter(ks_df_informations, ks_earlier_informations)
-            self.ks_construct_account_by_informations(ks_df_informations,
-                                                      ks_earlier_informations)
+            self.ks_construct_account_by_informations(ks_df_informations, ks_earlier_informations)
 
         # self.ks_construct_summary_tax_report(ks_df_informations, ks_earlier_informations)
 
@@ -4188,18 +4406,12 @@ class ks_dynamic_financial_base(models.Model):
         # ks_end_date = ks_earlier_date.get('ks_end_date') or self.ks_date_filter.get('ks_end_date')
         ks_range_constrain = ks_earlier_date.get('ks_range_constrain', False)
 
-        return self.ks_create_company_date(ks_df_informations,
-                                           ks_earlier_informations,
-                                           ks_process,
-                                           ks_filters_informations,
-                                           ks_start_date,
-                                           ks_end_date,
-                                           ks_range_constrain)
+        return self.ks_create_company_date(ks_df_informations, ks_earlier_informations, ks_process,
+                                           ks_filters_informations, ks_start_date, ks_end_date, ks_range_constrain)
 
     # Create date option for each company.,
     def ks_create_company_date(self, ks_df_informations, ks_eariler_informations, ks_process, ks_filters_informations,
-                               ks_start_date,
-                               ks_end_date, ks_range_constrain):
+                               ks_start_date, ks_end_date, ks_range_constrain):
         ks_interval_type = False
         if 'today' in ks_filters_informations:
             ks_end_date = fields.Date.context_today(self)
@@ -4230,39 +4442,28 @@ class ks_dynamic_financial_base(models.Model):
         if ks_filters_informations == "custom":
             if self.ks_date_filter['ks_process'] == 'range':
                 if ks_start_date == None or ks_end_date == None:
-                    ks_df_informations['date'] = self._ks_custom_fetch_dates_interval(ks_df_informations,
-                                                                                      ks_eariler_informations,
-                                                                                      ks_start_date, ks_end_date,
-                                                                                      ks_process,
-                                                                                      ks_interval_type=ks_interval_type,
-                                                                                      ks_range_constrain=ks_range_constrain)
+                    ks_df_informations['date'] = self._ks_custom_fetch_dates_interval(
+                        ks_df_informations, ks_eariler_informations, ks_start_date, ks_end_date, ks_process,
+                        ks_interval_type=ks_interval_type, ks_range_constrain=ks_range_constrain)
                 else:
-                    ks_df_informations['date'] = self._ks_fetch_dates_interval(ks_df_informations,
-                                                                               ks_start_date, ks_end_date,
-                                                                               ks_process,
+                    ks_df_informations['date'] = self._ks_fetch_dates_interval(ks_df_informations, ks_start_date,
+                                                                               ks_end_date, ks_process,
                                                                                ks_interval_type=ks_interval_type,
                                                                                ks_range_constrain=ks_range_constrain)
             else:
                 if ks_end_date == None:
-                    ks_df_informations['date'] = self._ks_custom_fetch_dates_interval(ks_df_informations,
-                                                                                      ks_eariler_informations,
-                                                                                      ks_start_date, ks_end_date,
-                                                                                      ks_process,
-                                                                                      ks_interval_type=ks_interval_type,
-                                                                                      ks_range_constrain=ks_range_constrain)
+                    ks_df_informations['date'] = self._ks_custom_fetch_dates_interval(
+                        ks_df_informations, ks_eariler_informations, ks_start_date, ks_end_date, ks_process,
+                        ks_interval_type=ks_interval_type, ks_range_constrain=ks_range_constrain)
                 else:
-                    ks_df_informations['date'] = self._ks_fetch_dates_interval(ks_df_informations,
-                                                                               ks_start_date, ks_end_date,
-                                                                               ks_process,
+                    ks_df_informations['date'] = self._ks_fetch_dates_interval(ks_df_informations, ks_start_date,
+                                                                               ks_end_date, ks_process,
                                                                                ks_interval_type=ks_interval_type,
                                                                                ks_range_constrain=ks_range_constrain)
 
         else:
-            ks_df_informations['date'] = self._ks_fetch_dates_interval(ks_df_informations,
-                                                                       ks_start_date,
-                                                                       ks_end_date,
-                                                                       ks_process,
-                                                                       ks_interval_type=ks_interval_type,
+            ks_df_informations['date'] = self._ks_fetch_dates_interval(ks_df_informations, ks_start_date, ks_end_date,
+                                                                       ks_process, ks_interval_type=ks_interval_type,
                                                                        ks_range_constrain=ks_range_constrain)
 
         if 'last' in ks_filters_informations:
@@ -4273,9 +4474,7 @@ class ks_dynamic_financial_base(models.Model):
     # obtain the differentiate_filter
     @api.model
     def _ks_custom_fetch_dates_interval(self, ks_df_informations, ks_eariler_informations, ks_start_date, ks_end_date,
-                                        ks_process,
-                                        ks_interval_type=None,
-                                        ks_range_constrain=False):
+                                        ks_process, ks_interval_type=None, ks_range_constrain=False):
         if not ks_interval_type:
             date = ks_end_date or ks_start_date
             company_fiscalyear_dates = self.env.company.compute_fiscalyear_dates(date)
@@ -4296,36 +4495,44 @@ class ks_dynamic_financial_base(models.Model):
 
         if self.ks_date_filter['ks_process'] == 'range':
             return {
-                'ks_string': self._ks_construct_date_string(ks_df_informations, ks_process, ks_interval_type,
-                                                            ks_end_date,
-                                                            ks_start_date, ks_range_constrain=ks_range_constrain),
-                'ks_interval_type': ks_interval_type,
-                'ks_process': ks_process,
-                'ks_range_constrain': ks_range_constrain,
-                'ks_start_date': fields.Date.to_date(
-                    ks_eariler_informations['ks_filter_context']['date_from']) or False,
-                'ks_end_date': fields.Date.to_date(ks_eariler_informations['ks_filter_context']['date_to']),
+                'ks_string':
+                self._ks_construct_date_string(ks_df_informations, ks_process, ks_interval_type, ks_end_date,
+                                               ks_start_date, ks_range_constrain=ks_range_constrain),
+                'ks_interval_type':
+                ks_interval_type,
+                'ks_process':
+                ks_process,
+                'ks_range_constrain':
+                ks_range_constrain,
+                'ks_start_date':
+                fields.Date.to_date(ks_eariler_informations['ks_filter_context']['date_from']) or False,
+                'ks_end_date':
+                fields.Date.to_date(ks_eariler_informations['ks_filter_context']['date_to']),
             }
         else:
             return {
-                'ks_string': self._ks_construct_date_string(ks_df_informations, ks_process, ks_interval_type,
-                                                            ks_end_date,
-                                                            ks_start_date, ks_range_constrain=ks_range_constrain),
-                'ks_interval_type': ks_interval_type,
-                'ks_process': ks_process,
-                'ks_range_constrain': ks_range_constrain,
-                'ks_start_date': ks_start_date and fields.Date.to_string(ks_start_date) or False,
-                'ks_end_date': fields.Date.to_date(ks_eariler_informations['ks_filter_context']['date_to']),
+                'ks_string':
+                self._ks_construct_date_string(ks_df_informations, ks_process, ks_interval_type, ks_end_date,
+                                               ks_start_date, ks_range_constrain=ks_range_constrain),
+                'ks_interval_type':
+                ks_interval_type,
+                'ks_process':
+                ks_process,
+                'ks_range_constrain':
+                ks_range_constrain,
+                'ks_start_date':
+                ks_start_date and fields.Date.to_string(ks_start_date) or False,
+                'ks_end_date':
+                fields.Date.to_date(ks_eariler_informations['ks_filter_context']['date_to']),
             }
 
     def ks_get_differentiate_filter_value(self):
-        return self.ks_differentiation_filter and self.ks_differentiation_filter.get('ks_differentiate',
-                                                                                     'no_differentiation')
+        return self.ks_differentiation_filter and self.ks_differentiation_filter.get(
+            'ks_differentiate', 'no_differentiation')
 
     # obtain the interval ks_value
     def ks_get_interval_value(self):
-        return self.ks_differentiation_filter and self.ks_differentiation_filter.get('ks_no_of_interval',
-                                                                                     1)
+        return self.ks_differentiation_filter and self.ks_differentiation_filter.get('ks_no_of_interval', 1)
 
     # obtain the start date
     def ks_get_start_date(self):
@@ -4353,12 +4560,14 @@ class ks_dynamic_financial_base(models.Model):
                     ks_end_date = ks_eariler_informations['ks_differ'].get('ks_end_date')
 
             # Copy the number of intervals.
-            if ks_eariler_informations['ks_differ'].get('ks_no_of_interval') and ks_eariler_informations['ks_differ'][
-                'ks_no_of_interval'] > 1:
+            if ks_eariler_informations['ks_differ'].get(
+                    'ks_no_of_interval') and ks_eariler_informations['ks_differ']['ks_no_of_interval'] > 1:
                 ks_no_of_interval = ks_eariler_informations['ks_differ'].get('ks_no_of_interval')
 
-        ks_df_informations['ks_differ'] = {'ks_differentiate_filter': ks_differentiate_filter,
-                                           'ks_no_of_interval': ks_no_of_interval}
+        ks_df_informations['ks_differ'] = {
+            'ks_differentiate_filter': ks_differentiate_filter,
+            'ks_no_of_interval': ks_no_of_interval
+        }
         ks_df_informations['ks_differ']['ks_start_date'] = ks_start_date
         ks_df_informations['ks_differ']['ks_end_date'] = ks_end_date
         ks_df_informations['ks_differ']['ks_intervals'] = []
@@ -4366,8 +4575,7 @@ class ks_dynamic_financial_base(models.Model):
 
     @api.model
     def ks_construct_dif_informations(self, ks_df_informations, ks_differentiate_filter, ks_no_of_interval,
-                                      ks_start_date,
-                                      ks_end_date):
+                                      ks_start_date, ks_end_date):
         if ks_differentiate_filter == 'custom':
             ks_no_of_interval = 1
 
@@ -4412,8 +4620,7 @@ class ks_dynamic_financial_base(models.Model):
 
     @api.model
     def _ks_fetch_dates_interval(self, ks_df_informations, ks_start_date, ks_end_date, ks_process,
-                                 ks_interval_type=None,
-                                 ks_range_constrain=False):
+                                 ks_interval_type=None, ks_range_constrain=False):
         lang = self.env.user.lang
         lang_id = self.env['res.lang'].search([('code', '=', lang)])['date_format'].replace('/', '-')
         if not ks_interval_type:
@@ -4440,13 +4647,19 @@ class ks_dynamic_financial_base(models.Model):
         lang_id = self.env['res.lang'].search([('code', '=', lang)])['date_format'].replace('/', '-')
 
         return {
-            'ks_string': self._ks_construct_date_string(ks_df_informations, ks_process, ks_interval_type, ks_end_date,
-                                                        ks_start_date, ks_range_constrain=ks_range_constrain),
-            'ks_interval_type': ks_interval_type,
-            'ks_process': ks_process,
-            'ks_range_constrain': ks_range_constrain,
-            'ks_start_date': ks_start_date and fields.Date.to_string(ks_start_date) or False,
-            'ks_end_date': fields.Date.to_string(ks_end_date),
+            'ks_string':
+            self._ks_construct_date_string(ks_df_informations, ks_process, ks_interval_type, ks_end_date, ks_start_date,
+                                           ks_range_constrain=ks_range_constrain),
+            'ks_interval_type':
+            ks_interval_type,
+            'ks_process':
+            ks_process,
+            'ks_range_constrain':
+            ks_range_constrain,
+            'ks_start_date':
+            ks_start_date and fields.Date.to_string(ks_start_date) or False,
+            'ks_end_date':
+            fields.Date.to_string(ks_end_date),
         }
 
     @api.model
@@ -4465,20 +4678,18 @@ class ks_dynamic_financial_base(models.Model):
                 dt_con = ks_end_date.strftime(lang_id)
                 ks_string = (_('As of') + ' {}'.format(dt_con))
 
-            elif ks_interval_type == 'year' or (
-                    ks_interval_type == 'fiscalyear' and (ks_start_date, ks_end_date) == date_utils.get_fiscal_year(
-                ks_end_date)):
+            elif ks_interval_type == 'year' or (ks_interval_type == 'fiscalyear' and (ks_start_date, ks_end_date)
+                                                == date_utils.get_fiscal_year(ks_end_date)):
                 ks_string = ks_end_date.strftime('%Y')
             elif ks_interval_type == 'fiscalyear' and (ks_start_date, ks_end_date) == date_utils.get_fiscal_year(
-                    ks_end_date, day=ks_fy_day,
-                    month=ks_fy_month):
+                    ks_end_date, day=ks_fy_day, month=ks_fy_month):
                 ks_string = '%s - %s' % (ks_end_date.year - 1, ks_end_date.year)
             elif ks_interval_type == 'month':
                 ks_string = fields.Date.to_string(ks_end_date)
             elif ks_interval_type == 'quarter':
                 quarter_names = get_quarter_names('abbreviated', locale=get_lang(self.env).code)
-                ks_string = u'%s\N{NO-BREAK SPACE}%s' % (
-                    quarter_names[date_utils.get_quarter_number(ks_end_date)], ks_end_date.year)
+                ks_string = u'%s\N{NO-BREAK SPACE}%s' % (quarter_names[date_utils.get_quarter_number(ks_end_date)],
+                                                         ks_end_date.year)
             else:
                 ks_dt_from_str = fields.Date.to_string(ks_start_date)
                 ks_dt_to_str = fields.Date.to_string(ks_end_date)
@@ -4553,8 +4764,7 @@ class ks_dynamic_financial_base(models.Model):
         if ks_interval_type == 'month':
             ks_start_date, ks_end_date = date_utils.get_month(ks_end_date)
         return self._ks_fetch_dates_interval(ks_df_informations, ks_start_date, ks_end_date, ks_process,
-                                             ks_interval_type=ks_interval_type,
-                                             ks_range_constrain=ks_range_constrain)
+                                             ks_interval_type=ks_interval_type, ks_range_constrain=ks_range_constrain)
 
     def ks_get_partner_name(self, ks_df_informations):
         '''
@@ -4664,7 +4874,7 @@ class ks_dynamic_financial_base(models.Model):
         ks_allowed_reports = self.ks_available_tax_report(ks_df_informations)
         ks_df_informations['ks_tax_report'] = (ks_eariler_informations or {}).get('ks_tax_report', None)
         if ks_df_informations['ks_tax_report'] != 0 and ks_df_informations[
-            'ks_tax_report'] not in ks_allowed_reports.ids:
+                'ks_tax_report'] not in ks_allowed_reports.ids:
             ks_default_reports = self.env.company.ks_get_choosed_default_tax_report()
             ks_df_informations['ks_tax_report'] = ks_default_reports and ks_default_reports.id or None
 
@@ -4745,8 +4955,9 @@ class ks_dynamic_financial_base(models.Model):
 
         if ks_df_informations:
             if ks_df_informations.get('journals'):
-                ks_selected_journals = [journal['id'] for journal in ks_df_informations['journals'] if
-                                        journal.get('selected')]
+                ks_selected_journals = [
+                    journal['id'] for journal in ks_df_informations['journals'] if journal.get('selected')
+                ]
                 if ks_selected_journals:  # Otherwise, nothing is selected, so we want to display everything
                     ks_ctx.update({
                         'search_default_journal_id': ks_selected_journals,
@@ -4823,12 +5034,13 @@ class ks_dynamic_financial_base(models.Model):
         return {
             'type': 'ir.actions.client',
             'tag': 'ks_executexlsxReportDownloadAction',
-            'data': {'model': self.env.context.get('model'),
-                     'ks_df_informations': json.dumps(ks_df_informations),
-                     'output_format': 'xlsx',
-                     'id': int(self.id),
-                     'financial_id': self.env.context.get('id'),
-                     }
+            'data': {
+                'model': self.env.context.get('model'),
+                'ks_df_informations': json.dumps(ks_df_informations),
+                'output_format': 'xlsx',
+                'id': int(self.id),
+                'financial_id': self.env.context.get('id'),
+            }
         }
 
     @api.model
@@ -4838,7 +5050,6 @@ class ks_dynamic_financial_base(models.Model):
         """
         ks_type_plotting = {
             'xlsx': 'application/vnd.ms-excel',
-
         }
         return ks_type_plotting.get(file_type, False)
 
@@ -4854,7 +5065,6 @@ class ks_dynamic_financial_base(models.Model):
             'res_model': 'ks_dynamic_financial_base',
             'type': 'binary',
             'mimetype': 'application/x-pdf',
-
         }
         self.env.user
         ks_attachment = self.env['ir.attachment'].create(attachment)
