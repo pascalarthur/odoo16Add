@@ -339,10 +339,9 @@ class ks_dynamic_financial_base(models.Model):
             ks_tables, ks_where_clause, ks_where_params = self.env['account.move.line'].with_context(
                 strict_range=True if self._context.get('date_from') else False)._query_get()
             ks_tables = ks_tables.replace('"', '') if ks_tables else "account_move_line"
-            wheres = [""]
+            ks_filters = ""
             if ks_where_clause.strip():
-                wheres.append(ks_where_clause.strip())
-            ks_filters = " AND ".join(wheres)
+                ks_filters = f" AND {ks_where_clause.strip()}"
 
             if prv_year_dates:
                 ks_context = dict(self._context or {})
@@ -364,7 +363,6 @@ class ks_dynamic_financial_base(models.Model):
             ks_params = (tuple(account_ids), ) + tuple(ks_where_params)
             self.env.cr.execute(request, ks_params)
             for row in self.env.cr.dictfetchall():
-                # row['balance'] = 0 - row['balance']
                 if self.ks_name == _('Balance Sheet') or self.ks_name == "Balance Sheet":
                     if (ks_report.ks_parent_id and _(
                             "Earnings") and "Earnings" in ks_report.ks_parent_id.display_name) or \
@@ -386,7 +384,6 @@ class ks_dynamic_financial_base(models.Model):
                     ks_res[row['id']] = row
                 elif self.ks_name == _('Profit and Loss') or self.ks_name == 'Profit and Loss' or self.ks_name == _(
                         'Cash Flow Statement') or self.ks_name == 'Cash Flow Statement':
-                    print(ks_report.ks_name)
                     account_type_record = self.env['ks.dynamic.financial.reports.account'].search([
                         ('ks_name', 'in', ['Bank and Cash', 'Expenses', 'Cost of Revenue'])
                     ])
