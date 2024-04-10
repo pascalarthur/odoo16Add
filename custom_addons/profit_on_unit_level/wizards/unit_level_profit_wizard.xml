@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_form_unit_level_profit" model="ir.ui.view">
+        <field name="name">unit.level.profit.form</field>
+        <field name="model">unit.level.profit</field>
+        <field name="arch" type="xml">
+            <form string="Unit Level Profit">
+                <sheet>
+                    <h1>Unit Level Profit Report</h1>
+                    <group>
+                        <field name="time_range_selection"/>
+                        <field name="start_date" invisible="time_range_selection != 'custom'"/>
+                        <field name="end_date" invisible="time_range_selection != 'custom'"/>
+                    </group>
+                    <group>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="average_unit_profit" widget="monetary" readonly="1"/>
+                        <field name="total_expenses" widget="monetary" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Product Profit Details">
+                            <field name="product_profit_ids" nolabel="1">
+                                <tree editable="bottom" create="0">
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="product_id"/>
+                                    <field name="units_sold"/>
+                                    <field name="average_purchase_price" widget="monetary"/>
+                                    <field name="average_sales_price" widget="monetary"/>
+                                    <field name="profit_per_unit" widget="monetary"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <record id="unit_level_profit_action" model="ir.actions.act_window">
+        <field name="name">Damage History</field>
+        <field name="res_model">unit.level.profit</field>
+        <field name="view_mode">form</field>
+    </record>
+</odoo>

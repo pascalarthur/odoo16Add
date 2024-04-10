@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_unit_level_profit_action" name="Unit - Profit and Loss" action="unit_level_profit_action" parent="account.menu_finance" sequence="10"/>
+</odoo>
