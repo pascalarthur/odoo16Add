@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <form string="Unit Level Profit">
                 <sheet>
-                    <h1>Unit Level Profit Report</h1>
+                    <h1>Unit Level - Profit Report</h1>
                     <group>
                         <field name="time_range_selection"/>
                         <field name="start_date" invisible="time_range_selection != 'custom'"/>
@@ -20,13 +20,14 @@
                     <notebook>
                         <page string="Product Profit Details">
                             <field name="product_profit_ids" nolabel="1">
-                                <tree editable="bottom" create="0">
-                                    <field name="currency_id" column_invisible="1"/>
-                                    <field name="product_id"/>
-                                    <field name="units_sold"/>
-                                    <field name="average_purchase_price" widget="monetary"/>
-                                    <field name="average_sales_price" widget="monetary"/>
-                                    <field name="profit_per_unit" widget="monetary"/>
+                                <tree editable="0" delete="0" create="0">
+                                    <field name="currency_id" column_invisible="1" readonly="1"/>
+                                    <field name="product_id" readonly="1" options="{'no_open': False}"/>
+                                    <field name="units_sold" readonly="1"/>
+                                    <field name="average_purchase_price" widget="monetary" readonly="1"/>
+                                    <field name="average_sales_price" widget="monetary" readonly="1"/>
+                                    <field name="profit_per_unit" widget="monetary" readonly="1"/>
+                                    <button name="action_check_product_details" string="Details" type="object" class="oe_highlight"/>
                                 </tree>
                             </field>
                         </page>
@@ -41,5 +42,48 @@
         <field name="name">Damage History</field>
         <field name="res_model">unit.level.profit</field>
         <field name="view_mode">form</field>
+    </record>
+
+    <record id="view_product_level_overview_wizard" model="ir.ui.view">
+        <field name="name">product.level.overview.wizard.form</field>
+        <field name="model">product.level.overview.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Overview">
+                <sheet>
+                    <h1>Overview - <field name="product_id" readonly="1"/></h1>
+                    <field name="currency_id" invisible="1"/>
+                    <group>
+                        <field name="start_date" readonly="1"/>
+                        <field name="end_date" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Product Purchases">
+                            <field name="purchase_ids" nolabel="1" readonly="1">
+                                <tree editable="0" delete="0" create="0">
+                                    <field name="order_id" readonly="1"/>
+                                    <field name="product_qty" readonly="1"/>
+                                    <field name="price_subtotal" readonly="1"/>
+                                    <field name="price_unit" widget="monetary" readonly="1"/>
+                                    <field name="currency_id" readonly="1" column_invisible="1"/>
+                                    <button name="action_get_purchase" string="Purchase" type="object" class="oe_highlight"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Product Sales">
+                            <field name="sale_ids" nolabel="1" readonly="1">
+                                <tree editable="0" delete="0" create="0">
+                                    <field name="order_id" readonly="1"/>
+                                    <field name="product_uom_qty" readonly="1"/>
+                                    <field name="price_total" readonly="1"/>
+                                    <field name="price_unit" widget="monetary" readonly="1"/>
+                                    <field name="currency_id" readonly="1" column_invisible="1"/>
+                                    <button name="action_get_sale" string="Sale" type="object" class="oe_highlight"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
     </record>
 </odoo>
