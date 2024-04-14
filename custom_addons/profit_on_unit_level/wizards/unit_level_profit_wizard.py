@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 class PurchaseOrderLine(models.Model):
     _inherit = 'purchase.order.line'
 
+    salesperson_id = fields.Many2one('res.users', string='Salesperson', related='order_id.user_id', readonly=True)
+
     def action_get_purchase(self):
         self.ensure_one()
         return {
@@ -21,6 +23,8 @@ class PurchaseOrderLine(models.Model):
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
+    salesperson_id = fields.Many2one('res.users', string='Salesperson', related='order_id.user_id', readonly=True)
+
     def action_get_sale(self):
         self.ensure_one()
         return {
@@ -28,6 +32,23 @@ class SaleOrderLine(models.Model):
             'type': 'ir.actions.act_window',
             'view_mode': 'form',
             'res_model': 'sale.order',
+            'res_id': self.order_id.id,
+            'target': 'new',
+        }
+
+
+class SaleOrderLine(models.Model):
+    _inherit = 'pos.order.line'
+
+    salesperson_id = fields.Many2one('res.users', string='Salesperson', related='order_id.user_id', readonly=True)
+
+    def action_get_pos_sale(self):
+        self.ensure_one()
+        return {
+            'name': _('POS Sale Order'),
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'pos.order',
             'res_id': self.order_id.id,
             'target': 'new',
         }
@@ -43,8 +64,9 @@ class ProductDetailsWizard(models.TransientModel):
     end_date = fields.Date(string="End Date")
     currency_id = fields.Many2one("res.currency", string="Company Currency")
 
-    sale_ids = fields.Many2many('sale.order.line', string="Sales")
     purchase_ids = fields.Many2many('purchase.order.line', string="Purchases")
+    sale_ids = fields.Many2many('sale.order.line', string="Sales")
+    pos_sale_ids = fields.Many2many('pos.order.line', string="Sales")
 
 
 class UnitLevelProfitLine(models.TransientModel):
@@ -66,25 +88,27 @@ class UnitLevelProfitLine(models.TransientModel):
         start_date = self.unit_level_profit_id.start_date
         end_date = self.unit_level_profit_id.end_date
 
-        # Define domain for sales and purchases within the time range and for the product
-        sales_domain = [
+        domain = [
             ('product_id', '=', self.product_id.id),
-            ('state', 'in', ['sale', 'done']),
             ('order_id.date_order', '>=', start_date),
             ('order_id.date_order', '<=', end_date),
         ]
 
-        purchase_domain = [
-            ('product_id', '=', self.product_id.id),
-            ('state', 'in', ['purchase', 'done']),
-            ('order_id.date_order', '>=', start_date),
-            ('order_id.date_order', '<=', end_date),
-        ]
+        purchase_domain = domain + [('state', 'in', ['purchase', 'done'])]
+        sales_domain = domain + [('state', 'in', ['sale', 'done'])]
+        pos_sales_domain = domain + [('refunded_orderline_id', '=', False)]
 
-        sale_ids = self.env['sale.order.line'].search(sales_domain).ids
         purchase_ids = self.env['purchase.order.line'].search(purchase_domain).ids
+        sale_ids = self.env['sale.order.line'].search(sales_domain).ids
+        pos_sale_ids = self.env['pos.order.line'].search(pos_sales_domain).ids
 
-        # Action to return
+        sale_and_pos_sale_ids = []
+        for sale_id in sale_ids:
+            sale_and_pos_sale_ids.append((0, 0, {'sale_order_line_id': sale_id}))
+
+        for pos_sale_id in pos_sale_ids:
+            sale_and_pos_sale_ids.append((0, 0, {'pos_order_line_id': pos_sale_id}))
+
         return {
             'name': _('Product Details'),
             'type': 'ir.actions.act_window',
@@ -96,8 +120,9 @@ class UnitLevelProfitLine(models.TransientModel):
                 'default_end_date': end_date,
                 'default_product_id': self.product_id.id,
                 'default_currency_id': self.currency_id.id,
-                'default_sale_ids': sale_ids,
                 'default_purchase_ids': purchase_ids,
+                'default_sale_ids': sale_ids,
+                'default_pos_sale_ids': pos_sale_ids,
             }
         }
 
@@ -174,14 +199,19 @@ class UnitLevelProfit(models.TransientModel):
 
         # Aggregate sales data by product
         sales_data = self.env['sale.order.line'].search(sales_domain)
-        total_units_sold = sum(sales_data.mapped("product_uom_qty"))
-        expense_per_unit = total_expenses / total_units_sold if total_units_sold else 0
+        pos_sales_data = self.env['pos.order.line'].search(date_domain)
 
         product_sales = defaultdict(list)
-
         for sale in sales_data:
             price_total = sale['currency_id']._convert(sale['price_total'], to_currency=self.env.company.currency_id)
             product_sales[sale.product_id.id].append({'price_total': price_total, 'units_sold': sale.product_uom_qty})
+
+        for sale in pos_sales_data:
+            price_total = sale['currency_id']._convert(sale['price_subtotal'], to_currency=self.env.company.currency_id)
+            product_sales[sale.product_id.id].append({'price_total': price_total, 'units_sold': sale.qty})
+
+        total_units_sold = sum(sales_data.mapped("product_uom_qty"))
+        expense_per_unit = total_expenses / total_units_sold if total_units_sold else 0
 
         product_profits = []
         for product_id, sales in product_sales.items():
