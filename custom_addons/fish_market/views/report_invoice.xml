@@ -4,7 +4,7 @@
         <template id="invoice_cop" inherit_id="account.report_invoice_document">
             <xpath expr="//div[hasclass('page')]" position="after">
                 <table>
-                    <tr t-if="o.partner_bank_id" class="no-border-table">
+                    <tr t-if="o.trailer_number or o.horse_number or o.container_number or o.seal_number" class="no-border-table">
                         <td style="padding-right: 10px;"><strong>Trucking Details:</strong></td>
                     </tr>
                     <tr t-if="o.trailer_number">
