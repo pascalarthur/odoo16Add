@@ -23,4 +23,5 @@
             </menuitem>
         </menuitem>
     </menuitem>
+    <menuitem id="menu_accounting_purchases" name="Purchase Order" action="purchase.purchase_form_action" parent="account.menu_finance_receivables" sequence="0"/>
 </odoo>
