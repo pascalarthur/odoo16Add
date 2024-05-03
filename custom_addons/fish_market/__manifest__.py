@@ -41,6 +41,7 @@
         'views/truck_view.xml',
         'views/sale_meta_view.xml',
         'views/sale_order_view.xml',
+        'views/account_payment_view.xml',
         'views/account_move_view.xml',
         'views/menus.xml',
     ],
