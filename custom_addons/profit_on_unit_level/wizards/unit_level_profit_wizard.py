@@ -98,16 +98,15 @@ class UnitLevelProfitLine(models.TransientModel):
         sales_domain = domain + [('state', 'in', ['sale', 'done'])]
         pos_sales_domain = domain + [('refunded_orderline_id', '=', False)]
 
-        purchase_ids = self.env['purchase.order.line'].search(purchase_domain).ids
         sale_ids = self.env['sale.order.line'].search(sales_domain).ids
         pos_sale_ids = self.env['pos.order.line'].search(pos_sales_domain).ids
+        purchase_ids = self.env['purchase.order.line'].search(purchase_domain).ids
+        if len(purchase_ids) == 0:
+            domain = [('product_id', '=', self.product_id.id), ('state', 'in', ['purchase', 'done'])]
+            purchase_ids = self.env['purchase.order.line'].search(domain).ids
 
-        sale_and_pos_sale_ids = []
-        for sale_id in sale_ids:
-            sale_and_pos_sale_ids.append((0, 0, {'sale_order_line_id': sale_id}))
-
-        for pos_sale_id in pos_sale_ids:
-            sale_and_pos_sale_ids.append((0, 0, {'pos_order_line_id': pos_sale_id}))
+        sale_and_pos_sale_ids = [(0, 0, {'sale_order_line_id': sale_id}) for sale_id in sale_ids]
+        sale_and_pos_sale_ids += [(0, 0, {'pos_order_line_id': pos_sale_id}) for pos_sale_id in pos_sale_ids]
 
         return {
             'name': _('Product Details'),
@@ -176,6 +175,13 @@ class UnitLevelProfit(models.TransientModel):
     average_unit_profit = fields.Monetary(string="Average Unit Profit", currency_field='currency_id',
                                           compute='_compute_average_unit_profit', readonly=True)
 
+    # The products listed here are considered for profit calculation
+    product_category_ids = fields.Many2many('product.category', 'product_category_rel', string="Product Categories")
+
+    # The products listed in this category are deducted from the profit calculation
+    expense_category_ids = fields.Many2many('product.category', 'expense_category_rel',
+                                            string="Product Expense Categories")
+
     def _compute_currency_id(self):
         for rec in self:
             rec.currency_id = rec.env.company.currency_id
@@ -187,48 +193,96 @@ class UnitLevelProfit(models.TransientModel):
         self.average_unit_profit = total_profit / total_units if total_units else 0
 
     def _get_product_profits(self):
-        # Define the period for sales and purchases
-        date_domain = [('order_id.date_order', '>=', self.start_date), ('order_id.date_order', '<=', self.end_date)]
-        sales_domain = date_domain + [('state', 'in', ['sale', 'done']), ('product_id.type', '=', 'product')]
-        purchase_domain = date_domain + [('state', 'in', ['purchase', 'done'])]
-        expense_domain = [('date', '>=', self.start_date), ('date', '<=', self.end_date),
-                          ('state', 'in', ['purchase', 'done'])]
-
-        # Calculate total expenses within the period
-        total_expenses = sum(self.env['hr.expense'].search(expense_domain).mapped('total_amount'))
-
-        # Aggregate sales data by product
-        sales_data = self.env['sale.order.line'].search(sales_domain)
-        pos_sales_data = self.env['pos.order.line'].search(date_domain)
+        if not self.start_date or not self.end_date:
+            return []
 
         product_sales = defaultdict(list)
-        for sale in sales_data:
-            price_total = sale['currency_id']._convert(sale['price_total'], to_currency=self.env.company.currency_id)
-            product_sales[sale.product_id.id].append({'price_total': price_total, 'units_sold': sale.product_uom_qty})
+        product_purchases = defaultdict(list)
+        product_profits = []
 
+        company_currency_id = self.env.company.currency_id
+
+        # Assumptions:
+        # 1. The products are in a different product category than the products
+        # 2. The purchase expenses (trucks, documentation) are only factored for purchases
+        #    -> Expenses (like trucks and documentation) on sales are not considered
+        # 3. The company expenses are divided by the total units sold
+
+        # Define the period for sales and purchases
+        date_domain = [('date', '>=', self.start_date), ('date', '<=', self.end_date)]
+
+        # Calculate total expenses within the period
+        expense_domain = date_domain + [('state', 'in', ['purchase', 'done'])]
+        hr_expenses = sum(self.env['hr.expense'].search(expense_domain).mapped('total_amount'))
+
+        # 1. Compute sales
+        sales_domain = date_domain + [('payment_state', '!=', 'reversed')]
+        invoices = self.env["account.move"].search(sales_domain).filtered(lambda x: x.move_type == "out_invoice")
+        for invoice in invoices:
+            for line in invoice.invoice_line_ids.filtered(lambda line: line.quantity > 0):
+                if line.product_id.product_tmpl_id.categ_id.id in self.product_category_ids.ids:
+                    price_total = abs(line.currency_id._convert(line.amount_currency, to_currency=company_currency_id))
+                    product_sales[line.product_id.id].append({
+                        'price_total': price_total,
+                        'units_sold': line.quantity,
+                    })
+
+        # 2. Compute and append POS sales -> Filter for those without invoice
+        date_domain = [('order_id.date_order', '>=', self.start_date), ('order_id.date_order', '<=', self.end_date)]
+        pos_sales_domain = date_domain + [('order_id.to_invoice', '=', True), ('qty', '>', 0)]
+        pos_sales_data = self.env['pos.order.line'].search(pos_sales_domain)
+        # We need to filter the POS Sales that are already invoiced -> Otherwise they are twice in the Sales
         for sale in pos_sales_data:
-            price_total = sale['currency_id']._convert(sale['price_subtotal'], to_currency=self.env.company.currency_id)
+            price_total = sale['currency_id']._convert(sale['price_subtotal'], to_currency=company_currency_id)
             product_sales[sale.product_id.id].append({'price_total': price_total, 'units_sold': sale.qty})
 
-        total_units_sold = sum(sales_data.mapped("product_uom_qty"))
-        expense_per_unit = total_expenses / total_units_sold if total_units_sold else 0
+        total_units_sold = sum([sum(sale['units_sold'] for sale in product) for product in product_sales.values()])
+        expense_per_unit = hr_expenses / total_units_sold if total_units_sold else 0
 
-        product_profits = []
         for product_id, sales in product_sales.items():
-            units_sold = sum(sale['units_sold'] for sale in sales)
-            price_total = sum(sale['price_total'] for sale in sales)
+            total_sale_units = sum(sale['units_sold'] for sale in sales)
+            total_sale_price = sum(sale['price_total'] for sale in sales)
+            average_sales_price = total_sale_price / total_sale_units if total_sale_units else 0
 
-            average_sales_price = price_total / units_sold if units_sold else 0
+            # 3. Compute Purchases <-> If no purchase is available in time frame, take all purchases
+            date_domain = [('date', '>=', self.start_date), ('date', '<=', self.end_date)]
+            product_domain = [('invoice_line_ids.product_id', '=', product_id)]
+            purchase_domain = date_domain + product_domain
 
-            # Aggregate purchase data for the same product
-            purchase_lines = self.env['purchase.order.line'].search(purchase_domain + [('product_id', '=', product_id)])
-            total_purchase = sum(
-                line.currency_id._convert(line.price_subtotal, to_currency=self.env.company.currency_id)
-                for line in purchase_lines)
-            total_qty_purchased = sum(line.product_qty for line in purchase_lines)
-            average_purchase_price = total_purchase / total_qty_purchased if total_qty_purchased else 0
+            bills = self.env["account.move"].search(purchase_domain).filtered(lambda x: x.move_type == "in_invoice")
+            if len(bills) == 0:
+                bills = self.env["account.move"].search(product_domain).filtered(lambda x: x.move_type == "in_invoice")
+
+            for bill in bills:
+                product_lines = bill.invoice_line_ids.filtered(
+                    lambda line: line.quantity > 0 and line.product_id.id == product_id)
+                all_product_lines = bill.invoice_line_ids.filtered(
+                    lambda line: line.product_id.product_tmpl_id.categ_id.id in self.product_category_ids.ids)
+                expense_lines = bill.invoice_line_ids.filtered(
+                    lambda line: line.product_id.product_tmpl_id.categ_id.id in self.product_category_ids.ids)
+
+                total_purchase_quantity = sum(line.quantity for line in all_product_lines)
+                total_bill_expense = sum(line.price_subtotal for line in expense_lines)
+
+                for line in product_lines:
+                    expenses = total_bill_expense * (line.quantity /
+                                                     total_purchase_quantity) if total_purchase_quantity else 0
+                    price_total = line.currency_id._convert(line.amount_currency, to_currency=company_currency_id)
+                    product_purchases[line.product_id.id].append({
+                        'price_total': price_total,
+                        'units_sold': line.quantity,
+                        'expenses': expenses
+                    })
 
             # Compute profit per unit, adjusted for expenses
+            purchases = product_purchases.get(product_id)
+            if purchases is not None:
+                total_purchase_units = sum(purchase['units_sold'] for purchase in purchases)
+                total_purchase_price = sum(purchase['price_total'] for purchase in purchases)
+                average_purchase_price = total_purchase_price / total_purchase_units if total_purchase_units else 0
+            else:
+                average_purchase_price = 0
+
             profit_per_unit = average_sales_price - average_purchase_price - expense_per_unit
 
             product_profits.append({
@@ -236,7 +290,7 @@ class UnitLevelProfit(models.TransientModel):
                 'average_purchase_price': average_purchase_price,
                 'average_sales_price': average_sales_price,
                 'profit_per_unit': profit_per_unit,
-                'units_sold': units_sold,
+                'units_sold': total_sale_units,
             })
 
         return product_profits

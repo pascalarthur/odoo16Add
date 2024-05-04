@@ -13,6 +13,10 @@
                         <field name="end_date" invisible="time_range_selection != 'custom'"/>
                     </group>
                     <group>
+                        <field name="product_category_ids" widget="many2many_tags"/>
+                        <field name="expense_category_ids" widget="many2many_tags"/>
+                    </group>
+                    <group>
                         <field name="currency_id" invisible="1"/>
                         <field name="average_unit_profit" widget="monetary" readonly="1"/>
                         <field name="total_expenses" widget="monetary" readonly="1"/>
@@ -66,7 +70,7 @@
                                     <field name="price_subtotal" readonly="1"/>
                                     <field name="price_unit" widget="monetary" readonly="1"/>
                                     <field name="currency_id" readonly="1" column_invisible="1"/>
-                                    <button name="action_get_purchase" string="Purchase" type="object" class="oe_highlight"/>
+                                    <button name="action_get_purchase" string="View" type="object" class="oe_highlight"/>
                                     <field name="salesperson_id" optional="show" string="Salesperson" widget="many2one_avatar_user"/>
                                 </tree>
                             </field>
@@ -80,7 +84,7 @@
                                     <field name="price_total" readonly="1"/>
                                     <field name="price_unit" widget="monetary" readonly="1"/>
                                     <field name="currency_id" readonly="1" column_invisible="1"/>
-                                    <button name="action_get_sale" string="Sale" type="object" class="oe_highlight"/>
+                                    <button name="action_get_sale" string="View" type="object" class="oe_highlight"/>
                                     <field name="salesperson_id" optional="show" string="Salesperson" widget="many2one_avatar_user"/>
                                 </tree>
                             </field>
@@ -93,7 +97,7 @@
                                     <field name="price_subtotal" readonly="1"/>
                                     <field name="price_unit" widget="monetary" readonly="1"/>
                                     <field name="currency_id" readonly="1" column_invisible="1"/>
-                                    <button name="action_get_pos_sale" string="Sale" type="object" class="oe_highlight"/>
+                                    <button name="action_get_pos_sale" string="View" type="object" class="oe_highlight"/>
                                     <field name="salesperson_id" optional="show" string="Salesperson" widget="many2one_avatar_user"/>
                                 </tree>
                             </field>
