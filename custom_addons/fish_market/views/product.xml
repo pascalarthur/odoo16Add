@@ -11,8 +11,8 @@
                     <field name="box_weight" invisible="detailed_type != 'product'"/>
                 </xpath>
                 <xpath expr="//field[@name='invoice_policy']" position="after">
-                    <field name="start_warehouse_id" invisible="is_transport == True"/>
-                    <field name="destination_warehouse_id" invisible="is_transport == True"/>
+                    <field name="start_warehouse_id" invisible="is_transport == False"/>
+                    <field name="destination_warehouse_id" invisible="is_transport == False"/>
                 </xpath>
                 <field name="sale_ok" position="before">
                     <span class="d-inline-block">
