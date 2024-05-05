@@ -62,7 +62,7 @@ class MetaSaleOrder(models.Model):
     )
 
     transport_product_id = fields.Many2one('product.template', string='Transport Route',
-                                           domain=[('type', '=', 'transport')])
+                                           domain=[('is_transport', '=', 'True')])
     transport_pricelist_id = fields.Many2one('product.pricelist', string='Transport Pricelist')
     transport_pricelist_item_ids = fields.One2many('product.pricelist.item', 'meta_sale_order_id',
                                                    string='Transport Bids with Backloads')
