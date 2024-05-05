@@ -18,7 +18,8 @@ import threading
 from socket import gaierror, timeout
 from OpenSSL import crypto as SSLCrypto
 from OpenSSL.crypto import Error as SSLCryptoError, FILETYPE_PEM
-from OpenSSL.SSL import Context as SSLContext, Error as SSLError
+from OpenSSL.SSL import Error as SSLError
+from urllib3.contrib.pyopenssl import PyOpenSSLContext
 
 from odoo import api, fields, models, tools, _
 from odoo.exceptions import UserError
@@ -88,6 +89,7 @@ class IrMailServer(models.Model):
     _name = "ir.mail_server"
     _description = 'Mail Server'
     _order = 'sequence, id'
+    _allow_sudo_commands = False
 
     NO_VALID_RECIPIENT = ("At least one valid recipient address should be "
                           "specified for outgoing emails (To/Cc/Bcc)")
@@ -236,36 +238,36 @@ class IrMailServer(models.Model):
                 # Testing the MAIL FROM step should detect sender filter problems
                 (code, repl) = smtp.mail(email_from)
                 if code != 250:
-                    raise UserError(_('The server refused the sender address (%(email_from)s) with error %(repl)s', email_from=email_from, repl=repl))
+                    raise UserError(_('The server refused the sender address (%(email_from)s) with error %(repl)s', email_from=email_from, repl=repl))  # noqa: TRY301
                 # Testing the RCPT TO step should detect most relaying problems
                 (code, repl) = smtp.rcpt(email_to)
                 if code not in (250, 251):
-                    raise UserError(_('The server refused the test recipient (%(email_to)s) with error %(repl)s', email_from=email_from, repl=repl))
+                    raise UserError(_('The server refused the test recipient (%(email_to)s) with error %(repl)s', email_to=email_to, repl=repl))  # noqa: TRY301
                 # Beginning the DATA step should detect some deferred rejections
                 # Can't use self.data() as it would actually send the mail!
                 smtp.putcmd("data")
                 (code, repl) = smtp.getreply()
                 if code != 354:
-                    raise UserError(_('The server refused the test connection with error %(repl)s', repl=repl))
-            except UserError as e:
-                # let UserErrors (messages) bubble up
-                raise e
+                    raise UserError(_('The server refused the test connection with error %(repl)s', repl=repl))  # noqa: TRY301
             except (UnicodeError, idna.core.InvalidCodepoint) as e:
-                raise UserError(_("Invalid server name!\n %s", ustr(e)))
+                raise UserError(_("Invalid server name!\n %s", e)) from e
             except (gaierror, timeout) as e:
-                raise UserError(_("No response received. Check server address and port number.\n %s", ustr(e)))
+                raise UserError(_("No response received. Check server address and port number.\n %s", e)) from e
             except smtplib.SMTPServerDisconnected as e:
-                raise UserError(_("The server has closed the connection unexpectedly. Check configuration served on this port number.\n %s", ustr(e.strerror)))
+                raise UserError(_("The server has closed the connection unexpectedly. Check configuration served on this port number.\n %s", e)) from e
             except smtplib.SMTPResponseException as e:
-                raise UserError(_("Server replied with following exception:\n %s", ustr(e.smtp_error)))
+                raise UserError(_("Server replied with following exception:\n %s", e)) from e
             except smtplib.SMTPNotSupportedError as e:
-                raise UserError(_("An option is not supported by the server:\n %s", e.strerror))
+                raise UserError(_("An option is not supported by the server:\n %s", e)) from e
             except smtplib.SMTPException as e:
-                raise UserError(_("An SMTP exception occurred. Check port number and connection security type.\n %s", ustr(e)))
-            except SSLError as e:
-                raise UserError(_("An SSL exception occurred. Check connection security type.\n %s", ustr(e)))
+                raise UserError(_("An SMTP exception occurred. Check port number and connection security type.\n %s", e)) from e
+            except (ssl.SSLError, SSLError) as e:
+                raise UserError(_("An SSL exception occurred. Check connection security type.\n %s", e)) from e
+            except UserError:
+                raise
             except Exception as e:
-                raise UserError(_("Connection Test Failed! Here is what we got instead:\n %s", ustr(e)))
+                _logger.warning("Connection test on %s failed with a generic error.", server, exc_info=True)
+                raise UserError(_("Connection Test Failed! Here is what we got instead:\n %s", e)) from e
             finally:
                 try:
                     if smtp:
@@ -340,15 +342,15 @@ class IrMailServer(models.Model):
                and mail_server.smtp_ssl_certificate
                and mail_server.smtp_ssl_private_key):
                 try:
-                    ssl_context = SSLContext(ssl.PROTOCOL_TLS)
+                    ssl_context = PyOpenSSLContext(ssl.PROTOCOL_TLS)
                     smtp_ssl_certificate = base64.b64decode(mail_server.smtp_ssl_certificate)
                     certificate = SSLCrypto.load_certificate(FILETYPE_PEM, smtp_ssl_certificate)
                     smtp_ssl_private_key = base64.b64decode(mail_server.smtp_ssl_private_key)
                     private_key = SSLCrypto.load_privatekey(FILETYPE_PEM, smtp_ssl_private_key)
-                    ssl_context.use_certificate(certificate)
-                    ssl_context.use_privatekey(private_key)
+                    ssl_context._ctx.use_certificate(certificate)
+                    ssl_context._ctx.use_privatekey(private_key)
                     # Check that the private key match the certificate
-                    ssl_context.check_privatekey()
+                    ssl_context._ctx.check_privatekey()
                 except SSLCryptoError as e:
                     raise UserError(_('The private key or the certificate is not a valid file. \n%s', str(e)))
                 except SSLError as e:
@@ -373,11 +375,10 @@ class IrMailServer(models.Model):
 
             if smtp_ssl_certificate_filename and smtp_ssl_private_key_filename:
                 try:
-                    ssl_context = SSLContext(ssl.PROTOCOL_TLS)
-                    ssl_context.use_certificate_chain_file(smtp_ssl_certificate_filename)
-                    ssl_context.use_privatekey_file(smtp_ssl_private_key_filename)
+                    ssl_context = PyOpenSSLContext(ssl.PROTOCOL_TLS)
+                    ssl_context.load_cert_chain(smtp_ssl_certificate_filename, keyfile=smtp_ssl_private_key_filename)
                     # Check that the private key match the certificate
-                    ssl_context.check_privatekey()
+                    ssl_context._ctx.check_privatekey()
                 except SSLCryptoError as e:
                     raise UserError(_('The private key or the certificate is not a valid file. \n%s', str(e)))
                 except SSLError as e:
@@ -396,7 +397,7 @@ class IrMailServer(models.Model):
                       "You could use STARTTLS instead. "
                        "If SSL is needed, an upgrade to Python 2.6 on the server-side "
                        "should do the trick."))
-            connection = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=SMTP_TIMEOUT)
+            connection = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=SMTP_TIMEOUT, context=ssl_context)
         else:
             connection = smtplib.SMTP(smtp_server, smtp_port, timeout=SMTP_TIMEOUT)
 
@@ -748,13 +749,17 @@ class IrMailServer(models.Model):
 
         # 3. Take the first mail server without "from_filter" because
         # nothing else has been found... Will spoof the FROM because
-        # we have no other choices
+        # we have no other choices (will use the notification email if available
+        # otherwise we will use the user email)
         if mail_server := mail_servers.filtered(lambda m: not m.from_filter):
-            return mail_server[0], email_from
+            return mail_server[0], notifications_email or email_from
 
         # 4. Return the first mail server even if it was configured for another domain
         if mail_servers:
-            return mail_servers[0], email_from
+            _logger.warning(
+                "No mail server matches the from_filter, using %s as fallback",
+                notifications_email or email_from)
+            return mail_servers[0], notifications_email or email_from
 
         # 5: SMTP config in odoo-bin arguments
         from_filter = self.env['ir.mail_server']._get_default_from_filter()
@@ -765,7 +770,11 @@ class IrMailServer(models.Model):
         if notifications_email and self._match_from_filter(notifications_email, from_filter):
             return None, notifications_email
 
-        return None, email_from
+        _logger.warning(
+            "The from filter of the CLI configuration does not match the notification email "
+            "or the user email, using %s as fallback",
+            notifications_email or email_from)
+        return None, notifications_email or email_from
 
     @api.model
     def _match_from_filter(self, email_from, from_filter):

@@ -108,7 +108,8 @@ class IrActionsReport(models.Model):
     _description = 'Report Action'
     _inherit = 'ir.actions.actions'
     _table = 'ir_act_report_xml'
-    _order = 'name'
+    _order = 'name, id'
+    _allow_sudo_commands = False
 
     type = fields.Char(default='ir.actions.report')
     binding_type = fields.Selection(default='report')
@@ -346,7 +347,7 @@ class IrActionsReport(models.Model):
             return {}
         base_url = IrConfig.get_param('report.url') or layout.get_base_url()
 
-        root = lxml.html.fromstring(html)
+        root = lxml.html.fromstring(html, parser=lxml.html.HTMLParser(encoding='utf-8'))
         match_klass = "//div[contains(concat(' ', normalize-space(@class), ' '), ' {} ')]"
 
         header_node = etree.Element('div', id='minimal_layout_report_headers')
@@ -673,6 +674,7 @@ class IrActionsReport(models.Model):
 
         # access the report details with sudo() but evaluation context as current user
         report_sudo = self._get_report(report_ref)
+        has_duplicated_ids = res_ids and len(res_ids) != len(set(res_ids))
 
         collected_streams = OrderedDict()
 
@@ -681,9 +683,13 @@ class IrActionsReport(models.Model):
         if res_ids:
             records = self.env[report_sudo.model].browse(res_ids)
             for record in records:
+                res_id = record.id
+                if res_id in collected_streams:
+                    continue
+
                 stream = None
                 attachment = None
-                if report_sudo.attachment and not self._context.get("report_pdf_no_attachment"):
+                if not has_duplicated_ids and report_sudo.attachment and not self._context.get("report_pdf_no_attachment"):
                     attachment = report_sudo.retrieve_attachment(record)
 
                     # Extract the stream from the attachment.
@@ -698,13 +704,14 @@ class IrActionsReport(models.Model):
                             stream.close()
                             stream = new_stream
 
-                collected_streams[record.id] = {
+                collected_streams[res_id] = {
                     'stream': stream,
                     'attachment': attachment,
                 }
 
         # Call 'wkhtmltopdf' to generate the missing streams.
         res_ids_wo_stream = [res_id for res_id, stream_data in collected_streams.items() if not stream_data['stream']]
+        all_res_ids_wo_stream = res_ids if has_duplicated_ids else res_ids_wo_stream
         is_whtmltopdf_needed = not res_ids or res_ids_wo_stream
 
         if is_whtmltopdf_needed:
@@ -724,16 +731,16 @@ class IrActionsReport(models.Model):
             # https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2083
             additional_context = {'debug': False}
 
-            html = self.with_context(**additional_context)._render_qweb_html(report_ref, res_ids_wo_stream, data=data)[0]
+            html = self.with_context(**additional_context)._render_qweb_html(report_ref, all_res_ids_wo_stream, data=data)[0]
 
             bodies, html_ids, header, footer, specific_paperformat_args = self.with_context(**additional_context)._prepare_html(html, report_model=report_sudo.model)
 
-            if report_sudo.attachment and set(res_ids_wo_stream) != set(html_ids):
+            if not has_duplicated_ids and report_sudo.attachment and set(res_ids_wo_stream) != set(html_ids):
                 raise UserError(_(
                     "The report's template %r is wrong, please contact your administrator. \n\n"
                     "Can not separate file to save as attachment because the report's template does not contains the"
                     " attributes 'data-oe-model' and 'data-oe-id' on the div with 'article' classname.",
-                    self.name,
+                    report_sudo.name,
                 ))
 
             pdf_content = self._run_wkhtmltopdf(
@@ -748,7 +755,7 @@ class IrActionsReport(models.Model):
             pdf_content_stream = io.BytesIO(pdf_content)
 
             # Printing a PDF report without any records. The content could be returned directly.
-            if not res_ids:
+            if has_duplicated_ids or not res_ids:
                 return {
                     False: {
                         'stream': pdf_content_stream,
@@ -824,6 +831,44 @@ class IrActionsReport(models.Model):
 
         return collected_streams
 
+    def _prepare_pdf_report_attachment_vals_list(self, report, streams):
+        """Hook to prepare attachment values needed for attachments creation
+        during the pdf report generation.
+
+        :param report: The report (with sudo) from a reference report_ref.
+        :param streams: Dict of streams for each report containing the pdf content and existing attachments.
+        :return: attachment values list needed for attachments creation.
+        """
+        attachment_vals_list = []
+        for res_id, stream_data in streams.items():
+            # An attachment already exists.
+            if stream_data['attachment']:
+                continue
+
+            # if res_id is false
+            # we are unable to fetch the record, it won't be saved as we can't split the documents unambiguously
+            if not res_id:
+                _logger.warning(
+                    "These documents were not saved as an attachment because the template of %s doesn't "
+                    "have any headers seperating different instances of it. If you want it saved,"
+                    "please print the documents separately", report.report_name)
+                continue
+            record = self.env[report.model].browse(res_id)
+            attachment_name = safe_eval(report.attachment, {'object': record, 'time': time})
+
+            # Unable to compute a name for the attachment.
+            if not attachment_name:
+                continue
+
+            attachment_vals_list.append({
+                'name': attachment_name,
+                'raw': stream_data['stream'].getvalue(),
+                'res_model': report.model,
+                'res_id': record.id,
+                'type': 'binary',
+            })
+        return attachment_vals_list
+
     def _render_qweb_pdf(self, report_ref, res_ids=None, data=None):
         if not data:
             data = {}
@@ -837,41 +882,14 @@ class IrActionsReport(models.Model):
 
         self = self.with_context(webp_as_jpg=True)
         collected_streams = self._render_qweb_pdf_prepare_streams(report_ref, data, res_ids=res_ids)
+        has_duplicated_ids = res_ids and len(res_ids) != len(set(res_ids))
 
         # access the report details with sudo() but keep evaluation context as current user
         report_sudo = self._get_report(report_ref)
 
         # Generate the ir.attachment if needed.
-        if report_sudo.attachment and not self._context.get("report_pdf_no_attachment"):
-            attachment_vals_list = []
-            for res_id, stream_data in collected_streams.items():
-                # An attachment already exists.
-                if stream_data['attachment']:
-                    continue
-
-                # if res_id is false
-                # we are unable to fetch the record, it won't be saved as we can't split the documents unambiguously
-                if not res_id:
-                    _logger.warning(
-                        "These documents were not saved as an attachment because the template of %s doesn't "
-                        "have any headers seperating different instances of it. If you want it saved,"
-                        "please print the documents separately", report_sudo.report_name)
-                    continue
-                record = self.env[report_sudo.model].browse(res_id)
-                attachment_name = safe_eval(report_sudo.attachment, {'object': record, 'time': time})
-
-                # Unable to compute a name for the attachment.
-                if not attachment_name:
-                    continue
-
-                attachment_vals_list.append({
-                    'name': attachment_name,
-                    'raw': stream_data['stream'].getvalue(),
-                    'res_model': report_sudo.model,
-                    'res_id': record.id,
-                    'type': 'binary',
-                })
-
+        if not has_duplicated_ids and report_sudo.attachment and not self._context.get("report_pdf_no_attachment"):
+            attachment_vals_list = self._prepare_pdf_report_attachment_vals_list(report_sudo, collected_streams)
             if attachment_vals_list:
                 attachment_names = ', '.join(x['name'] for x in attachment_vals_list)
                 try:

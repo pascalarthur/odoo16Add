@@ -96,7 +96,7 @@ class TestSanitizer(BaseCase):
             ("<DIV STYLE=\"background-image: url(&#1;javascript:alert('XSS'))\">"),  # div background + extra characters
             ("<IMG SRC='vbscript:msgbox(\"XSS\")'>"),  # VBscrip in an image
             ("<BODY ONLOAD=alert('XSS')>"),  # event handler
-            ("<BR SIZE=\"&{alert('XSS')}\>"),  # & javascript includes
+            ("<BR SIZE=\"&{alert('XSS')}\\>"),  # & javascript includes
             ("<LINK REL=\"stylesheet\" HREF=\"javascript:alert('XSS');\">"),  # style sheet
             ("<LINK REL=\"stylesheet\" HREF=\"http://ha.ckers.org/xss.css\">"),  # remote style sheet
             ("<STYLE>@import'http://ha.ckers.org/xss.css';</STYLE>"),  # remote style sheet 2
@@ -118,6 +118,46 @@ class TestSanitizer(BaseCase):
             self.assertIn(tag, sanitized_html, 'html_sanitize stripped too much of original html')
         for attr in ['javascript']:
             self.assertNotIn(attr, sanitized_html, 'html_sanitize did not remove enough unwanted attributes')
+
+    def test_outlook_mail_sanitize(self):
+        case = """<div class="WordSection1">
+<p class="MsoNormal">Here is a test mail<o:p></o:p></p>
+<p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class="MsoNormal">With a break line<o:p></o:p></p>
+<p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class="MsoNormal">Then two<o:p></o:p></p>
+<p class="MsoNormal"><o:p>&nbsp;</o:p></p>
+<div>
+<div style="border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0in 0in 0in">
+<p class="MsoNormal"><b>From:</b> Mitchell Admin &lt;dummy@example.com&gt;
+<br>
+<b>Sent:</b> Monday, November 20, 2023 8:34 AM<br>
+<b>To:</b> test user &lt;dummy@example.com&gt;<br>
+<b>Subject:</b> test (#23)<o:p></o:p></p>
+</div>
+</div>"""
+
+        expected = """<div class="WordSection1">
+<p class="MsoNormal">Here is a test mail</p>
+<p class="MsoNormal">&nbsp;</p>
+<p class="MsoNormal">With a break line</p>
+<p class="MsoNormal">&nbsp;</p>
+<p class="MsoNormal">&nbsp;</p>
+<p class="MsoNormal">Then two</p>
+<p class="MsoNormal">&nbsp;</p>
+<div>
+<div style="border:none;border-top:solid #E1E1E1 1.0pt;padding:3.0pt 0in 0in 0in">
+<p class="MsoNormal"><b>From:</b> Mitchell Admin &lt;dummy@example.com&gt;
+<br>
+<b>Sent:</b> Monday, November 20, 2023 8:34 AM<br>
+<b>To:</b> test user &lt;dummy@example.com&gt;<br>
+<b>Subject:</b> test (#23)</p>
+</div>
+</div></div>"""
+
+        result = html_sanitize(case)
+        self.assertEqual(result, expected)
 
     def test_sanitize_unescape_emails(self):
         not_emails = [
@@ -346,7 +386,7 @@ class TestHtmlTools(BaseCase):
             ('<div><p>First <br/>Second <br/>Third Paragraph</p><p>--<br/>Signature paragraph with a <a href="./link">link</a></p></div>',
              'First Second Third Paragraph -- Signature paragraph with a link'),
             ('<p>Now =&gt; processing&nbsp;entities&#8203;and extra whitespace too.  </p>',
-             'Now =&gt; processing&nbsp;entities\u200band extra whitespace too.'),
+             'Now => processing\xa0entities\u200band extra whitespace too.'),
             ('<div>Look what happens with <p>unmatched tags</div>', 'Look what happens with unmatched tags'),
             ('<div>Look what happens with <p unclosed tags</div> Are we good?', 'Look what happens with Are we good?')
         ]
@@ -374,6 +414,7 @@ class TestHtmlTools(BaseCase):
             self.assertTrue(is_html_empty(content))
 
         void_html_samples = [
+            '<section><br /> <b><i/></b></section>',
             '<p><br></p>', '<p><br> </p>', '<p><br /></p >',
             '<p style="margin: 4px"></p>',
             '<div style="margin: 4px"></div>',

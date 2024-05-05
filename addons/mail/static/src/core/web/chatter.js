@@ -131,7 +131,11 @@ export class Chatter extends Component {
                             return;
                         }
                     }
-                    files.forEach((file) => this.attachmentUploader.uploadFile(file));
+                    Promise.all(files.map((file) => this.attachmentUploader.uploadFile(file))).then(() => {
+                        if (this.props.hasParentReloadOnAttachmentsChanged) {
+                            this.reloadParentView();
+                        }
+                    })
                     this.state.isAttachmentBoxOpened = true;
                 }
             },
@@ -140,7 +144,12 @@ export class Chatter extends Component {
 
         onMounted(() => {
             this.changeThread(this.props.threadModel, this.props.threadId, this.props.webRecord);
-            this.load(this.state.thread, ["followers", "attachments", "suggestedRecipients"]);
+            if (!this.env.chatter || this.env.chatter?.fetchData) {
+                if (this.env.chatter) {
+                    this.env.chatter.fetchData = false;
+                }
+                this.load(this.state.thread, ["followers", "attachments", "suggestedRecipients"]);
+            }
         });
         onWillUpdateProps((nextProps) => {
             if (
@@ -149,8 +158,10 @@ export class Chatter extends Component {
             ) {
                 this.changeThread(nextProps.threadModel, nextProps.threadId, nextProps.webRecord);
             }
-            if (this.env.chatter?.fetchOnWillUpdateProps) {
-                this.env.chatter.fetchOnWillUpdateProps = false;
+            if (!this.env.chatter || this.env.chatter?.fetchData) {
+                if (this.env.chatter) {
+                    this.env.chatter.fetchData = false;
+                }
                 this.load(this.state.thread, ["followers", "attachments", "suggestedRecipients"]);
             }
         });
@@ -218,13 +229,16 @@ export class Chatter extends Component {
      * @returns {string}
      */
     get toRecipientsText() {
+        if (this.state.thread?.recipients.length === 0) {
+            return _t("No recipient");
+        }
         const recipients = [...(this.state.thread?.recipients ?? [])]
             .slice(0, 5)
             .map(({ partner }) => {
                 const text = partner.email ? partner.emailWithoutDomain : partner.name;
-                return `<span class="text-muted" title="${escape(partner.email)}">${escape(
-                    text
-                )}</span>`;
+                return `<span class="text-muted" title="${escape(
+                    partner.email || _t("no email address")
+                )}">${escape(text)}</span>`;
             });
         const formatter = new Intl.ListFormat(
             this.store.env.services["user"].lang?.replace("_", "-"),

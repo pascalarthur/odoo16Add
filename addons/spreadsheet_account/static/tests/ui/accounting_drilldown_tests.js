@@ -8,6 +8,7 @@ import {
     waitForDataSourcesLoaded,
 } from "@spreadsheet/../tests/utils/model";
 import { registry } from "@web/core/registry";
+import { doMenuAction } from "@spreadsheet/../tests/utils/ui";
 
 const { cellMenuRegistry } = spreadsheet.registries;
 
@@ -66,6 +67,10 @@ QUnit.module("spreadsheet_account > Accounting Drill down", { beforeEach }, () =
         env.model = model;
         setCellContent(model, "A1", `=ODOO.BALANCE("100", 2020)`);
         setCellContent(model, "A2", `=ODOO.BALANCE("100", 0)`);
+        setCellContent(model, "A3", `=ODOO.BALANCE("100", 2020, , , FALSE)`);
+        setCellContent(model, "A4", `=ODOO.BALANCE("100", 2020, , , )`);
+        // Does not affect non formula cells
+        setCellContent(model, "A5", `5`);
         await waitForDataSourcesLoaded(model);
         selectCell(model, "A1");
         const root = cellMenuRegistry
@@ -76,5 +81,55 @@ QUnit.module("spreadsheet_account > Accounting Drill down", { beforeEach }, () =
         assert.verifySteps(["drill down action"]);
         selectCell(model, "A2");
         assert.equal(root.isVisible(env), false);
+        selectCell(model, "A3");
+        assert.equal(root.isVisible(env), true);
+        await root.execute(env);
+        assert.verifySteps(["drill down action"]);
+        selectCell(model, "A4");
+        assert.equal(root.isVisible(env), true);
+        await root.execute(env);
+        assert.verifySteps(["drill down action"]);
+        selectCell(model, "A5");
+        assert.equal(root.isVisible(env), false);
+    });
+
+    QUnit.test("Create drill down domain when month date is a reference", async (assert) => {
+        const actionService = {
+            start() {
+                return {
+                    doAction(args) {},
+                };
+            },
+        };
+        registry.category("services").add("action", actionService, { force: true });
+        const model = await createModelWithDataSource({
+            serverData,
+            mockRPC: async function (route, args) {
+                if (args.method === "spreadsheet_move_line_action") {
+                    assert.step("spreadsheet_move_line_action");
+                    assert.deepEqual(args.args, [
+                        {
+                            codes: ["100"],
+                            company_id: null,
+                            include_unposted: false,
+                            date_range: {
+                                month: 2,
+                                range_type: "month",
+                                year: 2024,
+                            },
+                        },
+                    ]);
+                    return {};
+                }
+            },
+        });
+        const env = model.config.custom.env;
+        env.model = model;
+        setCellContent(model, "A1", "02/2024");
+        setCellContent(model, "A2", '=ODOO.BALANCE("100", A1)');
+        await waitForDataSourcesLoaded(model);
+        selectCell(model, "A2");
+        await doMenuAction(cellMenuRegistry, ["move_lines_see_records"], env);
+        assert.verifySteps(["spreadsheet_move_line_action"]);
     });
 });

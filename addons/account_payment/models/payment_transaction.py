@@ -19,16 +19,18 @@ class PaymentTransaction(models.Model):
 
     @api.depends('invoice_ids')
     def _compute_invoices_count(self):
-        self.env.cr.execute(
-            '''
-            SELECT transaction_id, count(invoice_id)
-            FROM account_invoice_transaction_rel
-            WHERE transaction_id IN %s
-            GROUP BY transaction_id
-            ''',
-            [tuple(self.ids)]
-        )
-        tx_data = dict(self.env.cr.fetchall())  # {id: count}
+        tx_data = {}
+        if self.ids:
+            self.env.cr.execute(
+                '''
+                SELECT transaction_id, count(invoice_id)
+                FROM account_invoice_transaction_rel
+                WHERE transaction_id IN %s
+                GROUP BY transaction_id
+                ''',
+                [tuple(self.ids)]
+            )
+            tx_data = dict(self.env.cr.fetchall())  # {id: count}
         for tx in self:
             tx.invoices_count = tx_data.get(tx.id, 0)
 
@@ -194,15 +196,15 @@ class PaymentTransaction(models.Model):
         :return: None
         """
         self.ensure_one()
-        self = self.with_user(SUPERUSER_ID)  # Log messages as 'OdooBot'
+        author = self.env.user.partner_id if self.env.uid == SUPERUSER_ID else self.partner_id
         if self.source_transaction_id:
             for invoice in self.source_transaction_id.invoice_ids:
-                invoice.message_post(body=message)
+                invoice.message_post(body=message, author_id=author.id)
             payment_id = self.source_transaction_id.payment_id
             if payment_id:
-                payment_id.message_post(body=message)
+                payment_id.message_post(body=message, author_id=author.id)
         for invoice in self.invoice_ids:
-            invoice.message_post(body=message)
+            invoice.message_post(body=message, author_id=author.id)
 
     #=== BUSINESS METHODS - POST-PROCESSING ===#
 

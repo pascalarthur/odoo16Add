@@ -9,7 +9,7 @@ import { camelToSnakeObject } from "@spreadsheet/helpers/helpers";
 
 const { cellMenuRegistry, featurePluginRegistry } = spreadsheet.registries;
 const { astToFormula } = spreadsheet;
-const { toString, toBoolean } = spreadsheet.helpers;
+const { toString, toBoolean, formatValue } = spreadsheet.helpers;
 
 featurePluginRegistry.add("odooAccountingAggregates", AccountingPlugin);
 
@@ -26,10 +26,26 @@ cellMenuRegistry.add("move_lines_see_records", {
             .map((arg) => env.model.getters.evaluateFormula(sheetId, arg));
         codes = toString(codes).split(",");
         const locale = env.model.getters.getLocale();
+        if (args[1]?.type === "REFERENCE") {
+            const range = env.model.getters.getRangeFromSheetXC(sheetId, args[1].value);
+            const cell = env.model.getters.getEvaluatedCell({
+                sheetId: range.sheetId,
+                col: range.zone.left,
+                row: range.zone.top,
+            });
+            if (cell?.format) {
+                date_range = formatValue(date_range, { format: cell.format, locale });
+            }
+        }
         const dateRange = parseAccountingDate(date_range, locale);
+        offset = parseInt(offset) || 0;
         dateRange.year += offset || 0;
-        companyId = companyId || null;
-        includeUnposted = toBoolean(includeUnposted);
+        companyId = parseInt(companyId) || null;
+        try {
+            includeUnposted = toBoolean(includeUnposted);
+        } catch {
+            includeUnposted = false;
+        }
 
         const action = await env.services.orm.call(
             "account.account",
@@ -46,6 +62,7 @@ cellMenuRegistry.add("move_lines_see_records", {
             !evaluatedCell.error &&
             evaluatedCell.value !== "" &&
             cell &&
+            cell.isFormula &&
             getNumberOfAccountFormulas(cell.compiledFormula.tokens) === 1
         );
     },
