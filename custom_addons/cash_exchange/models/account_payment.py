@@ -81,12 +81,13 @@ class AccountPayment(models.Model):
         self.auto_reconcile()
         self.paired_internal_transfer_payment_id.auto_reconcile()
 
-    def _prepare_move_line_default_vals(self, write_off_line_vals=None):
+    def _prepare_move_line_default_vals(self, write_off_line_vals=None, force_balance=None):
         ''' Prepare the dictionary to create the default account.move.lines for the current payment.
         :param write_off_line_vals: Optional list of dictionaries to create a write-off account.move.line easily containing:
             * amount:       The amount to be added to the counterpart amount.
             * name:         The label to set on the line.
             * account_id:   The account on which create the write-off.
+        :param force_balance: Optional balance.
         :return: A list of python dictionary to be passed to the account.move.line's 'create' method.
         '''
         self.ensure_one()
@@ -117,6 +118,9 @@ class AccountPayment(models.Model):
             liquidity_balance = liquidity_amount_currency
             if self.currency_id.id != self.company_id.currency_id.id:
                 liquidity_balance *= self.manual_currency_rate
+        elif not write_off_line_vals and force_balance is not None:
+            sign = 1 if liquidity_amount_currency > 0 else -1
+            liquidity_balance = sign * abs(force_balance)
         else:
             liquidity_balance = self.currency_id._convert(
                 liquidity_amount_currency,
