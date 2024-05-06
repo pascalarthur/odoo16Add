@@ -11,5 +11,7 @@ class PosSession(models.Model):
             domain=[('id', 'in', self.config_id.pos_currencies.ids)],
             fields=['name', 'symbol', 'position', 'rounding', 'rate', 'rate'],
         )
+        for currency in currencies:
+            currency["rate"] = 1 / currency["rate"]
         loaded_data['currency_rates'] = currencies
         return loaded_data

@@ -29,7 +29,7 @@ patch(CashOpeningPopup.prototype, {
         }
 
         let total = 0;
-        let default_currency_rate = this.pos.currency.rate;
+        let default_currency_rate = 1 / this.pos.currency.rate;
 
         this.pos.currencies.forEach((currency) => {
             let currency_rate = default_currency_rate / currency.rate;
@@ -80,7 +80,9 @@ patch(ClosePosPopup.prototype, {
         }
 
         let total = 0;
-        let default_currency_rate = this.pos.currency.rate;
+        let default_currency_rate = 1 / this.pos.currency.rate;
+
+        console.log("default_currency_rate", default_currency_rate, this.pos.currency.rate);
 
         this.pos.currencies.forEach((currency) => {
             let currency_rate = default_currency_rate / currency.rate;

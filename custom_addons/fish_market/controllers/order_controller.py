@@ -15,7 +15,7 @@ class TransportOrderController(http.Controller):
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
             nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')
-                                                                                       ]).inverse_rate
+                                                                                       ]).rate
 
             obj_start_end_dict = token_record.route_demand_id.read([
                 'route_start_street', 'route_start_street2', 'route_start_city', 'route_start_zip',

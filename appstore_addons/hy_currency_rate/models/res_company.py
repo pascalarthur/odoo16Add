@@ -103,7 +103,7 @@ class ResCompany(models.Model):
             url = f"{base_url}/{curr1}"
             rate = requests.get(url)
             if rate.status_code == 200:
-                return rate.json()['rates'][curr2]
+                return 1 / rate.json()['rates'][curr2]
         return "Not found"
 
     def get_today_rate(self, curr1, curr2):

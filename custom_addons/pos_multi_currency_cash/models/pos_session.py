@@ -25,7 +25,10 @@ class PosSession(models.Model):
             if cash['id'] == default_currency_id or cash['counted'] == 0:
                 continue
 
-            exchange_rate = cash['rate'] / default_cash['rate']
+            cash_id = self.env["res.currency"].browse(cash["id"])
+            default_cash_id = self.env["res.currency"].browse(default_cash["id"])
+
+            exchange_rate = self.env["res.currency"]._get_conversion_rate(default_cash_id, cash_id)
             # Create an AccountJournalCurrencyExchange record
             exchange_vals = {
                 'is_internal_transfer': True,
@@ -34,18 +37,18 @@ class PosSession(models.Model):
                 'destination_journal_id': default_journal_id,
                 'amount': cash['counted'],
                 'manual_currency_rate_active': True,
-                'manual_currency_rate': exchange_rate,
+                'manual_currency_rate': 1 / exchange_rate,
                 'date': fields.Date.today(),
                 'ref': f"Exchange from default POS currency to {cash['name']}",
             }
 
             # The payment is always in the currency that is not equal to the company currency
             if cash['id'] == self.company_id.currency_id.id:
-                exchange_vals['manual_currency_rate'] = 1 / exchange_rate
-                exchange_vals['amount'] *= exchange_rate
+                exchange_vals['manual_currency_rate'] = exchange_rate
+                exchange_vals['amount'] /= exchange_rate
 
             exchange_record = self.env['account.payment'].create(exchange_vals)
-            exchange_record.action_post_and_reconcile()
+            exchange_record.action_post()
 
     def correct_cash_amounts_closing(self, cash_amounts_in_currencies: List[dict]):
         # print('correct_cash_amounts_closing', 'location_id', self.config_id.location_id.id)
@@ -68,7 +71,10 @@ class PosSession(models.Model):
             if cash['id'] == default_currency_id or cash['counted'] == 0:
                 continue
 
-            exchange_rate = cash['rate'] / default_cash['rate']
+            cash_id = self.env["res.currency"].browse(cash["id"])
+            default_cash_id = self.env["res.currency"].browse(default_cash["id"])
+
+            exchange_rate = self.env["res.currency"]._get_conversion_rate(default_cash_id, cash_id)
 
             # Create an AccountJournalCurrencyExchange record
             exchange_vals = {
@@ -78,18 +84,18 @@ class PosSession(models.Model):
                 'destination_journal_id': cash['journal_id'],
                 'amount': cash['counted'],
                 'manual_currency_rate_active': True,
-                'manual_currency_rate': exchange_rate,
+                'manual_currency_rate': 1 / exchange_rate,
                 'date': fields.Date.today(),
                 'ref': f"Exchange from {cash['name']} to default POS currency",
             }
 
             # The payment is always in the currency that is not equal to the company currency
             if cash['id'] == self.company_id.currency_id.id:
-                exchange_vals['manual_currency_rate'] = 1 / exchange_rate
-                exchange_vals['amount'] *= exchange_rate
+                exchange_vals['manual_currency_rate'] = exchange_rate
+                exchange_vals['amount'] /= exchange_rate
 
             exchange_record = self.env['account.payment'].create(exchange_vals)
-            exchange_record.action_post_and_reconcile()
+            exchange_record.action_post()
 
     def get_available_product_quantities(self):
         available_product_quantities = {}
@@ -109,7 +115,7 @@ class PosSession(models.Model):
             pm = loaded_data["pos.payment.method"][ii]
             pm_complete = self.env['pos.payment.method'].search([('id', '=', pm['id'])])
             loaded_data["pos.payment.method"][ii]['currency_id'] = pm_complete.journal_id.currency_id.id
-            loaded_data["pos.payment.method"][ii]['currency_rate'] = pm_complete.journal_id.currency_id.rate
+            loaded_data["pos.payment.method"][ii]['currency_rate'] = pm_complete.journal_id.currency_id.inverse_rate
 
         journal_ids = self.env['account.journal'].sudo().search(
             domain=[('id', 'in', self.config_id.currency_journal_ids.ids)], )
@@ -122,7 +128,7 @@ class PosSession(models.Model):
                 'symbol': journal_id.currency_id.symbol,
                 'position': journal_id.currency_id.position,
                 'rounding': journal_id.currency_id.rounding,
-                'rate': journal_id.currency_id.rate,
+                'rate': journal_id.currency_id.inverse_rate,
                 'journal_id': journal_id.id,
                 'counted': 0,
             })

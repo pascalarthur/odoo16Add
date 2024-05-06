@@ -51,7 +51,7 @@ class SupplierBidOrderController(http.Controller):
             ]
 
             nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')
-                                                                                       ]).inverse_rate
+                                                                                       ]).rate
 
             return http.request.render(
                 'fish_market.supplier_form_template', {

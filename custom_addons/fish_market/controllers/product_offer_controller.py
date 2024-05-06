@@ -16,7 +16,7 @@ class ProductOfferController(http.Controller):
         token_record = self.get_token_record(token)
         if self.check_token(token_record) is True:
             nad_to_usd_exchange_rate = http.request.env['res.currency'].sudo().search([('name', '=', 'NAD')
-                                                                                       ]).inverse_rate
+                                                                                       ]).rate
 
             product_pricelist_items = http.request.env['product.pricelist.item'].sudo().search_read(
                 [('id', 'in', token_record.product_pricelist_item_ids.ids)],
