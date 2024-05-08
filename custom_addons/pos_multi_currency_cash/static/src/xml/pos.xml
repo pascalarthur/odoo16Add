@@ -16,7 +16,7 @@
                 <tbody>
                     <tr t-foreach="this.pos.currencies" t-as="currency" t-key="currency.id">
                         <td t-esc="currency.name"/>
-                        <td>
+                        <td t-att-id="'input_' + currency.name">
                             <Input tModel="[currency, 'counted']"
                                 isValid.bind="env.utils.isValidFloat"
                                 callback.bind="(value) => this.setCashCurrencies(value)"/>
@@ -82,7 +82,7 @@
                                 <tr t-foreach="this.pos.currencies" t-as="currency" t-key="currency.id">
                                     <td t-esc="currency.name"/>
                                     <td t-esc="this.pos.formatCurrency(currency.counted, currency.id)"/>
-                                    <td class="d-flex">
+                                    <td class="d-flex" t-att-id="'input_' + currency.name">
                                         <Input tModel="[currency, 'counted']"
                                             callback.bind="(value) => this.setCashCurrencies(value)"
                                             isValid.bind="env.utils.isValidFloat"/>
