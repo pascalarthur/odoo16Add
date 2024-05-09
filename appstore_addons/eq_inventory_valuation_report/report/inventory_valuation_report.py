@@ -6,12 +6,10 @@
 ##############################################################################
 
 import pytz
-import time
 from operator import itemgetter
 from itertools import groupby
 from odoo import models, fields, api
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT, float_round
-from datetime import datetime, date
 
 
 class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractModel):
@@ -112,68 +110,89 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
             product_ids = product_product_obj.search(domain)
         return self._filter_purchased_product_qty(product_ids)
 
+    # def _get_beginning_inventory(self, record, product, warehouse, location=None):
+    #     locations = location if location else self.get_location(record, warehouse)
+    #     product_id = product if isinstance(product, int) else product.id
+
+    #     from_date = self.convert_withtimezone(record.start_date)
+    #     self._cr.execute(
+    #         '''
+    #                     SELECT id as product_id,coalesce(sum(qty), 0.0) as qty
+    #                     FROM
+    #                         ((
+    #                         SELECT pp.id, pp.default_code,m.date,
+    #                             CASE when pt.uom_id = m.product_uom
+    #                             THEN u.name
+    #                             ELSE (select name from uom_uom where id = pt.uom_id)
+    #                             END AS name,
+
+    #                             CASE when pt.uom_id = m.product_uom
+    #                             THEN coalesce(sum(-m.product_qty)::decimal, 0.0)
+    #                             ELSE coalesce(sum(-m.product_qty * pu.factor / u.factor )::decimal, 0.0)
+    #                             END AS qty
+
+    #                         FROM product_product pp
+    #                         LEFT JOIN stock_move m ON (m.product_id=pp.id)
+    #                         LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
+    #                         LEFT JOIN stock_location l ON (m.location_id=l.id)
+    #                         LEFT JOIN stock_picking p ON (m.picking_id=p.id)
+    #                         LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
+    #                         LEFT JOIN uom_uom u ON (m.product_uom=u.id)
+    #                         WHERE m.date <  %s AND (m.location_id in %s) AND m.state='done' AND pp.active=True AND pp.id = %s
+    #                         GROUP BY  pp.id, pt.uom_id , m.product_uom ,pp.default_code,u.name,m.date
+    #                         )
+    #                         UNION ALL
+    #                         (
+    #                         SELECT pp.id, pp.default_code,m.date,
+    #                             CASE when pt.uom_id = m.product_uom
+    #                             THEN u.name
+    #                             ELSE (select name from uom_uom where id = pt.uom_id)
+    #                             END AS name,
+    #                             CASE when pt.uom_id = m.product_uom
+    #                             THEN coalesce(sum(m.product_qty)::decimal, 0.0)
+    #                             ELSE coalesce(sum(m.product_qty * pu.factor / u.factor )::decimal, 0.0)
+    #                             END  AS qty
+    #                         FROM product_product pp
+    #                         LEFT JOIN stock_move m ON (m.product_id=pp.id)
+    #                         LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
+    #                         LEFT JOIN stock_location l ON (m.location_dest_id=l.id)
+    #                         LEFT JOIN stock_picking p ON (m.picking_id=p.id)
+    #                         LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
+    #                         LEFT JOIN uom_uom u ON (m.product_uom=u.id)
+    #                         WHERE m.date < %s AND (m.location_dest_id in %s) AND m.state='done' AND pp.active=True AND pp.id = %s
+    #                         GROUP BY  pp.id,pt.uom_id , m.product_uom ,pp.default_code,u.name,m.date
+    #                         ))
+    #                     AS foo
+    #                     GROUP BY id
+    #                 ''', (from_date, tuple(locations), product_id, from_date, tuple(locations), product_id))
+
+    #     res = self._cr.dictfetchall()
+    #     return res[0].get('qty', 0.00) if res else 0.00
+
     def _get_beginning_inventory(self, record, product, warehouse, location=None):
-        locations = location if location else self.get_location(record, warehouse)
-        if isinstance(product, int):
-            product_data = product
-        else:
-            product_data = product.id
+        location_ids = location if location else self.get_location(record, warehouse)
+        product_id = product if isinstance(product, int) else product.id
 
-        start_date = record.start_date
-        from_date = self.convert_withtimezone(start_date)
-        self._cr.execute(
-            '''
-                        SELECT id as product_id,coalesce(sum(qty), 0.0) as qty
-                        FROM
-                            ((
-                            SELECT pp.id, pp.default_code,m.date,
-                                CASE when pt.uom_id = m.product_uom
-                                THEN u.name
-                                ELSE (select name from uom_uom where id = pt.uom_id)
-                                END AS name,
+        from_date = self.convert_withtimezone(record.start_date)
 
-                                CASE when pt.uom_id = m.product_uom
-                                THEN coalesce(sum(-m.product_qty)::decimal, 0.0)
-                                ELSE coalesce(sum(-m.product_qty * pu.factor / u.factor )::decimal, 0.0)
-                                END AS qty
+        domain = [
+            ('date', '<', from_date),
+            ('state', '=', 'done'),
+            ('product_id', '=', product_id),
+            '|', ('location_id', 'in', location_ids), ('location_dest_id', 'in', location_ids),
+        ]
+        stock_moves = self.env['stock.move'].search(domain)
 
-                            FROM product_product pp
-                            LEFT JOIN stock_move m ON (m.product_id=pp.id)
-                            LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
-                            LEFT JOIN stock_location l ON (m.location_id=l.id)
-                            LEFT JOIN stock_picking p ON (m.picking_id=p.id)
-                            LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
-                            LEFT JOIN uom_uom u ON (m.product_uom=u.id)
-                            WHERE m.date <  %s AND (m.location_id in %s) AND m.state='done' AND pp.active=True AND pp.id = %s
-                            GROUP BY  pp.id, pt.uom_id , m.product_uom ,pp.default_code,u.name,m.date
-                            )
-                            UNION ALL
-                            (
-                            SELECT pp.id, pp.default_code,m.date,
-                                CASE when pt.uom_id = m.product_uom
-                                THEN u.name
-                                ELSE (select name from uom_uom where id = pt.uom_id)
-                                END AS name,
-                                CASE when pt.uom_id = m.product_uom
-                                THEN coalesce(sum(m.product_qty)::decimal, 0.0)
-                                ELSE coalesce(sum(m.product_qty * pu.factor / u.factor )::decimal, 0.0)
-                                END  AS qty
-                            FROM product_product pp
-                            LEFT JOIN stock_move m ON (m.product_id=pp.id)
-                            LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
-                            LEFT JOIN stock_location l ON (m.location_dest_id=l.id)
-                            LEFT JOIN stock_picking p ON (m.picking_id=p.id)
-                            LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
-                            LEFT JOIN uom_uom u ON (m.product_uom=u.id)
-                            WHERE m.date < %s AND (m.location_dest_id in %s) AND m.state='done' AND pp.active=True AND pp.id = %s
-                            GROUP BY  pp.id,pt.uom_id , m.product_uom ,pp.default_code,u.name,m.date
-                            ))
-                        AS foo
-                        GROUP BY id
-                    ''', (from_date, tuple(locations), product_data, from_date, tuple(locations), product_data))
-
-        res = self._cr.dictfetchall()
-        return res[0].get('qty', 0.00) if res else 0.00
+        # Calculate the quantity at the beginning of the period
+        qty = 0.0
+        for move in stock_moves:
+            if move.location_id.id in location_ids:
+                # Moving out of the location
+                qty -= move.product_qty
+            if move.location_dest_id.id in location_ids:
+                # Moving into the location
+                qty += move.product_qty
+        return qty
 
     def get_product_sale_qty(self, record, warehouse, product=None, location=None):
         if not product:
@@ -252,7 +271,6 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
 
     def _get_stock_move_valuation(self, record, product, warehouse, op_type, location_ids, quantity):
         product_price = self.env['decimal.precision'].precision_get('Product Price')
-        StockMove = self.env['stock.move']
         end_date = record.end_date.strftime("%Y-%m-%d") + ' 23:59:59'
         domain = [('product_id', '=', product.id), ('company_id', '=', record.company_id.id),
                   ('warehouse_id', '=', warehouse.id)]
@@ -277,5 +295,3 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
             value = 0
         return float_round(value, precision_digits=product_price)
 
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

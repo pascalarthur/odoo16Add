@@ -40,15 +40,12 @@ class wizard_inventory_valuation(models.TransientModel):
 
     @api.onchange('warehouse_ids')
     def onchange_warehouse_ids(self):
-        stock_location_obj = self.env['stock.location']
-        location_ids = stock_location_obj.search([('usage', '=', 'internal'), ('company_id', '=', self.company_id.id)])
         addtional_ids = []
         if self.warehouse_ids:
             for warehouse in self.warehouse_ids:
                 addtional_ids.extend([
-                    y.id
-                    for y in stock_location_obj.search([('location_id', 'child_of',
-                                                         warehouse.view_location_id.id), ('usage', '=', 'internal')])
+                    y.id for y in self.env['stock.location'].search([(
+                        'location_id', 'child_of', warehouse.view_location_id.id), ('usage', '=', 'internal')])
                 ])
             self.location_ids = False
         return {'domain': {'location_ids': [('id', 'in', addtional_ids)]}}
