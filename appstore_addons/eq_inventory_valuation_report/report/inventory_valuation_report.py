@@ -5,6 +5,9 @@
 #
 ##############################################################################
 
+from collections import defaultdict
+import datetime
+from typing import Any, Dict, Optional
 import pytz
 from operator import itemgetter
 from itertools import groupby
@@ -40,45 +43,20 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
         final_location_ids = record.location_ids & location_ids
         return final_location_ids or location_ids
 
-    def get_location_wise_product(self, record, warehouse, product, location_ids, product_categ_id=None):
-        group_by_location = {}
-        begning_qty = product_qty_in = product_qty_out = product_qty_internal = product_qty_adjustment = ending_qty = product_ending_qty = 0.00
-        for location in location_ids:
-            group_by_location.setdefault(location, [])
-            group_by_location[location].append(self._get_beginning_inventory(record, product, warehouse, [location.id]))
-            get_product_sale_qty = self.get_product_sale_qty(record, warehouse, product, [location.id])
-            location_begning_qty = group_by_location[location][0]
+    def get_location_wise_product(
+            self, record, inventory_by_location_and_product_start: Dict[int, Dict[int, int]]) -> Dict[int, dict]:
+        qtys_dict = defaultdict(lambda: defaultdict(dict))
+        for location_id, product_qtys in inventory_by_location_and_product_start.items():
+            for product, location_begning_qty in product_qtys.items():
+                product_sale_qty = self.get_product_sale_qty(record, product, location_id)
 
-            group_by_location[location].append(get_product_sale_qty['product_qty_in'])
-            group_by_location[location].append(get_product_sale_qty['product_qty_out'])
-            group_by_location[location].append(get_product_sale_qty['product_qty_internal'])
-            group_by_location[location].append(get_product_sale_qty['product_qty_adjustment'])
-            ending_qty = location_begning_qty + get_product_sale_qty['product_qty_in'] + get_product_sale_qty['product_qty_out'] + get_product_sale_qty['product_qty_internal'] \
-                + get_product_sale_qty['product_qty_adjustment']
+                product_sale_qty["product_qty_begin"] = location_begning_qty
+                product_sale_qty["product_qty_end"] = sum(product_sale_qty.values())
 
-            group_by_location[location].append(ending_qty)
-            ending_qty = 0.00
+                if sum(abs(x) for x in product_sale_qty.values()):
+                    qtys_dict[location_id][product] = product_sale_qty
 
-            begning_qty += location_begning_qty
-            product_qty_in += get_product_sale_qty['product_qty_in']
-            product_qty_out += get_product_sale_qty['product_qty_out']
-            product_qty_internal += get_product_sale_qty['product_qty_internal']
-            product_qty_adjustment += get_product_sale_qty['product_qty_adjustment']
-
-        product_ending_qty = begning_qty + product_qty_in + product_qty_out + product_qty_internal + product_qty_adjustment
-        return group_by_location, [
-            begning_qty, product_qty_in, product_qty_out, product_qty_internal, product_qty_adjustment,
-            product_ending_qty
-        ]
-
-    def get_location(self, records, warehouse):
-        stock_location_obj = self.env['stock.location'].sudo()
-        location_ids = []
-        location_ids.append(warehouse.view_location_id.id)
-        domain = [('company_id', '=', records.company_id.id), ('usage', '=', 'internal'),
-                  ('location_id', 'child_of', location_ids)]
-        final_location_ids = stock_location_obj.search(domain).ids
-        return final_location_ids
+        return qtys_dict
 
     def convert_withtimezone(self, userdate):
         timezone = pytz.timezone(self._context.get('tz') or 'UTC')
@@ -97,185 +75,112 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
         purchased_products = self.env['purchase.order.line'].search(domain).mapped("product_id").ids
         return product_ids.filtered(lambda product_id: product_id.id in purchased_products)
 
-    def _get_products(self, record):
-        product_product_obj = self.env['product.product']
-        domain = [('type', '=', 'product'), ('purchased_product_qty', '>', 0)]
-        product_ids = False
-        if record.category_ids:
-            domain.append(('categ_id', 'in', record.category_ids.ids))
-            product_ids = product_product_obj.search(domain)
-        if record.product_ids:
-            product_ids = record.product_ids
-        if not product_ids:
-            product_ids = product_product_obj.search(domain)
+    def _get_products(self, category_ids: Optional[Any]):
+        domain = [('type', '=', 'product')]
+        if category_ids:
+            domain.append(('categ_id', 'in', category_ids.ids))
+        product_ids = self.env['product.product'].search(domain)
         return self._filter_purchased_product_qty(product_ids)
 
-    # def _get_beginning_inventory(self, record, product, warehouse, location=None):
-    #     locations = location if location else self.get_location(record, warehouse)
-    #     product_id = product if isinstance(product, int) else product.id
+    def get_locations(self, company_id, warehouse):
+        location_ids = [warehouse.view_location_id.id]
+        domain = [('company_id', '=', company_id.id), ('usage', '=', 'internal'),
+                  ('location_id', 'child_of', location_ids)]
+        return self.env['stock.location'].sudo().search(domain)
 
-    #     from_date = self.convert_withtimezone(record.start_date)
-    #     self._cr.execute(
-    #         '''
-    #                     SELECT id as product_id,coalesce(sum(qty), 0.0) as qty
-    #                     FROM
-    #                         ((
-    #                         SELECT pp.id, pp.default_code,m.date,
-    #                             CASE when pt.uom_id = m.product_uom
-    #                             THEN u.name
-    #                             ELSE (select name from uom_uom where id = pt.uom_id)
-    #                             END AS name,
+    def get_inventory_at_date(self, date, location_id, category_ids: Optional[Any], is_start_of_day: bool = True):
+        date = date if is_start_of_day is False else date + datetime.timedelta(days=1)
+        date = self.convert_withtimezone(date)
 
-    #                             CASE when pt.uom_id = m.product_uom
-    #                             THEN coalesce(sum(-m.product_qty)::decimal, 0.0)
-    #                             ELSE coalesce(sum(-m.product_qty * pu.factor / u.factor )::decimal, 0.0)
-    #                             END AS qty
-
-    #                         FROM product_product pp
-    #                         LEFT JOIN stock_move m ON (m.product_id=pp.id)
-    #                         LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
-    #                         LEFT JOIN stock_location l ON (m.location_id=l.id)
-    #                         LEFT JOIN stock_picking p ON (m.picking_id=p.id)
-    #                         LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
-    #                         LEFT JOIN uom_uom u ON (m.product_uom=u.id)
-    #                         WHERE m.date <  %s AND (m.location_id in %s) AND m.state='done' AND pp.active=True AND pp.id = %s
-    #                         GROUP BY  pp.id, pt.uom_id , m.product_uom ,pp.default_code,u.name,m.date
-    #                         )
-    #                         UNION ALL
-    #                         (
-    #                         SELECT pp.id, pp.default_code,m.date,
-    #                             CASE when pt.uom_id = m.product_uom
-    #                             THEN u.name
-    #                             ELSE (select name from uom_uom where id = pt.uom_id)
-    #                             END AS name,
-    #                             CASE when pt.uom_id = m.product_uom
-    #                             THEN coalesce(sum(m.product_qty)::decimal, 0.0)
-    #                             ELSE coalesce(sum(m.product_qty * pu.factor / u.factor )::decimal, 0.0)
-    #                             END  AS qty
-    #                         FROM product_product pp
-    #                         LEFT JOIN stock_move m ON (m.product_id=pp.id)
-    #                         LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
-    #                         LEFT JOIN stock_location l ON (m.location_dest_id=l.id)
-    #                         LEFT JOIN stock_picking p ON (m.picking_id=p.id)
-    #                         LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
-    #                         LEFT JOIN uom_uom u ON (m.product_uom=u.id)
-    #                         WHERE m.date < %s AND (m.location_dest_id in %s) AND m.state='done' AND pp.active=True AND pp.id = %s
-    #                         GROUP BY  pp.id,pt.uom_id , m.product_uom ,pp.default_code,u.name,m.date
-    #                         ))
-    #                     AS foo
-    #                     GROUP BY id
-    #                 ''', (from_date, tuple(locations), product_id, from_date, tuple(locations), product_id))
-
-    #     res = self._cr.dictfetchall()
-    #     return res[0].get('qty', 0.00) if res else 0.00
-
-    def _get_beginning_inventory(self, record, product, warehouse, location=None):
-        location_ids = location if location else self.get_location(record, warehouse)
-        product_id = product if isinstance(product, int) else product.id
-
-        from_date = self.convert_withtimezone(record.start_date)
+        product_ids = self._get_products(category_ids)
 
         domain = [
-            ('date', '<', from_date),
+            ('date', '<', date),
             ('state', '=', 'done'),
-            ('product_id', '=', product_id),
-            '|', ('location_id', 'in', location_ids), ('location_dest_id', 'in', location_ids),
+            ('product_id', 'in', product_ids.ids),
+            '|',
+            ('location_id', '=', location_id.id),
+            ('location_dest_id', '=', location_id.id),
         ]
-        stock_moves = self.env['stock.move'].search(domain)
+        stock_moves = self.env['stock.move.line'].search(domain)
 
-        # Calculate the quantity at the beginning of the period
-        qty = 0.0
+        inventory_by_product = defaultdict(lambda: 0)
         for move in stock_moves:
-            if move.location_id.id in location_ids:
-                # Moving out of the location
-                qty -= move.product_qty
-            if move.location_dest_id.id in location_ids:
-                # Moving into the location
-                qty += move.product_qty
-        return qty
+            if move.location_id.id == location_id.id:
+                inventory_by_product[move.product_id.id] -= move.quantity
+            if move.location_dest_id.id == location_id.id:
+                inventory_by_product[move.product_id.id] += move.quantity
+        return inventory_by_product
 
-    def get_product_sale_qty(self, record, warehouse, product=None, location=None):
-        if not product:
-            product = self._get_products(record)
-        if isinstance(product, list):
-            product_data = tuple(product)
+    def get_product_sale_qty(self, record, product, location):
+        location = tuple(location.ids)
+        start_date = record.start_date.strftime("%Y-%m-%d") + ' 00:00:00'
+        end_date = record.end_date.strftime("%Y-%m-%d") + ' 23:59:59'
+
+        self._cr.execute(
+            '''
+                        SELECT
+                            sum((
+                            CASE WHEN spt.code in ('outgoing') AND smline.location_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
+                            THEN -(smline.quantity * pu.factor / pu2.factor)
+                            ELSE 0.0
+                            END
+                            )) AS product_qty_out,
+                                sum((
+                            CASE WHEN spt.code in ('incoming') AND smline.location_dest_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
+                            THEN (smline.quantity * pu.factor / pu2.factor)
+                            ELSE 0.0
+                            END
+                            )) AS product_qty_in,
+
+                            sum((
+                            CASE WHEN (spt.code ='internal') AND smline.location_dest_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
+                            THEN (smline.quantity * pu.factor / pu2.factor)
+                            WHEN (spt.code ='internal' OR spt.code is null) AND smline.location_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
+                            THEN -(smline.quantity * pu.factor / pu2.factor)
+                            ELSE 0.0
+                            END
+                            )) AS product_qty_internal,
+
+                            sum((
+                            CASE WHEN sourcel.usage = 'inventory' AND smline.location_dest_id in %s
+                            THEN  (smline.quantity * pu.factor / pu2.factor)
+                            WHEN destl.usage ='inventory' AND smline.location_id in %s
+                            THEN -(smline.quantity * pu.factor / pu2.factor)
+                            ELSE 0.0
+                            END
+                            )) AS product_qty_adjustment
+                        FROM product_product pp
+                        LEFT JOIN stock_move sm ON (sm.product_id = pp.id and sm.date >= %s and sm.date <= %s and sm.state = 'done' and sm.location_id != sm.location_dest_id)
+                        LEFT JOIN stock_move_line smline ON (smline.product_id = pp.id and smline.state = 'done' and smline.location_id != smline.location_dest_id and smline.move_id = sm.id)
+                        LEFT JOIN stock_picking sp ON (sm.picking_id=sp.id)
+                        LEFT JOIN stock_picking_type spt ON (spt.id=sp.picking_type_id)
+                        LEFT JOIN stock_location sourcel ON (smline.location_id=sourcel.id)
+                        LEFT JOIN stock_location destl ON (smline.location_dest_id=destl.id)
+                        LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
+                        LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
+                        LEFT JOIN uom_uom pu2 ON (smline.product_uom_id=pu2.id)
+                        WHERE pp.id in %s
+                        GROUP BY pt.categ_id, pp.id order by pt.categ_id
+                        ''',
+            (location, location, location, location, location, location, start_date, end_date, tuple([product])))
+        values = self._cr.dictfetchall()
+        if record.group_by_categ and not location:
+            sort_by_categories = sorted(values, key=itemgetter('categ_id'))
+            records_by_categories = dict(
+                (k, [v for v in itr]) for k, itr in groupby(sort_by_categories, itemgetter('categ_id')))
+            return records_by_categories
         else:
-            product_data = tuple(product.ids)
+            return values[0]
 
-        if product_data:
-            locations = location if location else self.get_location(record, warehouse)
-            start_date = record.start_date.strftime("%Y-%m-%d") + ' 00:00:00'
-            end_date = record.end_date.strftime("%Y-%m-%d") + ' 23:59:59'
-
-            self._cr.execute(
-                '''
-                            SELECT pp.id AS product_id,pt.categ_id,
-                                sum((
-                                CASE WHEN spt.code in ('outgoing') AND smline.location_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
-                                THEN -(smline.quantity * pu.factor / pu2.factor)
-                                ELSE 0.0
-                                END
-                                )) AS product_qty_out,
-                                 sum((
-                                CASE WHEN spt.code in ('incoming') AND smline.location_dest_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
-                                THEN (smline.quantity * pu.factor / pu2.factor)
-                                ELSE 0.0
-                                END
-                                )) AS product_qty_in,
-
-                                sum((
-                                CASE WHEN (spt.code ='internal') AND smline.location_dest_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
-                                THEN (smline.quantity * pu.factor / pu2.factor)
-                                WHEN (spt.code ='internal' OR spt.code is null) AND smline.location_id in %s AND sourcel.usage !='inventory' AND destl.usage !='inventory'
-                                THEN -(smline.quantity * pu.factor / pu2.factor)
-                                ELSE 0.0
-                                END
-                                )) AS product_qty_internal,
-
-                                sum((
-                                CASE WHEN sourcel.usage = 'inventory' AND smline.location_dest_id in %s
-                                THEN  (smline.quantity * pu.factor / pu2.factor)
-                                WHEN destl.usage ='inventory' AND smline.location_id in %s
-                                THEN -(smline.quantity * pu.factor / pu2.factor)
-                                ELSE 0.0
-                                END
-                                )) AS product_qty_adjustment
-                            FROM product_product pp
-                            LEFT JOIN stock_move sm ON (sm.product_id = pp.id and sm.date >= %s and sm.date <= %s and sm.state = 'done' and sm.location_id != sm.location_dest_id)
-                            LEFT JOIN stock_move_line smline ON (smline.product_id = pp.id and smline.state = 'done' and smline.location_id != smline.location_dest_id and smline.move_id = sm.id)
-                            LEFT JOIN stock_picking sp ON (sm.picking_id=sp.id)
-                            LEFT JOIN stock_picking_type spt ON (spt.id=sp.picking_type_id)
-                            LEFT JOIN stock_location sourcel ON (smline.location_id=sourcel.id)
-                            LEFT JOIN stock_location destl ON (smline.location_dest_id=destl.id)
-                            LEFT JOIN product_template pt ON (pp.product_tmpl_id=pt.id)
-                            LEFT JOIN uom_uom pu ON (pt.uom_id=pu.id)
-                            LEFT JOIN uom_uom pu2 ON (smline.product_uom_id=pu2.id)
-                            WHERE pp.id in %s
-                            GROUP BY pt.categ_id, pp.id order by pt.categ_id
-                            ''', (tuple(locations), tuple(locations), tuple(locations), tuple(locations),
-                                  tuple(locations), tuple(locations), start_date, end_date, product_data))
-            values = self._cr.dictfetchall()
-            if record.group_by_categ and not location:
-                sort_by_categories = sorted(values, key=itemgetter('categ_id'))
-                records_by_categories = dict(
-                    (k, [v for v in itr]) for k, itr in groupby(sort_by_categories, itemgetter('categ_id')))
-                return records_by_categories
-            else:
-                return values[0]
-
-    def get_product_valuation(self, record, product_id, quantity, warehouse, op_type):
-        value = 0.00
-        location_ids = self.get_warehouse_wise_location(record, warehouse).ids
-        value = self._get_stock_move_valuation(record, product_id, warehouse, op_type, location_ids, quantity)
-        return value
-
-    def _get_stock_move_valuation(self, record, product, warehouse, op_type, location_ids, quantity):
+    def get_product_valuation(self, record, product_id, quantity: float, warehouse: str, op_type: str) -> float:
+        if not quantity:
+            return 0.0
         product_price = self.env['decimal.precision'].precision_get('Product Price')
         end_date = record.end_date.strftime("%Y-%m-%d") + ' 23:59:59'
-        domain = [('product_id', '=', product.id), ('company_id', '=', record.company_id.id),
+        domain = [('product_id', '=', product_id.id), ('company_id', '=', record.company_id.id),
                   ('warehouse_id', '=', warehouse.id)]
 
-        value = 0.00
         if op_type == 'beg':
             domain.append(('create_date', '<', record.start_date))
         if op_type == 'in':
@@ -290,8 +195,5 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
         valuation_layer_ids = self.env['stock.valuation.layer'].search(domain)
         value = sum(valuation_layer_ids.mapped('value'))
         if op_type in ['int', 'final']:
-            value = quantity * product.standard_price
-        if not quantity:
-            value = 0
+            value = quantity * product_id.standard_price
         return float_round(value, precision_digits=product_price)
-

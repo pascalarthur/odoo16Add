@@ -17,7 +17,8 @@ class wizard_inventory_valuation(models.TransientModel):
     _name = 'wizard.inventory.valuation'
     _description = 'Wizard Inventory Valuation'
 
-    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id.id)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id.id,
+                                 readonly=True)
     warehouse_ids = fields.Many2many('stock.warehouse', string='Warehouse')
     location_ids = fields.Many2many('stock.location', string='Location')
     start_date = fields.Date(string="Start Date")
@@ -340,124 +341,132 @@ class wizard_inventory_valuation(models.TransientModel):
                 prod_beginning_qty = prod_qty_in = prod_qty_out = prod_qty_int = prod_qty_adjust = prod_ending_qty = 0.00
                 prod_beginning_qty_val = prod_qty_in_val = prod_qty_out_val = prod_qty_int_val = prod_qty_adjust_val = prod_ending_qty_val = 0.00
                 location_ids = report_stock_inv_obj.get_warehouse_wise_location(self, warehouse)
+                location_ids = location_ids if len(location_ids) > 0 else report_stock_inv_obj.get_locations(
+                    self.company_id, self.warehouse_ids)
                 if not self.group_by_categ:
-                    for product in report_stock_inv_obj._get_products(self):
-                        location_wise_data = report_stock_inv_obj.get_location_wise_product(
-                            self, warehouse, product, location_ids)
-                        beginning_qty = location_wise_data[1][0]
-                        beginning_qty_val = report_stock_inv_obj.get_product_valuation(
-                            self, product, beginning_qty, warehouse, 'beg')
-                        product_qty_in = location_wise_data[1][1]
-                        product_qty_in_val = report_stock_inv_obj.get_product_valuation(
-                            self, product, product_qty_in, warehouse, 'in')
-                        product_qty_out = location_wise_data[1][2]
-                        product_qty_out_val = report_stock_inv_obj.get_product_valuation(
-                            self, product, product_qty_out, warehouse, 'out')
-                        product_qty_internal = location_wise_data[1][3]
-                        product_qty_internal_val = report_stock_inv_obj.get_product_valuation(
-                            self, product, product_qty_internal, warehouse, 'int')
-                        product_qty_adjustment = location_wise_data[1][4]
-                        product_qty_adjustment_val = report_stock_inv_obj.get_product_valuation(
-                            self, product, product_qty_adjustment, warehouse, 'adj')
-                        ending_qty = location_wise_data[1][5]
-                        ending_qty_val = report_stock_inv_obj.get_product_valuation(self, product, ending_qty,
-                                                                                    warehouse, 'final')
+                    inventory_by_location = {
+                        loc: report_stock_inv_obj.get_inventory_at_date(self.start_date, loc, self.category_ids)
+                        for loc in location_ids
+                    }
+                    location_wise_data = report_stock_inv_obj.get_location_wise_product(self, inventory_by_location)
 
-                        worksheet.merge_range(rows, 0, rows, 1, product.display_name, product_header_format)
-                        cost_method = dict(product.categ_id.fields_get()['property_cost_method']['selection'])[
-                            product.categ_id.property_cost_method]
-                        worksheet.write(rows, 2, cost_method, header_data_format)
-                        worksheet.write(rows, 3, ' ', header_data_format)
-                        worksheet.write(rows, 4, beginning_qty, header_merge_format)
-                        worksheet.write(rows, 5, formatLang(self.env, beginning_qty_val), header_merge_format)
-                        worksheet.write(rows, 6, product_qty_in, header_merge_format)
-                        worksheet.write(rows, 7, formatLang(self.env, product_qty_in_val), header_merge_format)
-                        worksheet.write(rows, 8, abs(product_qty_out), header_merge_format)
-                        worksheet.write(rows, 9, formatLang(self.env, abs(product_qty_out_val)), header_merge_format)
-                        worksheet.write(rows, 10, product_qty_internal, header_merge_format)
-                        worksheet.write(rows, 11, formatLang(self.env, product_qty_internal_val), header_merge_format)
-                        worksheet.write(rows, 12, product_qty_adjustment, header_merge_format)
-                        worksheet.write(rows, 13, formatLang(self.env, product_qty_adjustment_val), header_merge_format)
-                        worksheet.write(rows, 14, ending_qty, header_merge_format)
-                        worksheet.write(rows, 15, formatLang(self.env, ending_qty_val), header_merge_format)
-                        rows += 1
+                    for location_id, product_dicts in location_wise_data.items():
+                        for product, product_dict in product_dicts.items():
+                            product = self.env['product.product'].browse(product)
 
-                        for location, value in location_wise_data[0].items():
-                            worksheet.merge_range(rows, 0, rows, 2, '', header_data_format)
-                            worksheet.write(rows, 3, location.display_name, header_data_format)
-                            worksheet.write(rows, 4, value[0], header_data_format)
-                            worksheet.write(
-                                rows, 5,
-                                formatLang(
-                                    self.env,
-                                    report_stock_inv_obj.get_product_valuation(self, product, value[0], warehouse,
-                                                                               'beg')), header_data_format)
-                            worksheet.write(rows, 6, value[1], header_data_format)
-                            worksheet.write(
-                                rows, 7,
-                                formatLang(
-                                    self.env,
-                                    report_stock_inv_obj.get_product_valuation(self, product, value[1], warehouse,
-                                                                               'in')), header_data_format)
-                            worksheet.write(rows, 8, abs(value[2]), header_data_format)
-                            worksheet.write(
-                                rows, 9,
-                                formatLang(
-                                    self.env,
-                                    abs(
-                                        report_stock_inv_obj.get_product_valuation(self, product, abs(value[2]),
-                                                                                   warehouse, 'out'))),
-                                header_data_format)
-                            worksheet.write(rows, 10, value[3], header_data_format)
-                            worksheet.write(
-                                rows, 11,
-                                formatLang(
-                                    self.env,
-                                    report_stock_inv_obj.get_product_valuation(self, product, value[3], warehouse,
-                                                                               'int')), header_data_format)
-                            worksheet.write(rows, 12, value[4], header_data_format)
-                            worksheet.write(
-                                rows, 13,
-                                formatLang(
-                                    self.env,
-                                    report_stock_inv_obj.get_product_valuation(self, product, value[4], warehouse,
-                                                                               'adj')), header_data_format)
-                            worksheet.write(rows, 14, value[5], header_data_format)
-                            worksheet.write(
-                                rows, 15,
-                                formatLang(
-                                    self.env,
-                                    report_stock_inv_obj.get_product_valuation(self, product, value[5], warehouse,
-                                                                               'final')), header_data_format)
+                            product_qty_begin_val = report_stock_inv_obj.get_product_valuation(
+                                self, product, product_dict['product_qty_begin'], warehouse, 'beg')
+                            product_qty_in_val = report_stock_inv_obj.get_product_valuation(
+                                self, product, product_dict['product_qty_in'], warehouse, 'in')
+                            product_qty_out_val = report_stock_inv_obj.get_product_valuation(
+                                self, product, product_dict['product_qty_out'], warehouse, 'out')
+                            product_qty_internal_val = report_stock_inv_obj.get_product_valuation(
+                                self, product, product_dict['product_qty_internal'], warehouse, 'int')
+                            product_qty_adjustment_val = report_stock_inv_obj.get_product_valuation(
+                                self, product, product_dict['product_qty_adjustment'], warehouse, 'adj')
+                            product_qty_end_val = report_stock_inv_obj.get_product_valuation(
+                                self, product, product_dict['product_qty_end'], warehouse, 'final')
+
+                            worksheet.merge_range(rows, 0, rows, 1, product.display_name, product_header_format)
+                            cost_method = dict(product.categ_id.fields_get()['property_cost_method']['selection'])[
+                                product.categ_id.property_cost_method]
+                            worksheet.write(rows, 2, cost_method, header_data_format)
+                            worksheet.write(rows, 3, location_id.display_name, header_data_format)
+                            worksheet.write(rows, 4, product_dict['product_qty_begin'], header_merge_format)
+                            worksheet.write(rows, 5, formatLang(self.env, product_qty_begin_val), header_merge_format)
+                            worksheet.write(rows, 6, product_dict['product_qty_in'], header_merge_format)
+                            worksheet.write(rows, 7, formatLang(self.env, product_qty_in_val), header_merge_format)
+                            worksheet.write(rows, 8, abs(product_dict['product_qty_out']), header_merge_format)
+                            worksheet.write(rows, 9, formatLang(self.env, abs(product_qty_out_val)),
+                                            header_merge_format)
+                            worksheet.write(rows, 10, product_dict['product_qty_internal'], header_merge_format)
+                            worksheet.write(rows, 11, formatLang(self.env, product_qty_internal_val),
+                                            header_merge_format)
+                            worksheet.write(rows, 12, product_dict['product_qty_adjustment'], header_merge_format)
+                            worksheet.write(rows, 13, formatLang(self.env, product_qty_adjustment_val),
+                                            header_merge_format)
+                            worksheet.write(rows, 14, product_dict['product_qty_end'], header_merge_format)
+                            worksheet.write(rows, 15, formatLang(self.env, product_qty_end_val), header_merge_format)
                             rows += 1
 
-                        prod_beginning_qty += beginning_qty
-                        prod_beginning_qty_val += beginning_qty_val
-                        prod_qty_in += product_qty_in
-                        prod_qty_in_val += product_qty_in_val
-                        prod_qty_out += product_qty_out
-                        prod_qty_out_val += product_qty_out_val
-                        prod_qty_int += product_qty_internal
-                        prod_qty_int_val += product_qty_internal_val
-                        prod_qty_adjust += product_qty_adjustment
-                        prod_qty_adjust_val += product_qty_adjustment_val
-                        prod_ending_qty += ending_qty
-                        prod_ending_qty_val += ending_qty_val
+                    # TODO: Add summation by product
 
-                    rows += 1
-                    worksheet.merge_range(rows, 0, rows, 3, 'Total', header_merge_format)
-                    worksheet.write(rows, 4, prod_beginning_qty, header_merge_format)
-                    worksheet.write(rows, 5, formatLang(self.env, prod_beginning_qty_val), header_merge_format)
-                    worksheet.write(rows, 6, prod_qty_in, header_merge_format)
-                    worksheet.write(rows, 7, formatLang(self.env, prod_qty_in_val), header_merge_format)
-                    worksheet.write(rows, 8, abs(prod_qty_out), header_merge_format)
-                    worksheet.write(rows, 9, formatLang(self.env, abs(prod_qty_out_val)), header_merge_format)
-                    worksheet.write(rows, 10, prod_qty_int, header_merge_format)
-                    worksheet.write(rows, 11, formatLang(self.env, prod_qty_int_val), header_merge_format)
-                    worksheet.write(rows, 12, prod_qty_adjust, header_merge_format)
-                    worksheet.write(rows, 13, formatLang(self.env, prod_qty_adjust_val), header_merge_format)
-                    worksheet.write(rows, 14, prod_ending_qty, header_merge_format)
-                    worksheet.write(rows, 15, formatLang(self.env, prod_ending_qty_val), header_merge_format)
+                    #     for location, value in location_wise_data[0].items():
+                    #         worksheet.merge_range(rows, 0, rows, 2, '', header_data_format)
+                    #         worksheet.write(rows, 3, location.display_name, header_data_format)
+                    #         worksheet.write(rows, 4, value[0], header_data_format)
+                    #         worksheet.write(
+                    #             rows, 5,
+                    #             formatLang(
+                    #                 self.env,
+                    #                 report_stock_inv_obj.get_product_valuation(self, product, value[0], warehouse,
+                    #                                                            'beg')), header_data_format)
+                    #         worksheet.write(rows, 6, value[1], header_data_format)
+                    #         worksheet.write(
+                    #             rows, 7,
+                    #             formatLang(
+                    #                 self.env,
+                    #                 report_stock_inv_obj.get_product_valuation(self, product, value[1], warehouse,
+                    #                                                            'in')), header_data_format)
+                    #         worksheet.write(rows, 8, abs(value[2]), header_data_format)
+                    #         worksheet.write(
+                    #             rows, 9,
+                    #             formatLang(
+                    #                 self.env,
+                    #                 abs(
+                    #                     report_stock_inv_obj.get_product_valuation(self, product, abs(value[2]),
+                    #                                                                warehouse, 'out'))),
+                    #             header_data_format)
+                    #         worksheet.write(rows, 10, value[3], header_data_format)
+                    #         worksheet.write(
+                    #             rows, 11,
+                    #             formatLang(
+                    #                 self.env,
+                    #                 report_stock_inv_obj.get_product_valuation(self, product, value[3], warehouse,
+                    #                                                            'int')), header_data_format)
+                    #         worksheet.write(rows, 12, value[4], header_data_format)
+                    #         worksheet.write(
+                    #             rows, 13,
+                    #             formatLang(
+                    #                 self.env,
+                    #                 report_stock_inv_obj.get_product_valuation(self, product, value[4], warehouse,
+                    #                                                            'adj')), header_data_format)
+                    #         worksheet.write(rows, 14, value[5], header_data_format)
+                    #         worksheet.write(
+                    #             rows, 15,
+                    #             formatLang(
+                    #                 self.env,
+                    #                 report_stock_inv_obj.get_product_valuation(self, product, value[5], warehouse,
+                    #                                                            'final')), header_data_format)
+                    #         rows += 1
+
+                    #     prod_beginning_qty += beginning_qty
+                    #     prod_beginning_qty_val += beginning_qty_val
+                    #     prod_qty_in += product_qty_in
+                    #     prod_qty_in_val += product_qty_in_val
+                    #     prod_qty_out += product_qty_out
+                    #     prod_qty_out_val += product_qty_out_val
+                    #     prod_qty_int += product_qty_internal
+                    #     prod_qty_int_val += product_qty_internal_val
+                    #     prod_qty_adjust += product_qty_adjustment
+                    #     prod_qty_adjust_val += product_qty_adjustment_val
+                    #     prod_ending_qty += ending_qty
+                    #     prod_ending_qty_val += ending_qty_val
+
+                    # rows += 1
+                    # worksheet.merge_range(rows, 0, rows, 3, 'Total', header_merge_format)
+                    # worksheet.write(rows, 4, prod_beginning_qty, header_merge_format)
+                    # worksheet.write(rows, 5, formatLang(self.env, prod_beginning_qty_val), header_merge_format)
+                    # worksheet.write(rows, 6, prod_qty_in, header_merge_format)
+                    # worksheet.write(rows, 7, formatLang(self.env, prod_qty_in_val), header_merge_format)
+                    # worksheet.write(rows, 8, abs(prod_qty_out), header_merge_format)
+                    # worksheet.write(rows, 9, formatLang(self.env, abs(prod_qty_out_val)), header_merge_format)
+                    # worksheet.write(rows, 10, prod_qty_int, header_merge_format)
+                    # worksheet.write(rows, 11, formatLang(self.env, prod_qty_int_val), header_merge_format)
+                    # worksheet.write(rows, 12, prod_qty_adjust, header_merge_format)
+                    # worksheet.write(rows, 13, formatLang(self.env, prod_qty_adjust_val), header_merge_format)
+                    # worksheet.write(rows, 14, prod_ending_qty, header_merge_format)
+                    # worksheet.write(rows, 15, formatLang(self.env, prod_ending_qty_val), header_merge_format)
 
                 else:
                     rows += 1
