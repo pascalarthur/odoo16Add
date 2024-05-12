@@ -33,7 +33,8 @@
 
                     <group invisible="state != 'choose'">
                         <group>
-                            <field name="group_by_categ"/>
+                            <field name="group"/>
+                            <field name="group_by" widget="radio" invisible="group == False"/>
                         </group>
                         <group>
                             <field name="filter_by"/>
@@ -51,7 +52,7 @@
                     <notebook invisible="filter_by == False or filter_by == 'product' or state != 'choose'">
                         <page string="Category">
                             <group>
-                                <field name="category_ids" widget="many2many_tags" 
+                                <field name="category_ids" widget="many2many_tags"
                                        options="{'no_create':True,'no_edit':True}"/>
                             </group>
                         </page>
@@ -62,8 +63,8 @@
                             <p>File : <field name="data" readonly="1" filename="name"/></p>
                     </div>
                     <footer invisible="state != 'choose'">
-                        <button name="print_report" string="PDF" type="object" class="oe_highlight" />
-                        or
+                        <!-- <button name="print_report" string="PDF" type="object" class="oe_highlight" /> -->
+                        <!-- or -->
                         <button name="print_xls_report" string="XLS" type="object" class="oe_highlight" />
                         or
                         <button string="Cancel" class="oe_link" special="cancel" />

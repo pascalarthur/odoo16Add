@@ -1,16 +1,7 @@
-# -*- coding: utf-8 -*-
-##############################################################################
-#
-# Copyright 2019 EquickERP
-#
-##############################################################################
-
 from collections import defaultdict
 import datetime
 from typing import Any, Dict, Optional
 import pytz
-from operator import itemgetter
-from itertools import groupby
 from odoo import models, fields, api
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT, float_round
 
@@ -53,7 +44,7 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
                 product_sale_qty["product_qty_begin"] = location_begning_qty
                 product_sale_qty["product_qty_end"] = sum(product_sale_qty.values())
 
-                if sum(abs(x) for x in product_sale_qty.values()):
+                if any([x != 0 for x in product_sale_qty.values()]):
                     qtys_dict[location_id][product] = product_sale_qty
 
         return qtys_dict
@@ -67,20 +58,13 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
             return end_dt.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
         return userdate.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
 
-    def _filter_purchased_product_qty(self, product_ids):
-        domain = [
-            ('order_id.state', 'in', ['purchase', 'done']),
-            ('product_id', 'in', product_ids.ids),
-        ]
-        purchased_products = self.env['purchase.order.line'].search(domain).mapped("product_id").ids
-        return product_ids.filtered(lambda product_id: product_id.id in purchased_products)
-
-    def _get_products(self, category_ids: Optional[Any]):
+    def _get_products(self, category_ids: Optional[Any], product_ids: Optional[Any]):
         domain = [('type', '=', 'product')]
         if category_ids:
             domain.append(('categ_id', 'in', category_ids.ids))
-        product_ids = self.env['product.product'].search(domain)
-        return self._filter_purchased_product_qty(product_ids)
+        if product_ids:
+            domain.append(('id', 'in', product_ids.ids))
+        return self.env['product.product'].search(domain)
 
     def get_locations(self, company_id, warehouse):
         location_ids = [warehouse.view_location_id.id]
@@ -88,11 +72,12 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
                   ('location_id', 'child_of', location_ids)]
         return self.env['stock.location'].sudo().search(domain)
 
-    def get_inventory_at_date(self, date, location_id, category_ids: Optional[Any], is_start_of_day: bool = True):
+    def get_inventory_at_date(self, date, location_id, category_ids: Optional[Any], product_ids: Optional[Any],
+                              is_start_of_day: bool = True):
         date = date if is_start_of_day is False else date + datetime.timedelta(days=1)
         date = self.convert_withtimezone(date)
 
-        product_ids = self._get_products(category_ids)
+        product_ids = self._get_products(category_ids, product_ids)
 
         domain = [
             ('date', '<', date),
@@ -107,9 +92,9 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
         inventory_by_product = defaultdict(lambda: 0)
         for move in stock_moves:
             if move.location_id.id == location_id.id:
-                inventory_by_product[move.product_id.id] -= move.quantity
+                inventory_by_product[move.product_id] -= move.quantity
             if move.location_dest_id.id == location_id.id:
-                inventory_by_product[move.product_id.id] += move.quantity
+                inventory_by_product[move.product_id] += move.quantity
         return inventory_by_product
 
     def get_product_sale_qty(self, record, product, location):
@@ -163,15 +148,8 @@ class eq_inventory_valuation_report_inventory_valuation_report(models.AbstractMo
                         WHERE pp.id in %s
                         GROUP BY pt.categ_id, pp.id order by pt.categ_id
                         ''',
-            (location, location, location, location, location, location, start_date, end_date, tuple([product])))
-        values = self._cr.dictfetchall()
-        if record.group_by_categ and not location:
-            sort_by_categories = sorted(values, key=itemgetter('categ_id'))
-            records_by_categories = dict(
-                (k, [v for v in itr]) for k, itr in groupby(sort_by_categories, itemgetter('categ_id')))
-            return records_by_categories
-        else:
-            return values[0]
+            (location, location, location, location, location, location, start_date, end_date, tuple([product.id])))
+        return self._cr.dictfetchall()[0]
 
     def get_product_valuation(self, record, product_id, quantity: float, warehouse: str, op_type: str) -> float:
         if not quantity:
