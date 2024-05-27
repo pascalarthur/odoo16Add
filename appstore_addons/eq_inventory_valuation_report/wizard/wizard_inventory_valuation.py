@@ -10,7 +10,7 @@ class wizard_inventory_valuation(models.TransientModel):
     _name = 'wizard.inventory.valuation'
     _description = 'Wizard Inventory Valuation'
 
-    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.user.company_id.id,
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company.id,
                                  readonly=True)
     warehouse_ids = fields.Many2many('stock.warehouse', string='Warehouse')
     location_ids = fields.Many2many('stock.location', string='Location')
@@ -83,6 +83,11 @@ class wizard_inventory_valuation(models.TransientModel):
             'target': 'new'
         }
 
+    def get_locations(self, company_id, warehouse):
+        domain = [('company_id', '=', company_id.id), ('usage', '=', 'internal'),
+                  ('location_id', 'child_of', warehouse.view_location_id.ids)]
+        return self.env['stock.location'].sudo().search(domain)
+
     def print_xls_report(self):
         self.check_date_range()
         xls_filename = 'inventory_valuation_report.xlsx'
@@ -99,13 +104,15 @@ class wizard_inventory_valuation(models.TransientModel):
             })
 
             location_ids = report_stock_inv_obj.get_warehouse_wise_location(self, warehouse)
-            location_ids = location_ids if len(location_ids) > 0 else report_stock_inv_obj.get_locations(
-                self.company_id, self.warehouse_ids)
+            if len(location_ids) == 0:
+                location_ids = self.get_locations(self.company_id, self.warehouse_ids)
             inventory_by_location = {
-                loc: report_stock_inv_obj.get_inventory_at_date(self.start_date, loc, self.category_ids, self.product_ids)
+                loc: report_stock_inv_obj.get_inventory_at_date(self.start_date, loc, self.category_ids,
+                                                                self.product_ids)
                 for loc in location_ids
             }
-            location_wise_data = report_stock_inv_obj.get_location_wise_product(self, inventory_by_location)
+            location_wise_data = report_stock_inv_obj.get_location_wise_product(self.start_date, self.end_date,
+                                                                                inventory_by_location)
 
             df_data = pd.DataFrame({
                 "Products": [],
@@ -145,6 +152,7 @@ class wizard_inventory_valuation(models.TransientModel):
                     cost_method = dict(product.categ_id.fields_get()['property_cost_method']['selection'])[
                         product.categ_id.property_cost_method]
 
+                    # Append data to dataframe
                     df_data.loc[len(df_data)] = [
                         product.display_name, product.categ_id.complete_name, cost_method, location_id.display_name,
                         product_dict['product_qty_begin'], product_qty_begin_val, product_dict['product_qty_in'],
